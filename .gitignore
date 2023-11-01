@@ -1,0 +1,7 @@
+*.iso
+isodir
+sysroot
+out
+
+# IDEA ides
+.idea

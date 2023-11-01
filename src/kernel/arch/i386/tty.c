@@ -24,19 +24,13 @@ void terminal_put_at(char c, uint8_t color, size_t x, size_t y)
 
 void terminal_scroll(void)
 {
-        for (size_t y = 1; y < VGA_HEIGHT; y++) {
-                for (size_t x = 0; x < VGA_WIDTH; x++) {
+        for (int i = VGA_WIDTH; i <= VGA_WIDTH * VGA_HEIGHT; i++) {
+                VGA_MEMORY[i - VGA_WIDTH] = VGA_MEMORY[i];
+        }
 
-                        const size_t old = (y * VGA_WIDTH) + x;
-                        const size_t new = ((y - 1) * VGA_WIDTH) + x;
-
-                        if (y == VGA_HEIGHT - 1) {
-                                terminal_buffer[new] = ' ';
-                                return;
-                        }
-
-                        terminal_buffer[new] = terminal_buffer[old];
-                }
+        for (int i = 0; i <= VGA_WIDTH; i++) {
+                size_t row = VGA_HEIGHT - 1;
+                VGA_MEMORY[(VGA_WIDTH * row) + i] = ' ';
         }
 }
 
@@ -46,8 +40,8 @@ void terminal_putchar(char c)
                 terminal_column = 0;
                 
                 if (++terminal_row >= VGA_HEIGHT) {
-                        terminal_row = VGA_HEIGHT - 1;
                         terminal_scroll();
+                        terminal_row = VGA_HEIGHT - 1;
                 }
 
                 return;
@@ -59,8 +53,8 @@ void terminal_putchar(char c)
                 terminal_column = 0;
 
                 if (++terminal_row >= VGA_HEIGHT) {
-                        terminal_row = VGA_HEIGHT - 1;
                         terminal_scroll();
+                        terminal_row = VGA_HEIGHT - 1;
                 }
         }
 }

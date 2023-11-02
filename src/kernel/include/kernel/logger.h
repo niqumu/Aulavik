@@ -10,6 +10,7 @@
 #ifndef _KERNEL_LOGGER_H
 #define _KERNEL_LOGGER_H
 
+void k_debug(const char* __restrict format, ...);
 void k_ok(const char* __restrict, ...);
 void k_warn(const char* __restrict, ...);
 void k_error(const char* __restrict, ...);

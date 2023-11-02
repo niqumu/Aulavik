@@ -44,8 +44,8 @@
 #define SYS_ACCESS_TSS_64_AVAIL         0b00001001
 #define SYS_ACCESS_TSS_64_BUSY          0b00001011
 
-/* null, kernel code and data, user code and data */
-#define GDT_ENTRIES 5
+/* null, kernel code and data, user code and data, task state */
+#define GDT_ENTRIES 6
 
 /* the byte size of a single segment descriptor */
 #define DESCRIPTOR_SIZE 64

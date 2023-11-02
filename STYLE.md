@@ -69,6 +69,9 @@ and a blank line between them.
 Where it makes sense to do so, it is strongly preferred that includes are 
 ordered alphabetically within their category.
 
+If a file is solely an implementation of a header, that header should be the 
+first #include.
+
 ```c
 #include <math.h> /* atan(), asin(), INFINITY */
 #include <stdint.h> /* uint16_t */

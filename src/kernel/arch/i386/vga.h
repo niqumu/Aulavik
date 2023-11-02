@@ -31,20 +31,20 @@ enum vga_shade {
         VGA_COLOR_WHITE = 15,
 };
 
-/* generate a vga memory entry from a character and color */
-uint16_t vga_entry(unsigned char uc, uint8_t color)
+/* generate a vga memory entry from a character and style byte */
+uint16_t vga_entry(unsigned char uc, uint8_t style)
 {
-        return (uint16_t) uc | (uint16_t) color << 8;
+        return (uint16_t) uc | (uint16_t) style << 8;
 }
 
-/* generate a vga color from foreground and background shades */
-uint8_t vga_entry_color(uint8_t fg, uint8_t bg)
+/* generate a vga color from foreground and background colors */
+uint8_t vga_create_style(uint8_t fg, uint8_t bg)
 {
         return fg | bg << 4;
 }
 
-/* get the vga shade corresponding to the given id */
-uint8_t vga_get_shade(int id, int bg)
+/* get the vga color corresponding to the given id */
+uint8_t vga_get_color(int id, int bg)
 {
 	if (bg)
 		id -= 10;

@@ -63,6 +63,11 @@ static void create_default_descriptors(void) {
 	access = (ACCESS_PRESENT | ACCESS_PRIVILEGE_3 | ACCESS_TYPE |
 		  ACCESS_READWRITE);
 	gdt[4] = create_descriptor(0, 0xfffff, flags, access);
+
+	/* create task sate segment */
+	access = (ACCESS_PRESENT | ACCESS_PRIVILEGE_0 | ACCESS_EXECUTABLE |
+		  ACCESS_ACCESSED);
+	gdt[5] = create_descriptor(0, 0xfffff, flags, access);
 }
 
 void gdt_init(void)

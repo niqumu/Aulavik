@@ -35,6 +35,7 @@ KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 $(KERNEL_GDT_OBJS) \
 kernel/kernel.o \
+kernel/logger.o \
  
 OBJS=\
 $(ARCHDIR)/crti.o \

@@ -10,14 +10,20 @@
 #include <stdint.h> /* uint8_t, uint32_t, uint64_t */
 
 #include <kernel/gdt.h>
+#include <kernel/logger.h>
 
 /* gdt itself */
 uint64_t *gdt;
 
-// TODO validate limit as 20 bits and flags as 4 bits (need kernel error func)
 uint64_t create_descriptor(uint32_t base, uint32_t limit,
-				uint8_t flags, uint8_t access)
+			   uint8_t flags, uint8_t access)
 {
+	if (limit > 0xfffff)
+		k_error("bad segment descriptor: limit %x is too big!", limit);
+
+	if (flags > 0xf)
+		k_error("bad segment descriptor: flags %x are too big!", flags);
+
 	uint64_t dest;
 	dest  = limit & 0x00ffff;
 	dest |= (((uint64_t) limit) & 0xff0000) << 32;
@@ -59,7 +65,7 @@ static void create_default_descriptors(void) {
 	gdt[4] = create_descriptor(0, 0xfffff, flags, access);
 }
 
-void initialize_gdt(void)
+void gdt_init(void)
 {
 	create_default_descriptors();
 

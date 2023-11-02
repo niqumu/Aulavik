@@ -7,13 +7,13 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef AULAVIK_GDT_H
-#define AULAVIK_GDT_H
+#ifndef _KERNEL_GDT_H
+#define _KERNEL_GDT_H
 
 #include <stdint.h> /* uint8_t, uint16_t, uint32_t, uint64_t */
 
 /* segment descriptor access byte flags */
-#define ACCESS_PRESENT	        0b10000000
+#define ACCESS_PRESENT	                0b10000000
 #define ACCESS_PRIVILEGE_0	        0b00000000
 #define ACCESS_PRIVILEGE_1	        0b00100000
 #define ACCESS_PRIVILEGE_2	        0b01000000
@@ -21,6 +21,7 @@
 #define ACCESS_TYPE		        0b00010000
 #define ACCESS_EXECUTABLE	        0b00001000
 #define ACCESS_DIRECTION	        0b00000100
+#define ACCESS_CONFORMING	        0b00000100
 #define ACCESS_READWRITE	        0b00000010
 #define ACCESS_ACCESSED	                0b00000001
 
@@ -43,8 +44,11 @@
 #define SYS_ACCESS_TSS_64_AVAIL         0b00001001
 #define SYS_ACCESS_TSS_64_BUSY          0b00001011
 
-#define GDT_ENTRIES 5 /* null, kernel code and data, user code and data */
-#define DESCRIPTOR_SIZE 64 /* the byte size of a single segment descriptor */
+/* null, kernel code and data, user code and data */
+#define GDT_ENTRIES 5
+
+/* the byte size of a single segment descriptor */
+#define DESCRIPTOR_SIZE 64
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,16 +69,16 @@ struct __attribute__((packed)) gdt_descriptor_64 {
 /* representation of a reconstructed segment descriptor */
 struct __attribute__((packed)) segment {
 	uint32_t base;
-	uint32_t limit; /* 20 bits */
-	uint8_t flags;  /* 4 bits */
+	uint32_t limit;         /* 20 bits */
+	uint8_t flags;          /* 4 bits */
 	uint8_t access;
 };
 
 /* representation of a reconstructed long-mode system segment descriptor */
 struct __attribute__((packed)) long_sys_segment {
 	uint64_t base;
-	uint32_t limit; /* 20 bits */
-	uint8_t flags;  /* 4 bits */
+	uint32_t limit;         /* 20 bits */
+	uint8_t flags;          /* 4 bits */
 	uint8_t access;
 };
 
@@ -89,10 +93,10 @@ extern void load_gdt(uint32_t limit, uint32_t base);
 extern void reload_registers(void);
 
 /* creates and load a gdt */
-void initialize_gdt(void);
+void gdt_init(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* AULAVIK_GDT_H */
+#endif /* _KERNEL_GDT_H */

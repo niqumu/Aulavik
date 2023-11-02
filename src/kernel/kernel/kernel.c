@@ -9,16 +9,17 @@
 
 #include <stdio.h> /* printf() */
 
-#include <kernel/gdt.h>
-#include <kernel/tty.h>
+#include <kernel/logger.h>
+#include <kernel/gdt.h> /* gdt_init(); */
+#include <kernel/tty.h> /* terminal_init(); */
 
 void kernel_main(void)
 {
 	terminal_init();
-	printf("[OK] Initialized terminal\n");
+	k_ok("Initialized terminal");
 
-	initialize_gdt();
-	printf("[OK] Loaded GDT\n");
+	gdt_init();
+	k_ok("Loaded GDT");
 
-	printf("[OK] Kernel ready!\n");
+	k_ok("Kernel ready!\n");
 }

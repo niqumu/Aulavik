@@ -12,7 +12,7 @@
 
 #include <stdint.h> /* uint8_t */
 
-enum vga_color {
+enum vga_shade {
         VGA_COLOR_BLACK = 0,
         VGA_COLOR_BLUE = 1,
         VGA_COLOR_GREEN = 2,
@@ -37,10 +37,41 @@ uint16_t vga_entry(unsigned char uc, uint8_t color)
         return (uint16_t) uc | (uint16_t) color << 8;
 }
 
-/* generate a vga color from foreground and background colors */
+/* generate a vga color from foreground and background shades */
 uint8_t vga_entry_color(uint8_t fg, uint8_t bg)
 {
         return fg | bg << 4;
+}
+
+/* get the vga shade corresponding to the given id */
+uint8_t vga_get_shade(int id, int bg)
+{
+	if (bg)
+		id -= 10;
+
+	switch (id) {
+	case 30: return VGA_COLOR_BLACK;
+	case 31: return VGA_COLOR_RED;
+	case 32: return VGA_COLOR_GREEN;
+	case 33: return VGA_COLOR_BROWN;
+	case 34: return VGA_COLOR_BLUE;
+	case 35: return VGA_COLOR_MAGENTA;
+	case 36: return VGA_COLOR_CYAN;
+	case 37: return VGA_COLOR_LIGHT_GRAY;
+	case 90: return VGA_COLOR_DARK_GRAY;
+	case 91: return VGA_COLOR_LIGHT_RED;
+	case 92: return VGA_COLOR_LIGHT_GREEN;
+	case 93: return VGA_COLOR_LIGHT_BROWN;
+	case 94: return VGA_COLOR_LIGHT_BLUE;
+	case 95: return VGA_COLOR_LIGHT_MAGENTA;
+	case 96: return VGA_COLOR_LIGHT_CYAN;
+	case 97: return VGA_COLOR_WHITE;
+	default: /* fg falls back to light gray, bg to black (defaults) */
+		if (bg)
+			return VGA_COLOR_BLACK;
+		else
+			return VGA_COLOR_LIGHT_GRAY;
+	}
 }
 
 #endif /* ARCH_I386_VGA_H */

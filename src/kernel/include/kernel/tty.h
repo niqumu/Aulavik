@@ -10,6 +10,13 @@
 #ifndef _KERNEL_TTY_H
 #define _KERNEL_TTY_H
 
+#define FE_CONTROL_SEQUENCE_INTRODUCER '['
+#define FE_CONTROL_SEQUENCE FE_CONTROL_SEQUENCE_INTRODUCER
+
+#define ESCAPE_START '\e'
+#define ESCAPE_END 'm'
+#define SEPERATOR ';'
+
 /* initialize the terminal, clearing the screen */
 void terminal_init(void);
 

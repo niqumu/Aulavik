@@ -68,7 +68,6 @@ int printf(const char* restrict format, ...)
                 }
 
                 const char *format_begun_at = format++;
-                char *str;
                 size_t len;
 
                 switch (*format) {
@@ -90,8 +89,8 @@ int printf(const char* restrict format, ...)
                         format++;
                         const int num = va_arg(parameters, int);
                         // TODO proper abs();
-                        str = convert(num * ((num > 0) - (num < 0)), 10);
-                        len = strlen(str);
+                        char *d_str = convert(num * ((num > 0) - (num < 0)), 10);
+                        len = strlen(d_str);
 
                         if (maxleft < len) {
                                 // TODO set errno to EOVERFLOW
@@ -105,22 +104,22 @@ int printf(const char* restrict format, ...)
                                         return -1;
                         }
 
-                        if (!print(str, len))
+                        if (!print(d_str, len))
                                 return -1;
 
                         written += len;
                         break;
                 case 's':
                         format++;
-                        *str = va_arg(parameters, const char*);
-                        len = strlen(str);
+                        const char *s_str = va_arg(parameters, const char*);
+                        len = strlen(s_str);
 
                         if (maxleft < len) {
                                 // TODO set errno to EOVERFLOW
                                 return -1;
                         }
 
-                        if (!print(str, len))
+                        if (!print(s_str, len))
                                 return -1;
 
                         written += len;
@@ -128,8 +127,8 @@ int printf(const char* restrict format, ...)
                 case 'x':
                         format++;
                         const int num_hex = va_arg(parameters, int);
-                        str = convert(num_hex, 16);
-                        len = strlen(str);
+                        char x_str = convert(num_hex, 16);
+                        len = strlen(x_str);
 
                         if (maxleft < len) {
                                 // TODO set errno to EOVERFLOW
@@ -139,7 +138,7 @@ int printf(const char* restrict format, ...)
                         if (!print("0x", sizeof("0x") - 1))
                                 return -1;
 
-                        if (!print(str, len))
+                        if (!print(x_str, len))
                                 return -1;
 
                         written += len + 2;

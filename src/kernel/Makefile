@@ -21,7 +21,8 @@ NASMFLAGS:=$(NASMFLAGS) -felf32
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
  
 ARCHDIR=arch/$(HOSTARCH)
- 
+
+include gdt/make.config
 include $(ARCHDIR)/make.config
  
 CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
@@ -32,6 +33,7 @@ LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
  
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
+$(KERNEL_GDT_OBJS) \
 kernel/kernel.o \
  
 OBJS=\

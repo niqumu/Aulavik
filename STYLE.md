@@ -44,10 +44,14 @@ default:
 
 ### Including header files
 
-Unless it is immediately clear, #includes should be proceeded by a comment, 
-documenting what is being used from the file, alphabetically. This helps 
-improve code readability, as well as making it more obvious when a header file 
-is no longer being used and the #include is no longer needed.
+#includes should be proceeded by a comment, documenting what is being used 
+from the file. This helps improve code readability, as well as making it more
+obvious when a header file is no longer being used and the #include is no 
+longer needed.
+
+If the usage of the #include is obvious and will always be needed (ie, 
+`#include <foo.h>` in a file named `foo.c`, implementing `foo.h`), this is not 
+necessary.
 
 If the #include is used widely enough that this comment isn't practical, the
 usage of the header should already be obvious in the context.

@@ -9,15 +9,16 @@
 
 #include <stdio.h> /* printf() */
 
-#include <kernel/tty.h> /* terminal_init() */
+#include <kernel/gdt.h>
+#include <kernel/tty.h>
 
 void kernel_main(void)
 {
-        terminal_init();
+	terminal_init();
+	printf("[OK] Initialized terminal\n");
 
-        printf("kernel loaded!");
+	initialize_gdt();
+	printf("[OK] Loaded GDT\n");
 
-        //for (int i = 0; i < 50; i++) {
-        //    printf("Testing scrolling: Current line: %d!\n", i);
-        //}
+	printf("[OK] Kernel ready!\n");
 }

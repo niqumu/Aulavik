@@ -7,8 +7,6 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-/* Created by clamoureux on 2023/11/1 */
-
 // TODO 2023/11/1: §7.12.8
 // Per §7.12.9, FE_DIVBYZERO, FE_INVALID, and FE_OVERFLOW shall be defined
 //      in <fenv.h> when an implementation is written.
@@ -27,18 +25,18 @@
  * @ ISO/IEC 9899:201 §7.12.0.2
  */
 #if __FLT_EVAL_METHOD__ == 0
-        typedef float float_t
-        typedef double double_t
+        typedef float float_t;
+        typedef double double_t;
 #elif __FLT_EVAL_METHOD__ == 1
-        typedef double float_t
-        typedef double double_t
+        typedef double float_t;
+        typedef double double_t;
 #elif ___FLT_EVAL_METHOD__ == 2
-        typedef long double float_t
-        typedef long double double_t
+        typedef long double float_t;
+        typedef long double double_t;
 #else /* Default to __FLT_EVAL_METHOD 0 */
         #define __FLT_EVAL_METHOD__ 0
-        typedef float float_t
-        typedef double double_t
+        typedef float float_t;
+        typedef double double_t;
 #endif
 
 /* Constant expressions */

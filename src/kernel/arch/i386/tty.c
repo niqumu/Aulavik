@@ -1,90 +1,108 @@
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
+/*====-------------- tty.c - VGA Teletype implementation -----------------====*\
+ *
+ * This code is a part of the Aulavik project.
+ * Usage of these works is permitted provided that this instrument is retained
+ * with the works, so that any entity that uses the works is notified of this
+ * instrument. These works are provided without any warranty.
+ *
+\*====--------------------------------------------------------------------====*/
+
+#include <stdint.h> /* uint16_t, uint8_t */
 
 #include <kernel/tty.h>
 
 #include "vga.h"
 
-static const size_t VGA_WIDTH = 80;
-static const size_t VGA_HEIGHT = 25;
-static uint16_t *VGA_MEMORY = (uint16_t*) 0xb8000;
+static const int VGA_WIDTH = 80;
+static const int VGA_HEIGHT = 25;
+volatile uint16_t *VGA_MEMORY = (uint16_t*) 0xb8000;
 
-size_t terminal_row;
-size_t terminal_column;
-uint8_t terminal_color;
-uint16_t *terminal_buffer;
+int term_row;
+int term_column;
+uint8_t term_color;
 
-void terminal_put_at(char c, uint8_t color, size_t x, size_t y)
+static void terminal_put_at(char c, uint8_t color, int x, int y)
 {
-        const size_t index = (y * VGA_WIDTH) + x;
-        terminal_buffer[index] = vga_entry(c, color);
+        const int index = (y * VGA_WIDTH) + x;
+        VGA_MEMORY[index] = vga_entry(c, color);
 }
 
-void terminal_scroll(void)
+static void terminal_scroll(void)
 {
         for (int i = VGA_WIDTH; i <= VGA_WIDTH * VGA_HEIGHT; i++) {
                 VGA_MEMORY[i - VGA_WIDTH] = VGA_MEMORY[i];
         }
 
         for (int i = 0; i <= VGA_WIDTH; i++) {
-                size_t row = VGA_HEIGHT - 1;
+                int row = VGA_HEIGHT - 1;
                 VGA_MEMORY[(VGA_WIDTH * row) + i] = ' ';
+        }
+}
+
+static void terminal_clear(void)
+{
+        for (int y = 0; y < VGA_HEIGHT; y++) {
+                for (int x = 0; x < VGA_WIDTH; x++) {
+                        terminal_put_at(' ', term_color, x, y);
+                }
         }
 }
 
 void terminal_putchar(char c)
 {
-        if (c == '\n') {
-                terminal_column = 0;
-                
-                if (++terminal_row >= VGA_HEIGHT) {
-                        terminal_scroll();
-                        terminal_row = VGA_HEIGHT - 1;
-                }
-
-                return;
+        switch (c) {
+        case 0x08: /* backspace */
+                if (term_column > 0)
+                        term_column--;
+                break;
+        case 0x09: /* tab */
+                term_column = ((term_column + 7) / 8) * 8;
+                break;
+        case '\n': /* line feed */
+                term_column = 0;
+                term_row++;
+                break;
+        case 0x0d: /* carriage return */
+                term_column = 0;
+                break;
+        default:
+                terminal_put_at(c, term_color, term_column, term_row);
+                term_column++;
         }
 
-        terminal_put_at(c, terminal_color, terminal_column, terminal_row);
+        if (term_column >= VGA_WIDTH) {
+                term_column = 0;
+                term_row++;
+        }
 
-        if (++terminal_column >= VGA_WIDTH) {
-                terminal_column = 0;
-
-                if (++terminal_row >= VGA_HEIGHT) {
-                        terminal_scroll();
-                        terminal_row = VGA_HEIGHT - 1;
-                }
+        if (term_row >= VGA_HEIGHT) {
+                terminal_scroll();
+                term_row = VGA_HEIGHT - 1;
         }
 }
 
 void terminal_puts(const char *string)
 {
-        for (size_t c = 0; c < strlen(string); c++)
-                terminal_putchar(string[c]);
-}
+        for (int i = 0; string[i]; i++) {
+                char c = string[i];
 
-void terminal_clear(void)
-{
-        for (size_t y = 0; y < VGA_HEIGHT; y++) {
-                for (size_t x = 0; x < VGA_WIDTH; x++) {
-                        terminal_put_at(' ', terminal_color, x, y);
+                if (c == 0x1b) { /* escape */
+                        // TODO: ANSI colors
                 }
+
+                terminal_putchar(c);
         }
 }
 
-void terminal_initialize(void)
+void terminal_set_color(int fg, int bg)
 {
-        terminal_row = 0;
-        terminal_column = 0;
-        terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GRAY, VGA_COLOR_BLACK);
-        terminal_buffer = VGA_MEMORY;
-
-        terminal_clear();
+        term_color = vga_entry_color(fg, bg);
 }
 
-void terminal_setcolor(uint8_t color)
+void terminal_init(void)
 {
-        terminal_color = color;
+        term_row = 0;
+        term_column = 0;
+        terminal_set_color(VGA_COLOR_LIGHT_GRAY, VGA_COLOR_BLACK);
+        terminal_clear();
 }

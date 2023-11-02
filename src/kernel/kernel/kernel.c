@@ -1,10 +1,19 @@
-#include <stdio.h>
+/*====------------------ kernel.h - Main kernel entry --------------------====*\
+ *
+ * This code is a part of the Aulavik project.
+ * Usage of these works is permitted provided that this instrument is retained
+ * with the works, so that any entity that uses the works is notified of this
+ * instrument. These works are provided without any warranty.
+ *
+\*====--------------------------------------------------------------------====*/
 
-#include <kernel/tty.h>
+#include <stdio.h> /* printf() */
+
+#include <kernel/tty.h> /* terminal_init() */
 
 void kernel_main(void)
 {
-        terminal_initialize();
+        terminal_init();
 
         printf("kernel loaded!");
 

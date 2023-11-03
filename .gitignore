@@ -1,7 +1,10 @@
+# File types
 *.iso
-isodir
-sysroot
-out
 
-# IDEA ides
-.idea
+# Build
+build/*
+isodir/*
+sysroot/*
+
+# Other
+.idea/*

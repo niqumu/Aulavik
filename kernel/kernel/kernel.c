@@ -27,5 +27,5 @@ void kernel_main(void)
 	k_ok("Loaded serial driver!");
 
 	k_print("\nKernel ready!");
-	k_print("%d kb of memory present\n", *((uint64_t*) 0x413));
+	k_print("%dkb of memory present\n", *((uint64_t*) 0x413));
 }

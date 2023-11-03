@@ -1,26 +1,16 @@
-DEFAULT_HOST!=../../default-host.sh
-HOST?=DEFAULT_HOST
-HOSTARCH!=../../target-triplet-to-arch.sh $(HOST)
- 
+# libc makefile
+
 CFLAGS?=-O2 -g
 CPPFLAGS?=
 LDFLAGS?=
 NASMFLAGS?=
 LIBS?=
- 
-DESTDIR?=
-PREFIX?=/usr/local
-EXEC_PREFIX?=$(PREFIX)
-INCLUDEDIR?=$(PREFIX)/include
-LIBDIR?=$(EXEC_PREFIX)/lib
- 
+
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
 CPPFLAGS:=$(CPPFLAGS) -D__is_libc -Iinclude
 LIBK_CFLAGS:=$(CFLAGS)
 NASMFLAGS:=$(NASMFLAGS) -felf32
 LIBK_CPPFLAGS:=$(CPPFLAGS) -D__is_libk
- 
-ARCHDIR=arch/$(HOSTARCH)
 
 include $(ARCHDIR)/make.config
  

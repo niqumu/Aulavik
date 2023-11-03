@@ -1,26 +1,16 @@
-DEFAULT_HOST!=../../default-host.sh
-HOST?=DEFAULT_HOST
-HOSTARCH!=../../target-triplet-to-arch.sh $(HOST)
- 
+# kernel makefile
+
 CFLAGS?=-O2 -g
 CPPFLAGS?=
 LDFLAGS?=
 NASMFLAGS?=
 LIBS?=
  
-DESTDIR?=
-PREFIX?=/usr/local
-EXEC_PREFIX?=$(PREFIX)
-BOOTDIR?=$(EXEC_PREFIX)/boot
-INCLUDEDIR?=$(PREFIX)/include
- 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
 CPPFLAGS:=$(CPPFLAGS) -D__is_kernel -Iinclude
 LDFLAGS:=$(LDFLAGS)
 NASMFLAGS:=$(NASMFLAGS) -felf32
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
- 
-ARCHDIR=arch/$(HOSTARCH)
 
 include driver/make.config
 include gdt/make.config

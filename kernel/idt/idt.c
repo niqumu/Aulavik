@@ -10,22 +10,12 @@
 #include <kernel/idt.h>
 
 #include <kernel/gdt.h>
-#include <kernel/logger.h>
 
 /* defined in _idt.asm */
 extern void *isr_stubs[];
 
 /* idt itself */
 uint64_t idt[IDT_MAX_ENTRIES];
-
-__attribute__((__noreturn__))
-void exception_handler(void)
-{
-	k_print("");
-	k_error("FATAL: exception thrown, system halt!");
-	while (1)
-		asm volatile ("cli; hlt");
-}
 
 uint64_t idt_create_descriptor(uintptr_t base, uint8_t flags)
 {

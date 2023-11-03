@@ -7,6 +7,9 @@
  *
 \*====--------------------------------------------------------------------====*/
 
+#include <kernel/kernel.h>
+
+#include <stdint.h>
 #include <stdio.h> /* printf() */
 
 #include <driver/serial.h>
@@ -14,6 +17,33 @@
 #include <kernel/idt.h> /* idt_init() */
 #include <kernel/gdt.h> /* gdt_init(); */
 #include <kernel/tty.h> /* terminal_init(); */
+
+void k_except(int vec, char *nmon, char *name, int has_error, int abort)
+{
+	uint32_t error = 0;
+
+	k_print("");
+	k_error("Exception caught!");
+	k_print("----------------------------------------");
+	k_print("Exception: %x %s (%s)", vec, nmon, name);
+
+	if (has_error) {
+		/* TODO get from stack */
+	}
+
+	k_print("error: %x, abort: %d", error, abort);
+
+	if (abort)
+		panic("Abort");
+}
+
+__attribute__((__noreturn__))
+void panic(char *msg)
+{
+	k_print("\nKernel panic: %s", msg);
+	while (1)
+		asm volatile ("cli; hlt");
+}
 
 void kernel_main(void)
 {
@@ -31,7 +61,5 @@ void kernel_main(void)
 	k_print("\nKernel ready!");
 	k_print("%dkb of memory present\n", *((uint64_t*) 0x413));
 
-	k_debug("About to divide by zero!");
-	k_print("\tTest!");
-	asm volatile ("div %0" :: "a" (0));
+//	asm volatile ("div %0" :: "a" (0)); /* exception testing */
 }

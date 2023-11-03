@@ -44,8 +44,51 @@ struct __attribute__((packed)) gate {
 	uint8_t flags;
 };
 
-__attribute__((__noreturn__))
-void exception_handler(void);
+__attribute__((unused)) void idt_handle_vec0(void);
+__attribute__((unused)) void idt_handle_vec1(void);
+__attribute__((unused)) void idt_handle_vec2(void);
+__attribute__((unused)) void idt_handle_vec3(void);
+__attribute__((unused)) void idt_handle_vec4(void);
+__attribute__((unused)) void idt_handle_vec5(void);
+__attribute__((unused)) void idt_handle_vec6(void);
+__attribute__((unused)) void idt_handle_vec7(void);
+__attribute__((unused)) void idt_handle_vec8(void);
+__attribute__((unused)) void idt_handle_vec9(void);
+__attribute__((unused)) void idt_handle_vec10(void);
+__attribute__((unused)) void idt_handle_vec11(void);
+__attribute__((unused)) void idt_handle_vec12(void);
+__attribute__((unused)) void idt_handle_vec13(void);
+__attribute__((unused)) void idt_handle_vec14(void);
+__attribute__((unused)) void idt_handle_vec15(void);
+__attribute__((unused)) void idt_handle_vec16(void);
+__attribute__((unused)) void idt_handle_vec17(void);
+__attribute__((unused)) void idt_handle_vec18(void);
+__attribute__((unused)) void idt_handle_vec19(void);
+__attribute__((unused)) void idt_handle_vec20(void);
+__attribute__((unused)) void idt_handle_vec21(void);
+__attribute__((unused)) void idt_handle_vec22(void);
+__attribute__((unused)) void idt_handle_vec23(void);
+__attribute__((unused)) void idt_handle_vec24(void);
+__attribute__((unused)) void idt_handle_vec25(void);
+__attribute__((unused)) void idt_handle_vec26(void);
+__attribute__((unused)) void idt_handle_vec27(void);
+__attribute__((unused)) void idt_handle_vec28(void);
+__attribute__((unused)) void idt_handle_vec29(void);
+__attribute__((unused)) void idt_handle_vec30(void);
+__attribute__((unused)) void idt_handle_vec31(void);
+
+
+__attribute__((unused))
+void idt_handle_fault_error(uint16_t vec);
+
+__attribute__((unused))
+void idt_handle_fault(uint16_t vec);
+
+__attribute__((unused))
+void idt_handle_abort_error(uint16_t vec);
+
+__attribute__((unused))
+void idt_handle_abort(uint16_t vec);
 
 /* creates and returns a gate descriptor with the provided data */
 uint64_t idt_create_descriptor(uintptr_t base, uint8_t flags);

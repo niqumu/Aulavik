@@ -7,35 +7,80 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <stdarg.h> /* va_list, va_start(), va_end() */
-#include <stdio.h> /* printf() */
-
 #include <kernel/logger.h>
 
-#define FG_GREEN        "\e[92m"
-#define FG_ORANGE       "\e[93m"
-#define FG_RED          "\e[91m"
-#define FG_DARK_GRAY    "\e[90m"
-#define FG_GRAY         "\e[37m"
+#include <stdarg.h> /* va_list, va_start(), va_end() */
+#include <stdio.h> /* printf() */
+#include <string.h> /* strcat() */
+
+#include <driver/serial.h> /* serial_write_string() */
 
 void k_debug(const char* restrict format, ...)
 {
-	printf("[ " FG_DARK_GRAY "DBG" FG_GRAY " ] ");
+	printf(PREFIX_DEBUG);
 
 	va_list args;
 	va_start(args, format);
+
+#ifdef SERIAL_LOGGING_ENABLED
+#ifdef SERIAL_LOGGING_ANSI
+	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_DEBUG);
+#else
+	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_DEBUG_M);
+#endif
+	char *str;
+	memset(str, 0, 64); // todo this needs to be malloc()!
+	vsprintf(str, format, args);
+
+	serial_write_string(SERIAL_LOGGING_PORT, str);
+	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+#endif
+
 	vprintf(format, args);
 	va_end(args);
+	printf("\n");
+}
 
+void k_print(const char* __restrict format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+#ifdef SERIAL_LOGGING_ENABLED
+	char *str;
+	memset(str, 0, 64); // todo this needs to be malloc()!
+	vsprintf(str, format, args);
+
+	serial_write_string(SERIAL_LOGGING_PORT, str);
+	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+#endif
+
+	vprintf(format, args);
+	va_end(args);
 	printf("\n");
 }
 
 void k_ok(const char* restrict format, ...)
 {
-	printf("[ " FG_GREEN "OK" FG_GRAY " ] ");
+	printf(PREFIX_OK);
 
 	va_list args;
 	va_start(args, format);
+
+#ifdef SERIAL_LOGGING_ENABLED
+#ifdef SERIAL_LOGGING_ANSI
+	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_OK);
+#else
+	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_OK_M);
+#endif
+	char *str;
+	memset(str, 0, 64); // todo this needs to be malloc()!
+	vsprintf(str, format, args);
+
+	serial_write_string(SERIAL_LOGGING_PORT, str);
+	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+#endif
+
 	vprintf(format, args);
 	va_end(args);
 
@@ -44,10 +89,25 @@ void k_ok(const char* restrict format, ...)
 
 void k_warn(const char* restrict format, ...)
 {
-	printf("[ " FG_ORANGE "WARN" FG_GRAY " ] ");
+	printf(PREFIX_WARN);
 
 	va_list args;
 	va_start(args, format);
+
+#ifdef SERIAL_LOGGING_ENABLED
+#ifdef SERIAL_LOGGING_ANSI
+	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_WARN);
+#else
+	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_WARN_M);
+#endif
+	char *str;
+	memset(str, 0, 64); // todo this needs to be malloc()!
+	vsprintf(str, format, args);
+
+	serial_write_string(SERIAL_LOGGING_PORT, str);
+	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+#endif
+
 	vprintf(format, args);
 	va_end(args);
 
@@ -56,10 +116,25 @@ void k_warn(const char* restrict format, ...)
 
 void k_error(const char* restrict format, ...)
 {
-	printf("[ " FG_RED "ERR" FG_GRAY " ] ");
+	printf(PREFIX_ERROR);
 
 	va_list args;
 	va_start(args, format);
+
+#ifdef SERIAL_LOGGING_ENABLED
+	#ifdef SERIAL_LOGGING_ANSI
+	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_ERROR);
+#else
+	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_ERROR_M);
+#endif
+	char *str;
+	memset(str, 0, 64); // todo this needs to be malloc()!
+	vsprintf(str, format, args);
+
+	serial_write_string(SERIAL_LOGGING_PORT, str);
+	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+#endif
+
 	vprintf(format, args);
 	va_end(args);
 

@@ -22,6 +22,7 @@ LIBS:=$(LIBS) -nostdlib -lk -lgcc
  
 ARCHDIR=arch/$(HOSTARCH)
 
+include driver/make.config
 include gdt/make.config
 include $(ARCHDIR)/make.config
  
@@ -33,6 +34,7 @@ LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
  
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
+$(KERNEL_DRIVER_OBJS) \
 $(KERNEL_GDT_OBJS) \
 kernel/kernel.o \
 kernel/logger.o \

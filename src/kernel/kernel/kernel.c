@@ -9,6 +9,7 @@
 
 #include <stdio.h> /* printf() */
 
+#include <driver/serial.h>
 #include <kernel/logger.h>
 #include <kernel/gdt.h> /* gdt_init(); */
 #include <kernel/tty.h> /* terminal_init(); */
@@ -21,5 +22,10 @@ void kernel_main(void)
 	gdt_init();
 	k_ok("Loaded GDT");
 
-	k_ok("Kernel ready!\n");
+	k_ok("Loading drivers...");
+	serial_init(PORT_COM_1, BAUD_38400);
+	k_ok("Loaded serial driver!");
+
+	k_print("\nKernel ready!");
+	k_print("%d kb of memory present\n", *((uint64_t*) 0x413));
 }

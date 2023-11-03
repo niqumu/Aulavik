@@ -15,6 +15,7 @@ int printf(const char* __restrict, ...);
 int putchar(int);
 int puts(const char*);
 int vprintf(const char* __restrict, va_list args);
+int vsprintf(char* __restrict str, const char* __restrict, va_list args);
 
 #ifdef __cplusplus
 }

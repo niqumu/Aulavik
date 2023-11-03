@@ -42,9 +42,9 @@ build:
 clean:
 	$(foreach module, $(MODULES), $(MAKE) -C $(module) clean;) \
 	rm -rf ./sysroot 		\
-    rm -rf ./isodir 		\
-    rm -rf ./out 			\
-    rm -rf ./aulavik.iso
+	rm -rf ./isodir 		\
+	rm -rf ./out 			\
+	rm -rf ./aulavik.iso
 
 iso:
 	mkdir -p ./isodir/boot/grub

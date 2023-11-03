@@ -13,6 +13,7 @@ NASMFLAGS:=$(NASMFLAGS) -felf32
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
 
 include driver/make.config
+include idt/make.config
 include gdt/make.config
 include $(ARCHDIR)/make.config
  
@@ -26,6 +27,7 @@ KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 $(KERNEL_DRIVER_OBJS) \
 $(KERNEL_GDT_OBJS) \
+$(KERNEL_IDT_OBJS) \
 kernel/kernel.o \
 kernel/logger.o \
  

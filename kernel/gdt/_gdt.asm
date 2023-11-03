@@ -13,15 +13,15 @@ gdtr:
 
 ; -----------------------------------------------------------------------------
 ; global function: load a gdt given the size and location
-; params: uint32_t limit, uint32_t base
+; params: uint16_t limit, uintptr_t base
 ;
 ; global function defined and exposed in gdt.h
 ; -----------------------------------------------------------------------------
 global load_gdt
 load_gdt:
-	mov ax, [esp + 4]       ; uint32_t limit
+	mov ax, [esp + 4]       ; uint16_t limit
 	mov [gdtr], ax
-	mov eax, [esp + 8]      ; uint32_t base
+	mov eax, [esp + 8]      ; uintptr_t base
 	mov [gdtr + 2], eax
 	lgdt [gdtr]             ; load gdt
 	ret

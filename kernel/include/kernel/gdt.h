@@ -44,11 +44,17 @@
 #define SYS_ACCESS_TSS_64_AVAIL         0b00001001
 #define SYS_ACCESS_TSS_64_BUSY          0b00001011
 
-/* null, kernel code and data, user code and data, task state */
-#define GDT_ENTRIES 6
+#define GDT_MAX_ENTRIES 16
+
+#define GDT_SEGMENT_NULL        0
+#define GDT_SEGMENT_KERNEL_CODE 1
+#define GDT_SEGMENT_KERNEL_DATA 2
+#define GDT_SEGMENT_USER_CODE   3
+#define GDT_SEGMENT_USER_DATA   4
+#define GDT_SEGMENT_TASK_STATE  5
 
 /* the byte size of a single segment descriptor */
-#define DESCRIPTOR_SIZE 64
+#define DESCRIPTOR_SIZE 8
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,12 +88,14 @@ struct __attribute__((packed)) long_sys_segment {
 	uint8_t access;
 };
 
+uint64_t* gdt_get_descriptor(uint8_t index);
+
 /* creates and returns a segment descriptor with the provided data */
-uint64_t create_descriptor(uint32_t base, uint32_t limit,
+uint64_t gdt_create_descriptor(uint32_t base, uint32_t limit,
 			   uint8_t flags, uint8_t access);
 
 /* load a gdt given the size and location. impl: _gdt.asm */
-extern void load_gdt(uint32_t limit, uint32_t base);
+extern void load_gdt(uint16_t limit, uintptr_t base);
 
 /* reload the segment registers, required after loading gdt. impl: _gdt.asm */
 extern void reload_registers(void);

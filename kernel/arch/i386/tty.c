@@ -128,6 +128,7 @@ void terminal_putchar(char c)
 			term_column--;
 		break;
 	case 0x09: /* tab */
+		term_column++;
 		term_column = ((term_column + 7) / 8) * 8;
 		break;
 	case '\n': /* line feed */

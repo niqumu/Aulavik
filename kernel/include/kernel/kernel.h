@@ -10,7 +10,10 @@
 #ifndef _KERNEL_H
 #define _KERNEL_H
 
+/* how many times exceptions can recurse before a panic is called */
+#ifndef MAX_EXCEPTION_DEPTH
 #define MAX_EXCEPTION_DEPTH 3
+#endif
 
 __attribute__((__noreturn__))
 void panic(char *msg);

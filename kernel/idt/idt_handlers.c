@@ -24,7 +24,7 @@ __attribute__((unused)) void idt_handle_vec0(void)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(0, "#DE", "Division Error", 1, 0);
+	k_except(0, "#DE", "Division Error", 1, 1); // TODO temporarily fatal
 	exception_depth--;
 }
 
@@ -99,15 +99,6 @@ __attribute__((unused)) void idt_handle_vec9(void)
 	k_except(9, "#CS", "Coprocessor Segment Overrun", 1, 0);
 	exception_depth--;
 }
-
-
-
-
-
-
-
-
-
 
 __attribute__((unused)) void idt_handle_vec10(void)
 {
@@ -259,7 +250,6 @@ __attribute__((unused)) void idt_handle_vec30(void)
 	k_except(29, "#SX", "Security Exception", 1, 0);
 	exception_depth--;
 }
-
 
 __attribute__((unused)) void idt_handle_vec31(void)
 {

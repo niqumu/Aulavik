@@ -32,6 +32,20 @@ void k_except(int vec, char *nmon, char *name, int has_error, int abort)
 	}
 
 	k_print("error: %x, abort: %d", error, abort);
+	k_print("Stack dump:");
+
+	uint32_t *stack_bottom;
+	asm volatile ("mov %%ebp, %0" : "=a" (stack_bottom));
+
+	for (int i = 0; i <= 10; i++) {
+		if (!*stack_bottom)
+			goto done_stack_trace;
+
+		k_print("  %d: %x", i, *stack_bottom);
+		stack_bottom += sizeof(uintptr_t);
+	}
+	k_print("  ...");
+done_stack_trace:
 
 	if (abort)
 		panic("Abort");
@@ -60,6 +74,4 @@ void kernel_main(void)
 
 	k_print("\nKernel ready!");
 	k_print("%dkb of memory present\n", *((uint64_t*) 0x413));
-
-//	asm volatile ("div %0" :: "a" (0)); /* exception testing */
 }

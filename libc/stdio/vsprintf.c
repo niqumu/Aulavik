@@ -18,7 +18,7 @@ static bool print(char *dest, const char *src, size_t length)
 {
 	char *ptr = dest + strlen(dest);
 
-	for (int i = 0; i < length; i++)
+	for (size_t i = 0; i < length; i++)
 		*ptr++ = *src++;
 
 	*ptr = 0;
@@ -27,8 +27,9 @@ static bool print(char *dest, const char *src, size_t length)
 }
 
 // TODO how big does the buffer really need to be?
-char* convert(unsigned int number, int base)
+char* convert(unsigned int number, int base, int min_digits)
 {
+	int digits = 0;
 	static char chars[] = "0123456789abcdef";
 	static char buff[64];
 	char *ptr = &buff[63];
@@ -36,9 +37,13 @@ char* convert(unsigned int number, int base)
 	*ptr = '\0';
 
 	do {
+		digits++;
 		*--ptr = chars[number % base];
 		number /= base;
 	} while (number);
+
+	if (digits < min_digits)
+		ptr -= (min_digits - digits);
 
 	return ptr;
 }
@@ -46,6 +51,7 @@ char* convert(unsigned int number, int base)
 int vsprintf(char *str, const char* restrict format, va_list parameters)
 {
 	int written = 0;
+	int min_digits = 0;
 
 	while (*format) {
 		size_t maxleft = INT_MAX - written;
@@ -94,7 +100,7 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 				format++;
 				const int num = va_arg(parameters, int);
 				// TODO proper abs();
-				char *d_str = convert(num * ((num > 0) - (num < 0)), 10);
+				char *d_str = convert(num * ((num > 0) - (num < 0)), 10, min_digits);
 				len = strlen(d_str);
 
 				if (maxleft < len) {
@@ -132,7 +138,7 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 			case 'x':
 				format++;
 				const int num_hex = va_arg(parameters, int);
-				char *x_str = convert(num_hex, 16);
+				char *x_str = convert(num_hex, 16, min_digits);
 				len = strlen(x_str);
 
 				if (maxleft < len) {
@@ -149,6 +155,15 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 				written += len + 2;
 				break;
 			default:
+				if (*format >= '0' && *format <= '9') {
+					format++;
+					min_digits *= 10;
+					min_digits += *format - '0';
+
+					written++;
+					break;
+				}
+
 				format = format_begun_at;
 				len = strlen(format);
 

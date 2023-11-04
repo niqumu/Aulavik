@@ -7,8 +7,8 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef _KERNEL_TTY_H
-#define _KERNEL_TTY_H
+#ifndef _DRIVER_TTY_H
+#define _DRIVER_TTY_H
 
 #define FE_CONTROL_SEQUENCE_INTRODUCER '['
 #define FE_CONTROL_SEQUENCE FE_CONTROL_SEQUENCE_INTRODUCER
@@ -16,6 +16,9 @@
 #define ESCAPE_START '\e'
 #define ESCAPE_END 'm'
 #define SEPERATOR ';'
+
+/* enable/disable the text mode cursor */
+void terminal_set_cursor_enabled(int state);
 
 /* initialize the terminal, clearing the screen */
 void terminal_init(void);
@@ -29,4 +32,10 @@ void terminal_puts(const char *string);
 /* set the terminal color */
 void terminal_set_color(int fg, int bg);
 
-#endif /* _KERNEL_TTY_H */
+/* get the terminal color */
+int terminal_get_color(int *fg_dest, int *bg_dest);
+
+/* set the text mode cursor position */
+void terminal_set_cursor(int row, int col);
+
+#endif /* _DRIVER_TTY_H */

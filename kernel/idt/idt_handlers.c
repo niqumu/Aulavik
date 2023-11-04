@@ -8,6 +8,9 @@
 \*====--------------------------------------------------------------------====*/
 
 #include <kernel/idt.h>
+
+#include <driver/keyboard.h>
+
 #include <kernel/kernel.h>
 
 int exception_depth = 0;
@@ -254,4 +257,9 @@ __attribute__((unused)) void idt_handle_vec30(void)
 __attribute__((unused)) void idt_handle_vec31(void)
 {
 	idt_handle_reserved(31);
+}
+
+__attribute__((unused)) void idt_handle_vec100(void)
+{
+	keyboard_handle_press();
 }

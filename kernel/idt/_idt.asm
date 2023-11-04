@@ -64,6 +64,7 @@ extern idt_handle_vec28
 extern idt_handle_vec29
 extern idt_handle_vec30
 extern idt_handle_vec31
+extern idt_handle_vec100
 
 isr_stub_0: call idt_handle_vec0
 	iret
@@ -129,6 +130,8 @@ isr_stub_30: call idt_handle_vec30
         iret
 isr_stub_31: call idt_handle_vec31
         iret
+isr_stub_100: call idt_handle_vec100
+	iret
 
 global isr_stubs
 isr_stubs:
@@ -138,3 +141,4 @@ isr_stubs:
 		dd isr_stub_%+i;
 	%assign i i + 1
 	%endrep
+	dd isr_stub_100;

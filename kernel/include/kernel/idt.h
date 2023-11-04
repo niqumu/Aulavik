@@ -76,6 +76,7 @@ __attribute__((unused)) void idt_handle_vec28(void);
 __attribute__((unused)) void idt_handle_vec29(void);
 __attribute__((unused)) void idt_handle_vec30(void);
 __attribute__((unused)) void idt_handle_vec31(void);
+__attribute__((unused)) void idt_handle_vec100(void);
 
 
 __attribute__((unused))

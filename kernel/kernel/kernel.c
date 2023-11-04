@@ -12,11 +12,12 @@
 #include <stdint.h>
 #include <stdio.h> /* printf() */
 
+#include <driver/tty.h> /* terminal_init(); */
 #include <driver/serial.h>
+
 #include <kernel/logger.h>
 #include <kernel/idt.h> /* idt_init() */
 #include <kernel/gdt.h> /* gdt_init(); */
-#include <kernel/tty.h> /* terminal_init(); */
 
 void k_except(int vec, char *nmon, char *name, int has_error, int abort)
 {
@@ -35,17 +36,37 @@ void k_except(int vec, char *nmon, char *name, int has_error, int abort)
 	k_print("Stack dump:");
 
 	uint32_t *stack_bottom;
-	asm volatile ("mov %%ebp, %0" : "=a" (stack_bottom));
+	asm volatile ("mov %%ebp, %0" : "=g" (stack_bottom));
 
-	for (int i = 0; i <= 10; i++) {
+	for (int i = 0; i < 10; i++) {
 		if (!*stack_bottom)
 			goto done_stack_trace;
 
 		k_print("  %d: %x", i, *stack_bottom);
 		stack_bottom += sizeof(uintptr_t);
 	}
-	k_print("  ...");
+	k_print("     ...");
 done_stack_trace:
+
+	k_print("Register dump:");
+
+	uint32_t eax, ebx, ecx, edx, esi, edi, esp, ebp;
+	asm volatile ("mov %%eax, %0" : "=g" (eax));
+	asm volatile ("mov %%ebx, %0" : "=g" (ebx));
+	asm volatile ("mov %%ecx, %0" : "=g" (ecx));
+	asm volatile ("mov %%edx, %0" : "=g" (edx));
+	asm volatile ("mov %%esi, %0" : "=g" (esi));
+	asm volatile ("mov %%edi, %0" : "=g" (edi));
+	asm volatile ("mov %%esp, %0" : "=g" (esp));
+	asm volatile ("mov %%ebp, %0" : "=g" (ebp));
+	k_print("  eax: %x\t\taccumulator", eax);
+	k_print("  ebx: %x\t\tbase", ebx);
+	k_print("  ecx: %x\t\tcounter", ecx);
+	k_print("  edx: %x\t\tdata", edx);
+	k_print("  esi: %x\t\tsource", esi);
+	k_print("  edi: %x\t\tdestination", edi);
+	k_print("  esp: %x\t\tstack pointer", esp);
+	k_print("  ebp: %x\t\tstack base pointer", ebp);
 
 	if (abort)
 		panic("Abort");

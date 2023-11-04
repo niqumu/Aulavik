@@ -13,7 +13,7 @@
 #include <stdio.h> /* printf() */
 #include <string.h> /* strcat() */
 
-#include <driver/serial.h> /* serial_write_string() */
+#include <kernel/driver/serial.h> /* serial_write_string() */
 
 void k_debug(const char* restrict format, ...)
 {

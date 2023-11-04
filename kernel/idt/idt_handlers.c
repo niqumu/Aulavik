@@ -7,9 +7,9 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <kernel/idt.h>
+#include <kernel/idt/idt.h>
 
-#include <driver/keyboard.h>
+#include <kernel/driver/keyboard.h>
 
 #include <kernel/kernel.h>
 

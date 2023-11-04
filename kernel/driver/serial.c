@@ -7,11 +7,11 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <driver/serial.h>
+#include <kernel/driver/serial.h>
 
 #include <stdint.h> /* uint8_t, uint16_t */
 
-#include <driver/ports.h>
+#include <kernel/driver/ports.h>
 #include <kernel/logger.h>
 
 static int serial_write_ready(uint16_t port)

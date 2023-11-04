@@ -7,9 +7,9 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <kernel/idt.h>
+#include <kernel/idt/idt.h>
 
-#include <kernel/gdt.h>
+#include <kernel/gdt/gdt.h>
 
 /* defined in _idt.asm */
 extern void *isr_stubs[];

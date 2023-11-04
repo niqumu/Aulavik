@@ -7,7 +7,7 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <driver/keyboard.h>
+#include <kernel/driver/keyboard.h>
 
 void keyboard_handle_press()
 {

@@ -7,7 +7,7 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <kernel/gdt.h>
+#include <kernel/gdt/gdt.h>
 #include <kernel/logger.h>
 
 /* gdt itself */

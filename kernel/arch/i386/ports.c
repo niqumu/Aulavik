@@ -7,7 +7,7 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <driver/ports.h>
+#include <kernel/driver/ports.h>
 
 #include <stdint.h> /* uint8_t, uint16_t */
 

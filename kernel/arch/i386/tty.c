@@ -10,8 +10,8 @@
 #include <stdint.h> /* uint16_t, uint8_t */
 #include <string.h> /* memset() */
 
-#include <driver/ports.h>
-#include <driver/tty.h>
+#include <kernel/driver/ports.h>
+#include <kernel/driver/tty.h>
 
 #include "vga.h"
 

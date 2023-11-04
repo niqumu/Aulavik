@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #ifdef __is_libk
-#include <driver/tty.h>
+#include <kernel/driver/tty.h>
 #endif
 
 int putchar(int i)

@@ -7,5 +7,5 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <driver/ioapic.h>
+#include <kernel/driver/ioapic.h>
 

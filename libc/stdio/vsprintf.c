@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 
+#include <stdint.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdarg.h>
@@ -27,7 +28,7 @@ static bool print(char *dest, const char *src, size_t length)
 }
 
 // TODO how big does the buffer really need to be?
-char* convert(unsigned int number, int base, int min_digits)
+char* convert(uint64_t number, int base, int min_digits)
 {
 	int digits = 0;
 	static char chars[] = "0123456789abcdef";
@@ -137,7 +138,7 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 				break;
 			case 'x':
 				format++;
-				const int num_hex = va_arg(parameters, int);
+				const uint64_t num_hex = va_arg(parameters, int);
 				char *x_str = convert(num_hex, 16, min_digits);
 				len = strlen(x_str);
 

@@ -7,6 +7,10 @@
  *
 \*====--------------------------------------------------------------------====*/
 
+#include <stdint.h>
+
+#include <kernel/multiboot.h>
+
 #ifndef _KERNEL_H
 #define _KERNEL_H
 
@@ -14,6 +18,17 @@
 #ifndef MAX_EXCEPTION_DEPTH
 #define MAX_EXCEPTION_DEPTH 3
 #endif
+
+typedef struct multiboot_memory_map {
+	uint32_t size;
+	uint32_t base_addr_low;
+	uint32_t base_addr_high;
+	uint32_t length_low;
+	uint32_t length_high;
+//	uint64_t base_addr;
+//	uint64_t length;
+	uint16_t type;
+} mmap_entry_t;
 
 __attribute__((__noreturn__))
 void panic(char *msg);

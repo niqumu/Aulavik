@@ -67,10 +67,7 @@ _start:
 
 	; If execution reaches this point, loop forever.
 	;
-	; Interrupts are disabled with the cli instruction (clear interrupt
-	;   enable). This doesn't really make sense, since they should already
-	;   have been disabled by the  bootloader, but this is here just in case
-	;   they somehow get re-enabled by the kernel.
+	; Interrupts are disabled with the cli instruction.
 	;
 	; The hlt instruction will wait for the next interrupt to come. This
 	;   should never happen, since they have been disabled.

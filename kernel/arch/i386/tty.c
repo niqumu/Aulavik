@@ -160,8 +160,10 @@ void terminal_putchar(char c)
 
 	switch (c) {
 	case 0x08: /* backspace */
-		if (term_cursor_column > 0)
+		if (term_cursor_column > 0) {
+			terminal_put_at(' ', term_style, term_cursor_column, term_cursor_row);
 			terminal_set_cursor(term_cursor_row, term_cursor_row - 1);
+		}
 		break;
 	case 0x09: /* tab */
 		int column = ((term_cursor_column + 7 + 1) / 8) * 8;

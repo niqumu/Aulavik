@@ -13,18 +13,12 @@
 
 #include <kernel/logger.h>
 
-void k_except(int vec, char *nmon, char *name, int has_error, int abort)
+void k_except(int vec, char *nmon, char *name, uint32_t error, int abort)
 {
-	uint32_t error = 0;
-
 	k_print("");
 	k_error("Exception caught!");
 	k_print("----------------------------------------");
 	k_print("Exception: %x %s (%s)", vec, nmon, name);
-
-	if (has_error) {
-		/* TODO get from stack */
-	}
 
 	k_print("error: %x, abort: %d", error, abort);
 	k_print("Stack dump:");
@@ -64,7 +58,7 @@ done_stack_trace:
 	k_print("  esp: %x\t\tstack pointer", esp);
 	k_print("  ebp: %x\t\tstack base pointer", ebp);
 
-	if (abort)
+//	if (abort)
 		panic("Abort");
 }
 

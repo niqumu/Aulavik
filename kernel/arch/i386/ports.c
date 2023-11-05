@@ -18,12 +18,12 @@ void port_wait(void)
 
 void port_outb(uint16_t port, uint8_t data)
 {
-	asm volatile ("outb %0, %1" :: "a" (data), "Nd" (port));
+	asm volatile ("outb %0, %1" :: "a" (data), "Nd" (port) : "memory");
 }
 
 uint8_t port_inb(uint16_t port)
 {
 	uint8_t response;
-	asm volatile ("inb %1, %0" : "=a" (response) : "Nd" (port));
+	asm volatile ("inb %1, %0" : "=a" (response) : "Nd" (port) : "memory");
 	return response;
 }

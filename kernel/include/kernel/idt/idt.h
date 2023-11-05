@@ -17,7 +17,7 @@
 #define PIC_SLAVE_COMMAND       0xa0
 #define PIC_SLAVE_DATA          0xa1
 
-#define PIC_OFFSET              100
+#define PIC_OFFSET              80
 
 #define FLAG_PRESENT            0b10000000
 #define FLAG_PRIVILEGE_0	0b00000000
@@ -51,42 +51,42 @@ struct __attribute__((packed)) gate {
 	uint8_t flags;
 };
 
-__attribute__((unused)) void idt_handle_vec0(void);
-__attribute__((unused)) void idt_handle_vec1(void);
-__attribute__((unused)) void idt_handle_vec2(void);
-__attribute__((unused)) void idt_handle_vec3(void);
-__attribute__((unused)) void idt_handle_vec4(void);
-__attribute__((unused)) void idt_handle_vec5(void);
-__attribute__((unused)) void idt_handle_vec6(void);
-__attribute__((unused)) void idt_handle_vec7(void);
-__attribute__((unused)) void idt_handle_vec8(void);
-__attribute__((unused)) void idt_handle_vec9(void);
-__attribute__((unused)) void idt_handle_vec10(void);
-__attribute__((unused)) void idt_handle_vec11(void);
-__attribute__((unused)) void idt_handle_vec12(void);
-__attribute__((unused)) void idt_handle_vec13(void);
-__attribute__((unused)) void idt_handle_vec14(void);
-__attribute__((unused)) void idt_handle_vec15(void);
-__attribute__((unused)) void idt_handle_vec16(void);
-__attribute__((unused)) void idt_handle_vec17(void);
-__attribute__((unused)) void idt_handle_vec18(void);
-__attribute__((unused)) void idt_handle_vec19(void);
-__attribute__((unused)) void idt_handle_vec20(void);
-__attribute__((unused)) void idt_handle_vec21(void);
-__attribute__((unused)) void idt_handle_vec22(void);
-__attribute__((unused)) void idt_handle_vec23(void);
-__attribute__((unused)) void idt_handle_vec24(void);
-__attribute__((unused)) void idt_handle_vec25(void);
-__attribute__((unused)) void idt_handle_vec26(void);
-__attribute__((unused)) void idt_handle_vec27(void);
-__attribute__((unused)) void idt_handle_vec28(void);
-__attribute__((unused)) void idt_handle_vec29(void);
-__attribute__((unused)) void idt_handle_vec30(void);
-__attribute__((unused)) void idt_handle_vec31(void);
+__attribute__((unused)) void idt_handle_vec0(uint32_t error);
+__attribute__((unused)) void idt_handle_vec1(uint32_t error);
+__attribute__((unused)) void idt_handle_vec2(uint32_t error);
+__attribute__((unused)) void idt_handle_vec3(uint32_t error);
+__attribute__((unused)) void idt_handle_vec4(uint32_t error);
+__attribute__((unused)) void idt_handle_vec5(uint32_t error);
+__attribute__((unused)) void idt_handle_vec6(uint32_t error);
+__attribute__((unused)) void idt_handle_vec7(uint32_t error);
+__attribute__((unused)) void idt_handle_vec8(uint32_t error);
+__attribute__((unused)) void idt_handle_vec9(uint32_t error);
+__attribute__((unused)) void idt_handle_vec10(uint32_t error);
+__attribute__((unused)) void idt_handle_vec11(uint32_t error);
+__attribute__((unused)) void idt_handle_vec12(uint32_t error);
+__attribute__((unused)) void idt_handle_vec13(uint32_t error);
+__attribute__((unused)) void idt_handle_vec14(uint32_t error);
+__attribute__((unused)) void idt_handle_vec15(uint32_t error);
+__attribute__((unused)) void idt_handle_vec16(uint32_t error);
+__attribute__((unused)) void idt_handle_vec17(uint32_t error);
+__attribute__((unused)) void idt_handle_vec18(uint32_t error);
+__attribute__((unused)) void idt_handle_vec19(uint32_t error);
+__attribute__((unused)) void idt_handle_vec20(uint32_t error);
+__attribute__((unused)) void idt_handle_vec21(uint32_t error);
+__attribute__((unused)) void idt_handle_vec22(uint32_t error);
+__attribute__((unused)) void idt_handle_vec23(uint32_t error);
+__attribute__((unused)) void idt_handle_vec24(uint32_t error);
+__attribute__((unused)) void idt_handle_vec25(uint32_t error);
+__attribute__((unused)) void idt_handle_vec26(uint32_t error);
+__attribute__((unused)) void idt_handle_vec27(uint32_t error);
+__attribute__((unused)) void idt_handle_vec28(uint32_t error);
+__attribute__((unused)) void idt_handle_vec29(uint32_t error);
+__attribute__((unused)) void idt_handle_vec30(uint32_t error);
+__attribute__((unused)) void idt_handle_vec31(uint32_t error);
 
 /* IRQs */
-__attribute__((unused)) void idt_handle_vec100(void);
-__attribute__((unused)) void idt_handle_vec101(void);
+__attribute__((unused)) void idt_handle_vec80(uint32_t error);
+__attribute__((unused)) void idt_handle_vec81(uint32_t error);
 
 
 __attribute__((unused))

@@ -9,9 +9,11 @@
 
 #include <kernel/driver/keyboard.h>
 
+#include <kernel/driver/ports.h>
 #include <kernel/logger.h>
 
 void keyboard_handle_press()
 {
 	k_debug("press");
+	port_outb(0x20, 0x20);
 }

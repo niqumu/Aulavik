@@ -19,11 +19,11 @@ static void idt_handle_reserved(int vec)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(0, "RESERVED", "Unimplemented", 1, 0);
+	k_except(0, "RESERVED", "Unimplemented", 0, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec0(void)
+__attribute__((unused)) void idt_handle_vec0(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
@@ -31,63 +31,63 @@ __attribute__((unused)) void idt_handle_vec0(void)
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec1(void)
+__attribute__((unused)) void idt_handle_vec1(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(1, "#DB", "Debug", 1, 0);
+	k_except(1, "#DB", "Debug", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec2(void) // TODO not an exception
+__attribute__((unused)) void idt_handle_vec2(uint32_t error) // TODO not an exception
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(2, "NMI", "Non-maskable Interrupt", 1, 0);
+	k_except(2, "NMI", "Non-maskable Interrupt", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec3(void)
+__attribute__((unused)) void idt_handle_vec3(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(3, "#BP", "Breakpoint", 1, 0);
+	k_except(3, "#BP", "Breakpoint", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec4(void)
+__attribute__((unused)) void idt_handle_vec4(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(4, "#OF", "Overflow", 1, 0);
+	k_except(4, "#OF", "Overflow", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec5(void)
+__attribute__((unused)) void idt_handle_vec5(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(5, "#BR", "Bound Range Exeeded", 1, 0);
+	k_except(5, "#BR", "Bound Range Exeeded", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec6(void)
+__attribute__((unused)) void idt_handle_vec6(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(6, "#UD", "Invalid Opcode", 1, 0);
+	k_except(6, "#UD", "Invalid Opcode", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec7(void)
+__attribute__((unused)) void idt_handle_vec7(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(7, "#NM", "Device Not Available", 1, 0);
+	k_except(7, "#NM", "Device Not Available", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec8(void)
+__attribute__((unused)) void idt_handle_vec8(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
@@ -95,60 +95,60 @@ __attribute__((unused)) void idt_handle_vec8(void)
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec9(void)
+__attribute__((unused)) void idt_handle_vec9(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(9, "#CS", "Coprocessor Segment Overrun", 1, 0);
+	k_except(9, "#CS", "Coprocessor Segment Overrun", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec10(void)
+__attribute__((unused)) void idt_handle_vec10(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(10, "#TS", "Invalid TSS", 1, 0);
+	k_except(10, "#TS", "Invalid TSS", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec11(void)
+__attribute__((unused)) void idt_handle_vec11(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(11, "#NP", "Segment Not Present", 1, 0);
+	k_except(11, "#NP", "Segment Not Present", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec12(void) 
+__attribute__((unused)) void idt_handle_vec12(uint32_t error) 
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(12, "SS", "Stack-Segment Fault", 1, 0);
+	k_except(12, "SS", "Stack-Segment Fault", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec13(void)
+__attribute__((unused)) void idt_handle_vec13(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(13, "#GP", "General Protection Fault", 1, 0);
+	k_except(13, "#GP", "General Protection Fault", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec14(void)
+__attribute__((unused)) void idt_handle_vec14(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(14, "#PF", "Page Fault", 1, 0);
+	k_except(14, "#PF", "Page Fault", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec15(void)
+__attribute__((unused)) void idt_handle_vec15(uint32_t error)
 {
 	idt_handle_reserved(15);
 }
 
-__attribute__((unused)) void idt_handle_vec16(void)
+__attribute__((unused)) void idt_handle_vec16(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
@@ -156,15 +156,15 @@ __attribute__((unused)) void idt_handle_vec16(void)
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec17(void)
+__attribute__((unused)) void idt_handle_vec17(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(17, "#AC", "Alignment Check", 1, 0);
+	k_except(17, "#AC", "Alignment Check", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec18(void)
+__attribute__((unused)) void idt_handle_vec18(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
@@ -172,7 +172,7 @@ __attribute__((unused)) void idt_handle_vec18(void)
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec19(void)
+__attribute__((unused)) void idt_handle_vec19(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
@@ -180,7 +180,7 @@ __attribute__((unused)) void idt_handle_vec19(void)
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec20(void)
+__attribute__((unused)) void idt_handle_vec20(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
@@ -188,49 +188,49 @@ __attribute__((unused)) void idt_handle_vec20(void)
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec21(void)
+__attribute__((unused)) void idt_handle_vec21(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(21, "#CP", "Control Protection Exception", 1, 0);
+	k_except(21, "#CP", "Control Protection Exception", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec22(void)
+__attribute__((unused)) void idt_handle_vec22(uint32_t error)
 {
 	idt_handle_reserved(22);
 }
 
-__attribute__((unused)) void idt_handle_vec23(void)
+__attribute__((unused)) void idt_handle_vec23(uint32_t error)
 {
 	idt_handle_reserved(23);
 }
 
 
-__attribute__((unused)) void idt_handle_vec24(void)
+__attribute__((unused)) void idt_handle_vec24(uint32_t error)
 {
 	idt_handle_reserved(24);
 }
 
 
-__attribute__((unused)) void idt_handle_vec25(void)
+__attribute__((unused)) void idt_handle_vec25(uint32_t error)
 {
 	idt_handle_reserved(25);
 }
 
 
-__attribute__((unused)) void idt_handle_vec26(void)
+__attribute__((unused)) void idt_handle_vec26(uint32_t error)
 {
 	idt_handle_reserved(27);
 }
 
 
-__attribute__((unused)) void idt_handle_vec27(void)
+__attribute__((unused)) void idt_handle_vec27(uint32_t error)
 {
 	idt_handle_reserved(27);
 }
 
-__attribute__((unused)) void idt_handle_vec28(void)
+__attribute__((unused)) void idt_handle_vec28(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
@@ -238,34 +238,45 @@ __attribute__((unused)) void idt_handle_vec28(void)
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec29(void)
+__attribute__((unused)) void idt_handle_vec29(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(29, "#VC", "VMM Communication Exception", 1, 0);
+	k_except(29, "#VC", "VMM Communication Exception", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec30(void)
+__attribute__((unused)) void idt_handle_vec30(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(29, "#SX", "Security Exception", 1, 0);
+	k_except(29, "#SX", "Security Exception", error, 0);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec31(void)
+__attribute__((unused)) void idt_handle_vec31(uint32_t error)
 {
 	idt_handle_reserved(31);
 }
 
 /* IRQs */
 
-__attribute__((unused)) void idt_handle_vec100(void)
+int flag = 0;
+
+/* clock */
+__attribute__((unused)) void idt_handle_vec80(uint32_t error)
 {
+//	if (flag) {
+//		terminal_putchar(0x08);
+//		flag = 0;
+//	} else {
+//		terminal_putchar('X');
+//		flag = 1;
+//	}
 }
 
-__attribute__((unused)) void idt_handle_vec101(void)
+/* keyboard */
+__attribute__((unused)) void idt_handle_vec81(uint32_t error)
 {
 	keyboard_handle_press();
 }

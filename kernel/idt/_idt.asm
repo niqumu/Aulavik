@@ -66,8 +66,8 @@ extern idt_handle_vec30
 extern idt_handle_vec31
 
 ; IRQs
-extern idt_handle_vec100
-extern idt_handle_vec101
+extern idt_handle_vec80
+extern idt_handle_vec81
 
 isr_stub_0: call idt_handle_vec0
 	iret
@@ -144,12 +144,12 @@ except_isr_stubs:
 	%endrep
 
 ; IRQs
-isr_stub_100: call idt_handle_vec100
+isr_stub_80: call idt_handle_vec80
         iret
-isr_stub_101: call idt_handle_vec101
+isr_stub_81: call idt_handle_vec81
         iret
 
 global irq_isr_stubs
 irq_isr_stubs:
-	dd isr_stub_100;
-        dd isr_stub_101;
+	dd isr_stub_80;
+        dd isr_stub_81;

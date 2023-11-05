@@ -9,6 +9,7 @@
 
 #include <kernel/kernel.h>
 
+#include <kernel/driver/ps2.h>
 #include <kernel/driver/tty.h> /* terminal_init(); */
 #include <kernel/driver/serial.h>
 #include <kernel/driver/graphics.h>
@@ -66,11 +67,15 @@ void kernel_main(void)
 	k_ok("Initialized IDT");
 	k_ok("Loading drivers...");
 	serial_init(PORT_COM_1, BAUD_38400);
-	k_ok("Loaded serial driver!");
+	k_ok("Loaded serial driver");
+	ps2_init();
+	k_ok("Loaded PS/2 driver");
 
 	k_print("\nKernel ready!");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	asm volatile ("int $101");
+	while (1) {
+		asm("hlt");
+	}
 }

@@ -38,6 +38,6 @@ uint32_t kernel_get_mb_memmap_size();
 __attribute__((__noreturn__))
 void panic(char *msg);
 
-void k_except(int vec, char *nmon, char *name, int has_error, int abort);
+void k_except(int vec, char *nmon, char *name, uint32_t has_error, int abort);
 
 #endif /* _KERNEL_H */

@@ -40,7 +40,7 @@ void idt_init(void)
 
 	/* irqs */
 	for (uint8_t vector = 0; vector < 2; vector++) {
-		idt[vector + 100] = idt_create_descriptor((uintptr_t) irq_isr_stubs[vector],
+		idt[vector + PIC_OFFSET] = idt_create_descriptor((uintptr_t) irq_isr_stubs[vector],
 		        FLAG_PRESENT | FLAG_PRIVILEGE_0 | FLAG_GATE_TYPE_INT);
 	}
 
@@ -55,7 +55,7 @@ void idt_init(void)
 	port_wait();
 	port_outb(PIC_MASTER_DATA, PIC_OFFSET);
 	port_wait();
-	port_outb(PIC_SLAVE_DATA, PIC_OFFSET);
+	port_outb(PIC_SLAVE_DATA, PIC_OFFSET + 8);
 	port_wait();
 	port_outb(PIC_MASTER_DATA, 0x04);
 	port_wait();

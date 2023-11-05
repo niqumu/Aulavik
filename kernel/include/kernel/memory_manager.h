@@ -1,4 +1,4 @@
-/*====------------------- FILENAME - SHORT DESCRIPTION -------------------====*\
+/*====-------- memory_manager.h - Physical memory manager header ---------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -7,15 +7,13 @@
  *
 \*====--------------------------------------------------------------------====*/
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <kernel/kernel.h>
 
 #ifndef _KERNEL_MEMORY_MANAGER_H
 #define _KERNEL_MEMORY_MANAGER_H
-
-/* where the table of memory blocks resides */
-#define TABLE_ADDRESS 0x110000
 
 /* where the start of our region to hand out memory from starts */
 #define MEMORY_START 0x200000
@@ -30,6 +28,12 @@ typedef struct block_header  {
 	uint64_t size;
 	uint16_t used;
 } __attribute__((packed)) block_header_t;
+
+void memman_dump(void);
+
+void* memman_allocate(size_t size);
+
+void memman_free(void *ptr);
 
 void memory_manager_init(void);
 

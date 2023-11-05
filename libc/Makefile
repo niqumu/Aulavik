@@ -27,6 +27,8 @@ stdio/puts.o \
 stdio/vsprintf.o \
 stdio/vprintf.o \
 stdlib/abort.o \
+stdlib/free.o \
+stdlib/malloc.o \
 string/memcmp.o \
 string/memcpy.o \
 string/memmove.o \

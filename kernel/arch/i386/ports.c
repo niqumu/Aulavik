@@ -11,6 +11,11 @@
 
 #include <stdint.h> /* uint8_t, uint16_t */
 
+void port_wait(void)
+{
+	port_outb(0x80, 0);
+}
+
 void port_outb(uint16_t port, uint8_t data)
 {
 	asm volatile ("outb %0, %1" :: "a" (data), "Nd" (port));

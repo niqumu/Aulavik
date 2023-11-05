@@ -12,6 +12,7 @@
 #ifndef _DRIVER_PORTS_H
 #define _DRIVER_PORTS_H
 
+void port_wait(void);
 void port_outb(uint16_t port, uint8_t data);
 uint8_t port_inb(uint16_t port);
 

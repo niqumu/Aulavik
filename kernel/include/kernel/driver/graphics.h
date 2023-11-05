@@ -1,4 +1,4 @@
-/*====---------------- keyboard.c - PS/2 keyboard driver -----------------====*\
+/*====------------------- FILENAME - SHORT DESCRIPTION -------------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -7,11 +7,9 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <kernel/driver/keyboard.h>
+#ifndef _KERNEL_GRAPHICS_H
+#define _KERNEL_GRAPHICS_H
 
-#include <kernel/logger.h>
+void graphics_init(void);
 
-void keyboard_handle_press()
-{
-	k_debug("press");
-}
+#endif /* _KERNEL_GRAPHICS_H */

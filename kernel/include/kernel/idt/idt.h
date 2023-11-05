@@ -12,6 +12,13 @@
 
 #include <stdint.h> /* uint8_t, uint16_t, uint32_t, uint64_t */
 
+#define PIC_MASTER_COMMAND      0x20
+#define PIC_MASTER_DATA         0x21
+#define PIC_SLAVE_COMMAND       0xa0
+#define PIC_SLAVE_DATA          0xa1
+
+#define PIC_OFFSET              100
+
 #define FLAG_PRESENT            0b10000000
 #define FLAG_PRIVILEGE_0	0b00000000
 #define FLAG_PRIVILEGE_1	0b00100000
@@ -76,7 +83,10 @@ __attribute__((unused)) void idt_handle_vec28(void);
 __attribute__((unused)) void idt_handle_vec29(void);
 __attribute__((unused)) void idt_handle_vec30(void);
 __attribute__((unused)) void idt_handle_vec31(void);
+
+/* IRQs */
 __attribute__((unused)) void idt_handle_vec100(void);
+__attribute__((unused)) void idt_handle_vec101(void);
 
 
 __attribute__((unused))

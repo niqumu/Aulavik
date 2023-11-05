@@ -259,7 +259,13 @@ __attribute__((unused)) void idt_handle_vec31(void)
 	idt_handle_reserved(31);
 }
 
+/* IRQs */
+
 __attribute__((unused)) void idt_handle_vec100(void)
+{
+}
+
+__attribute__((unused)) void idt_handle_vec101(void)
 {
 	keyboard_handle_press();
 }

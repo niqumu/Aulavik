@@ -11,6 +11,7 @@
 
 #include <kernel/driver/tty.h> /* terminal_init(); */
 #include <kernel/driver/serial.h>
+#include <kernel/driver/graphics.h>
 
 #include <kernel/logger.h>
 #include <kernel/memory_manager.h>
@@ -20,6 +21,11 @@
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
 uint32_t mb_memory_map_size;
+
+multiboot_info_t* kernel_get_mb_info()
+{
+	return mb_info;
+}
 
 mb_memory_block_t* kernel_get_mb_memmap()
 {
@@ -65,4 +71,6 @@ void kernel_main(void)
 	k_print("\nKernel ready!");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
+
+	asm volatile ("int $101");
 }

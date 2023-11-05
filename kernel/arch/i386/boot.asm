@@ -3,11 +3,12 @@
 ;
 ; The multiboot header is required to provide metadata to GRUB, and to allow
 ;   GRUB to recognize us in the first place.
-MBALIGN		equ    	1 << 0
-MEMINFO		equ     1 << 1
-MBFLAGS		equ     MBALIGN | MEMINFO
-MAGIC		equ	0x1badb002
-CHECKSUM	equ     -(MAGIC + MBFLAGS)
+FLAG_ALIGN      equ    	001b
+FLAG_MEMINFO    equ     010b
+FLAG_GRAPHICS   equ     100b
+MBFLAGS         equ     FLAG_ALIGN | FLAG_MEMINFO | FLAG_GRAPHICS
+MAGIC           equ     0x1badb002
+CHECKSUM        equ     -(MAGIC + MBFLAGS)
 
 ; Build the multiboot header using the constants we declared. These are magic
 ;   values that are documented in the multiboot standard (see OS Dev Wiki link
@@ -21,6 +22,15 @@ align 4
 	dd MAGIC
 	dd MBFLAGS
 	dd CHECKSUM
+	dd 0 ;
+	dd 0 ;
+	dd 0 ;
+	dd 0 ;
+	dd 0 ;
+	dd 0
+	;dd 1920
+	;dd 1080
+	;dd 0
 
 section .bss
 align 16

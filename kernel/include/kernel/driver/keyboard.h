@@ -22,8 +22,25 @@
 #define KBD_COMMAND_MAKE_REL_ONE            0bfc
 #define KBD_COMMAND_MAKE_ONLY_ONE           0xfd
 
+#define KEYCODE_LSHIFT_DOWN     0x2a
+#define KEYCODE_RSHIFT_DOWN     0x36
+#define KEYCODE_LSHIFT_UP       0xaa
+#define KEYCODE_RSHIFT_UP       0xb6
+
+/* us qwerty scan code set */
+extern char primary_scan_codes[0xff];
+extern char shift_scan_codes[0xff];
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void keyboard_handle_press(void);
 
 void keyboard_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _DRIVER_KEYBOARD_H */

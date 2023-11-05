@@ -15,6 +15,7 @@ LIBS:=$(LIBS) -nostdlib -lk -lgcc
 include driver/make.config
 include idt/make.config
 include gdt/make.config
+include memory/make.config
 include $(ARCHDIR)/make.config
  
 CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
@@ -28,10 +29,10 @@ $(KERNEL_ARCH_OBJS) \
 $(KERNEL_DRIVER_OBJS) \
 $(KERNEL_GDT_OBJS) \
 $(KERNEL_IDT_OBJS) \
-kernel/kernel.o \
-kernel/logger.o \
-kernel/memory_manager.o \
-kernel/watchdog.o \
+$(KERNEL_MEMORY_OBJS) \
+kernel.o \
+logger.o \
+watchdog.o \
  
 OBJS=\
 $(ARCHDIR)/crti.o \

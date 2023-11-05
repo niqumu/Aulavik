@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 
-#include <kernel/memory_manager.h>
+#include <kernel/memory/memory_manager.h>
 
 void* malloc(size_t size)
 {

@@ -8,7 +8,7 @@
 \*====--------------------------------------------------------------------====*/
 
 #include <kernel/logger.h>
-#include <kernel/memory_manager.h>
+#include <kernel/memory/memory_manager.h>
 
 uint64_t memory_end = 0;
 block_header_t *first_block;

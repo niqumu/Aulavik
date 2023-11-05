@@ -15,9 +15,9 @@
 #include <kernel/driver/serial.h>
 
 #include <kernel/logger.h>
-#include <kernel/memory_manager.h>
 #include <kernel/idt/idt.h> /* idt_init() */
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
+#include <kernel/memory/memory_manager.h>
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;

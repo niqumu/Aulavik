@@ -19,16 +19,21 @@
 #define MAX_EXCEPTION_DEPTH 3
 #endif
 
+/* directly compatible with the memory info format used by multiboot */
 typedef struct multiboot_memory_map {
 	uint32_t size;
-	uint32_t base_addr_low;
-	uint32_t base_addr_high;
-	uint32_t length_low;
-	uint32_t length_high;
-//	uint64_t base_addr;
-//	uint64_t length;
+//	uint32_t base_addr_low;
+//	uint32_t base_addr_high;
+//	uint32_t length_low;
+//	uint32_t length_high;
+	uint64_t address;
+	uint64_t length;
 	uint16_t type;
-} mmap_entry_t;
+} mb_memory_block_t;
+
+multiboot_info_t* kernel_get_mb_info();
+mb_memory_block_t* kernel_get_mb_memmap();
+uint32_t kernel_get_mb_memmap_size();
 
 __attribute__((__noreturn__))
 void panic(char *msg);

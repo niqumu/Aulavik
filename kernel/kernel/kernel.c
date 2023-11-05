@@ -13,27 +13,40 @@
 #include <kernel/driver/serial.h>
 
 #include <kernel/logger.h>
+#include <kernel/memory_manager.h>
 #include <kernel/idt/idt.h> /* idt_init() */
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
 
-multiboot_info_t *multiboot_info;
-mmap_entry_t *memory_map;
-uint32_t memory_map_size;
+multiboot_info_t *mb_info;
+mb_memory_block_t *mb_memory_map;
+uint32_t mb_memory_map_size;
+
+mb_memory_block_t* kernel_get_mb_memmap()
+{
+	return mb_memory_map;
+}
+
+uint32_t kernel_get_mb_memmap_size()
+{
+	return mb_memory_map_size;
+}
 
 __attribute__((unused))
-void kernel_premain(multiboot_info_t *_multiboot_info, uint32_t magic)
+void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 {
-	multiboot_info = _multiboot_info;
-	memory_map = (mmap_entry_t *) multiboot_info->mmap_addr;
-	memory_map_size = multiboot_info->mmap_length / sizeof(mmap_entry_t);
-
-	if (!(multiboot_info->flags & MULTIBOOT_INFO_MEM_MAP)) {
-		panic("Bootloader didn't give a memory map!");
-	}
+	mb_info = _mb_info;
+	mb_memory_map = (mb_memory_block_t *) mb_info->mmap_addr;
+	mb_memory_map_size = mb_info->mmap_length / sizeof(mb_memory_block_t);
 
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
 		panic("Bootloader gave bad magic bytes!");
 	}
+
+	if (!(mb_info->flags & MULTIBOOT_INFO_MEM_MAP)) {
+		panic("Bootloader didn't give a memory map!");
+	}
+
+//	memory_manager_init();
 }
 
 __attribute__((unused))
@@ -50,20 +63,8 @@ void kernel_main(void)
 	k_ok("Loaded serial driver!");
 
 	k_print("\nKernel ready!");
-	k_print("Memory: %dkb lower, %dkb upper\n", multiboot_info->mem_lower,
-		multiboot_info->mem_upper);
+	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
+		mb_info->mem_upper);
 
-	k_print("Memory map:");
-	for (uint32_t i = 0; i < memory_map_size; i++) {
-		mmap_entry_t mmmt = memory_map[i];
-
-		k_print("address = %x, length = %x, type = %x",
-		        mmmt.base_addr_low,
-		        mmmt.length_low,
-		        mmmt.type);
-
-		if (mmmt.type == MULTIBOOT_MEMORY_AVAILABLE) {
-			k_ok("Memory section starting at %x is free!", mmmt.base_addr_low);
-		}
-	}
+	memory_manager_init();
 }

@@ -32,8 +32,8 @@ char* convert(uint64_t number, int base, int min_digits)
 {
 	int digits = 0;
 	static char chars[] = "0123456789abcdef";
-	static char buff[64];
-	char *ptr = &buff[63];
+	static char buff[128];
+	char *ptr = &buff[127];
 
 	*ptr = '\0';
 
@@ -136,9 +136,29 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 
 				written += len;
 				break;
+			case 'l': /* todo this should be %lx, but format codes
+                                        are only 1 char now */
+				format++;
+				const uint64_t num_hex_64 = va_arg(parameters, uint64_t);
+				char *x_str_64 = convert(num_hex_64, 16, min_digits);
+				len = strlen(x_str_64);
+
+				if (maxleft < len) {
+					// TODO set errno to EOVERFLOW
+					return -1;
+				}
+
+				if (!print(str, "0x", sizeof("0x") - 1))
+					return -1;
+
+				if (!print(str, x_str_64, len))
+					return -1;
+
+				written += len + 2;
+				break;
 			case 'x':
 				format++;
-				const uint64_t num_hex = va_arg(parameters, int);
+				const uint32_t num_hex = va_arg(parameters, uint32_t);
 				char *x_str = convert(num_hex, 16, min_digits);
 				len = strlen(x_str);
 

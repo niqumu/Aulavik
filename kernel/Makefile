@@ -30,6 +30,7 @@ $(KERNEL_GDT_OBJS) \
 $(KERNEL_IDT_OBJS) \
 kernel/kernel.o \
 kernel/logger.o \
+kernel/memory_manager.o \
 kernel/watchdog.o \
  
 OBJS=\

@@ -69,85 +69,221 @@ extern idt_handle_vec31
 extern idt_handle_vec80
 extern idt_handle_vec81
 
-isr_stub_0: call idt_handle_vec0
+isr_stub_0:
+	pushad
+	cld
+	call idt_handle_vec0
+	popad
 	iret
-isr_stub_1: call idt_handle_vec1
+isr_stub_1:
+	pushad
+	cld
+	call idt_handle_vec1
+	popad
 	iret
-isr_stub_2: call idt_handle_vec2
-        iret
-isr_stub_3: call idt_handle_vec3
-        iret
-isr_stub_4: call idt_handle_vec4
-        iret
-isr_stub_5: call idt_handle_vec5
-        iret
-isr_stub_6: call idt_handle_vec6
-        iret
-isr_stub_7: call idt_handle_vec7
-        iret
-isr_stub_8: call idt_handle_vec8
-        iret
-isr_stub_9: call idt_handle_vec9
-        iret
-isr_stub_10: call idt_handle_vec10
-        iret
-isr_stub_11: call idt_handle_vec11
-        iret
-isr_stub_12: call idt_handle_vec12
-        iret
-isr_stub_13: call idt_handle_vec13
-        iret
-isr_stub_14: call idt_handle_vec14
-        iret
-isr_stub_15: call idt_handle_vec15
-        iret
-isr_stub_16: call idt_handle_vec16
-        iret
-isr_stub_17: call idt_handle_vec17
-        iret
-isr_stub_18: call idt_handle_vec18
-        iret
-isr_stub_19: call idt_handle_vec19
-        iret
-isr_stub_20: call idt_handle_vec20
-        iret
-isr_stub_21: call idt_handle_vec21
-        iret
-isr_stub_22: call idt_handle_vec22
-        iret
-isr_stub_23: call idt_handle_vec23
-        iret
-isr_stub_24: call idt_handle_vec24
-        iret
-isr_stub_25: call idt_handle_vec25
-        iret
-isr_stub_26: call idt_handle_vec26
-        iret
-isr_stub_27: call idt_handle_vec27
-        iret
-isr_stub_28: call idt_handle_vec28
-        iret
-isr_stub_29: call idt_handle_vec29
-        iret
-isr_stub_30: call idt_handle_vec30
-        iret
-isr_stub_31: call idt_handle_vec31
-        iret
+isr_stub_2:
+	pushad
+	cld
+	call idt_handle_vec2
+        popad
+	iret
+isr_stub_3:
+	pushad
+	cld
+	call idt_handle_vec3
+        popad
+	iret
+isr_stub_4:
+	pushad
+	cld
+	call idt_handle_vec4
+        popad
+	iret
+isr_stub_5:
+	pushad
+	cld
+	call idt_handle_vec5
+        popad
+	iret
+isr_stub_6:
+	pushad
+	cld
+	call idt_handle_vec6
+        popad
+	iret
+isr_stub_7:
+	pushad
+	cld
+	call idt_handle_vec7
+        popad
+	iret
+isr_stub_8: 
+	pushad
+	cld
+	call idt_handle_vec8
+        popad
+	iret
+isr_stub_9: 
+	pushad
+	cld
+	call idt_handle_vec9
+        popad
+	iret
+isr_stub_10: 
+	pushad
+	cld
+	call idt_handle_vec10
+        popad
+	iret
+isr_stub_11:
+	pushad
+	cld
+	call idt_handle_vec11
+        popad
+	iret
+isr_stub_12:
+	pushad
+	cld
+	call idt_handle_vec12
+        popad
+	iret
+isr_stub_13:
+	pushad
+	cld
+	call idt_handle_vec13
+        popad
+	iret
+isr_stub_14:
+	pushad
+	cld
+	call idt_handle_vec14
+        popad
+	iret
+isr_stub_15:
+	pushad
+	cld
+	call idt_handle_vec15
+        popad
+	iret
+isr_stub_16:
+	pushad
+	cld
+	call idt_handle_vec16
+        popad
+	iret
+isr_stub_17:
+	pushad
+	cld
+	call idt_handle_vec17
+        popad
+	iret
+isr_stub_18:
+	pushad
+	cld
+	call idt_handle_vec18
+        popad
+	iret
+isr_stub_19:
+	pushad
+	cld
+	call idt_handle_vec19
+        popad
+	iret
+isr_stub_20:
+	pushad
+	cld
+	call idt_handle_vec20
+        popad
+	iret
+isr_stub_21:
+	pushad
+	cld
+	call idt_handle_vec21
+        popad
+	iret
+isr_stub_22:
+	pushad
+	cld
+	call idt_handle_vec22
+        popad
+	iret
+isr_stub_23:
+	pushad
+	cld
+	call idt_handle_vec23
+        popad
+	iret
+isr_stub_24:
+	pushad
+	cld
+	call idt_handle_vec24
+        popad
+	iret
+isr_stub_25:
+	pushad
+	cld
+	call idt_handle_vec25
+        popad
+	iret
+isr_stub_26:
+	pushad
+	cld
+	call idt_handle_vec26
+        popad
+	iret
+isr_stub_27:
+	pushad
+	cld
+	call idt_handle_vec27
+        popad
+	iret
+isr_stub_28:
+	pushad
+	cld
+	call idt_handle_vec28
+        popad
+	iret
+isr_stub_29:
+	pushad
+	cld
+	call idt_handle_vec29
+        popad
+	iret
+isr_stub_30:
+	pushad
+	cld
+	call idt_handle_vec30
+        popad
+	iret
+isr_stub_31:
+	pushad
+	cld
+	call idt_handle_vec31
+        popad
+	iret
 
 global except_isr_stubs
 except_isr_stubs:
 	%assign i 0
 	%rep 32
-		;dd isr_err_stub_%+i ; use dq later when transitioning to 64-bit
+		; use dq later when transitioning to 64-bit
 		dd isr_stub_%+i;
 	%assign i i + 1
 	%endrep
 
 ; IRQs
-isr_stub_80: call idt_handle_vec80
-        iret
-isr_stub_81: call idt_handle_vec81
-        iret
+isr_stub_80:
+	pushad
+	cld
+	call idt_handle_vec80
+        popad
+	iret
+isr_stub_81:
+	pushad
+	cld
+	call idt_handle_vec81
+        popad
+	iret
 
 global irq_isr_stubs
 irq_isr_stubs:

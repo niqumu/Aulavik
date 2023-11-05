@@ -266,13 +266,15 @@ int flag = 0;
 /* clock */
 __attribute__((unused)) void idt_handle_vec80(uint32_t error)
 {
-//	if (flag) {
+//	if (flag == 5) {
 //		terminal_putchar(0x08);
-//		flag = 0;
-//	} else {
+//	} else if (flag == 10) {
 //		terminal_putchar('X');
-//		flag = 1;
+//		flag = 0;
 //	}
+//
+//	flag++;
+//	port_pic_eoi();
 }
 
 /* keyboard */

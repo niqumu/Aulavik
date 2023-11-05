@@ -22,6 +22,8 @@
 #define KBD_COMMAND_MAKE_REL_ONE            0bfc
 #define KBD_COMMAND_MAKE_ONLY_ONE           0xfd
 
-void keyboard_handle_press();
+void keyboard_handle_press(void);
+
+void keyboard_init(void);
 
 #endif /* _DRIVER_KEYBOARD_H */

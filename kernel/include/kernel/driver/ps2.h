@@ -7,13 +7,10 @@
  *
 \*====--------------------------------------------------------------------====*/
 
+#include <kernel/driver/ports.h>
+
 #ifndef _DRIVER_PS2_H
 #define _DRIVER_PS2_H
-
-/* PS/2 cpu ports */
-#define PS2_PORT_RW_DATA        0x60
-#define PS2_PORT_READ_STATUS    0x64
-#define PS2_PORT_WRITE_CMD      0x64
 
 /* PS/2 controller status */
 #define PS2_STATUS_OUT_BUFFER   0b00000001

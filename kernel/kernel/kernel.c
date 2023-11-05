@@ -9,10 +9,10 @@
 
 #include <kernel/kernel.h>
 
+#include <kernel/driver/keyboard.h>
 #include <kernel/driver/ps2.h>
 #include <kernel/driver/tty.h> /* terminal_init(); */
 #include <kernel/driver/serial.h>
-#include <kernel/driver/graphics.h>
 
 #include <kernel/logger.h>
 #include <kernel/memory_manager.h>
@@ -70,12 +70,14 @@ void kernel_main(void)
 	k_ok("Loaded serial driver");
 	ps2_init();
 	k_ok("Loaded PS/2 driver");
+	keyboard_init();
+	k_ok("Loaded keyboard driver");
 
 	k_print("\nKernel ready!");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
 	while (1) {
-		asm("hlt");
+		asm("sti; hlt");
 	}
 }

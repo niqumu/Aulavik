@@ -11,10 +11,6 @@
 
 #include <stdint.h> /* uint8_t, uint16_t */
 
-void port_wait(void)
-{
-	port_outb(0x80, 0);
-}
 
 void port_outb(uint16_t port, uint8_t data)
 {
@@ -26,4 +22,20 @@ uint8_t port_inb(uint16_t port)
 	uint8_t response;
 	asm volatile ("inb %1, %0" : "=a" (response) : "Nd" (port) : "memory");
 	return response;
+}
+
+void port_wait(void)
+{
+	port_outb(0x80, 0);
+}
+
+void port_pic_eoi(void)
+{
+	port_outb(PORT_PIC_MASTER_COMMAND, PORT_PIC_EOI);
+}
+
+void port_pic_eoi_slave(void)
+{
+	port_outb(PORT_PIC_MASTER_COMMAND, PORT_PIC_EOI);
+	port_outb(PORT_PIC_SLAVE_COMMAND, PORT_PIC_EOI);
 }

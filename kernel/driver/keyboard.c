@@ -10,10 +10,18 @@
 #include <kernel/driver/keyboard.h>
 
 #include <kernel/driver/ports.h>
+#include <kernel/idt/idt.h>
 #include <kernel/logger.h>
 
-void keyboard_handle_press()
+void keyboard_handle_press(void)
 {
-	k_debug("press");
-	port_outb(0x20, 0x20);
+	uint8_t scan_code = port_inb(0x60);
+	k_debug("press: %x", scan_code);
+	port_pic_eoi();
+}
+
+void keyboard_init(void)
+{
+	/* unmask keyboard irqs on the pic */
+	idt_set_pic_mask(1, 0);
 }

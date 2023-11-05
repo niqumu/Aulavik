@@ -19,6 +19,44 @@ extern void *irq_isr_stubs[];
 /* idt itself */
 uint64_t idt[IDT_MAX_ENTRIES];
 
+/* pic state */
+// TODO move pic to its own file it's messy here
+uint16_t pic_mask;
+
+void idt_set_pic_mask(uint8_t irq, uint8_t masked)
+{
+	if (masked)
+		pic_mask |= (1 << irq);
+	else
+		pic_mask &= ~(1 << irq);
+
+	port_outb(PORT_PIC_MASTER_DATA, pic_mask & 0xff);
+	port_outb(PORT_PIC_SLAVE_DATA, pic_mask >> 8);
+}
+
+static void idt_configure_pic(void)
+{
+
+	/* start pic initialization */
+	port_outb(PORT_PIC_MASTER_COMMAND, 0x01 | 0x10);
+	port_outb(PORT_PIC_SLAVE_COMMAND, 0x01 | 0x10);
+
+	/* set offsets and set up master/slave cascade */
+	port_outb(PORT_PIC_MASTER_DATA, PIC_OFFSET);
+	port_outb(PORT_PIC_SLAVE_DATA, PIC_OFFSET + 8);
+	port_outb(PORT_PIC_MASTER_DATA, 0x04);
+	port_outb(PORT_PIC_SLAVE_DATA, 0x02);
+
+	/* enable 8086 mode */
+	port_outb(PORT_PIC_MASTER_DATA, 0x01);
+	port_outb(PORT_PIC_SLAVE_DATA, 0x01);
+
+	/* disable all irqs until an appropriate driver enables them */
+	port_outb(PORT_PIC_MASTER_DATA, 0xff);
+	port_outb(PORT_PIC_SLAVE_DATA, 0xff);
+	pic_mask = 0xffff;
+}
+
 uint64_t idt_create_descriptor(uintptr_t base, uint8_t flags)
 {
 	uint64_t dest;
@@ -44,29 +82,6 @@ void idt_init(void)
 		        FLAG_PRESENT | FLAG_PRIVILEGE_0 | FLAG_GATE_TYPE_INT);
 	}
 
+	idt_configure_pic();
 	load_idt((IDT_MAX_ENTRIES * DESCRIPTOR_SIZE) - 1, (uintptr_t) &idt[0]);
-
-	uint8_t a1 = port_inb(PIC_MASTER_DATA);
-	uint8_t a2 = port_inb(PIC_SLAVE_DATA);
-
-	port_outb(PIC_MASTER_COMMAND, 0x01 | 0x10);
-	port_wait();
-	port_outb(PIC_SLAVE_COMMAND, 0x01 | 0x10);
-	port_wait();
-	port_outb(PIC_MASTER_DATA, PIC_OFFSET);
-	port_wait();
-	port_outb(PIC_SLAVE_DATA, PIC_OFFSET + 8);
-	port_wait();
-	port_outb(PIC_MASTER_DATA, 0x04);
-	port_wait();
-	port_outb(PIC_SLAVE_DATA, 0x02);
-	port_wait();
-
-	port_outb(PIC_MASTER_DATA, 0x01);
-	port_wait();
-	port_outb(PIC_SLAVE_DATA, 0x01);
-	port_wait();
-
-	port_outb(PIC_MASTER_DATA, a1);
-	port_outb(PIC_SLAVE_DATA, a2);
 }

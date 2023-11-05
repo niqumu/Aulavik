@@ -12,11 +12,6 @@
 
 #include <stdint.h> /* uint8_t, uint16_t, uint32_t, uint64_t */
 
-#define PIC_MASTER_COMMAND      0x20
-#define PIC_MASTER_DATA         0x21
-#define PIC_SLAVE_COMMAND       0xa0
-#define PIC_SLAVE_DATA          0xa1
-
 #define PIC_OFFSET              80
 
 #define FLAG_PRESENT            0b10000000
@@ -100,6 +95,8 @@ void idt_handle_abort_error(uint16_t vec);
 
 __attribute__((unused))
 void idt_handle_abort(uint16_t vec);
+
+void idt_set_pic_mask(uint8_t irq, uint8_t masked);
 
 /* creates and returns a gate descriptor with the provided data */
 uint64_t idt_create_descriptor(uintptr_t base, uint8_t flags);

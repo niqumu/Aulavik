@@ -10,7 +10,6 @@
 #include <kernel/driver/keyboard.h>
 
 #include <kernel/driver/ports.h>
-#include <kernel/driver/ps2.h>
 #include <kernel/idt/idt.h>
 #include <kernel/logger.h>
 #include <kernel/driver/tty.h>
@@ -47,4 +46,6 @@ void keyboard_init(void)
 
 //	port_outb(PORT_PS2_RW_DATA, PS2_DEV_COMMAND_IDENTIFY);
 //	k_debug("%x", port_inb(PORT_PS2_RW_DATA));
+
+	k_ok("Loaded keyboard driver");
 }

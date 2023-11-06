@@ -48,4 +48,6 @@ void ps2_init(void)
 	uint8_t config = port_inb(PORT_PS2_RW_DATA);
 	port_outb(PORT_PS2_WRITE_CMD, PS2_CMD_WRITE_BYTE_0);
 	port_outb(PORT_PS2_WRITE_CMD, config | PS2_CONFIG_FIRST_INT_ENABLE);
+
+	k_ok("Loaded PS/2 driver");
 }

@@ -32,6 +32,11 @@ load_idt:
 ;
 ; global function defined and exposed in idt.h, impl in idt.c
 ; -----------------------------------------------------------------------------
+
+; ---------------------------------------------------
+;  Exceptions
+; ---------------------------------------------------
+
 extern idt_handle_vec0
 extern idt_handle_vec1
 extern idt_handle_vec2
@@ -64,10 +69,6 @@ extern idt_handle_vec28
 extern idt_handle_vec29
 extern idt_handle_vec30
 extern idt_handle_vec31
-
-; IRQs
-extern idt_handle_vec80
-extern idt_handle_vec81
 
 isr_stub_0:
 	pushad
@@ -271,7 +272,13 @@ except_isr_stubs:
 	%assign i i + 1
 	%endrep
 
-; IRQs
+; ---------------------------------------------------
+;  IRQs
+; ---------------------------------------------------
+
+extern idt_handle_vec80
+extern idt_handle_vec81
+
 isr_stub_80:
 	pushad
 	cld
@@ -287,5 +294,22 @@ isr_stub_81:
 
 global irq_isr_stubs
 irq_isr_stubs:
-	dd isr_stub_80;
-        dd isr_stub_81;
+	dd isr_stub_80
+        dd isr_stub_81
+
+; ---------------------------------------------------
+;  Syscall
+; ---------------------------------------------------
+
+extern idt_handle_vec128
+
+isr_stub_128:
+	pushad
+	cld
+	call idt_handle_vec128
+        popad
+	iret
+
+global syscall_isr_stub
+syscall_isr_stub:
+	dd isr_stub_128

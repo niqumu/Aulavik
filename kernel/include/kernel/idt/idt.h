@@ -46,6 +46,7 @@ struct __attribute__((packed)) gate {
 	uint8_t flags;
 };
 
+/* exceptions */
 __attribute__((unused)) void idt_handle_vec0(uint32_t error);
 __attribute__((unused)) void idt_handle_vec1(uint32_t error);
 __attribute__((unused)) void idt_handle_vec2(uint32_t error);
@@ -80,9 +81,11 @@ __attribute__((unused)) void idt_handle_vec30(uint32_t error);
 __attribute__((unused)) void idt_handle_vec31(uint32_t error);
 
 /* IRQs */
-__attribute__((unused)) void idt_handle_vec80(uint32_t error);
-__attribute__((unused)) void idt_handle_vec81(uint32_t error);
+__attribute__((unused)) void idt_handle_vec80();
+__attribute__((unused)) void idt_handle_vec81();
 
+/* syscall */
+__attribute__((unused)) void idt_handle_vec128();
 
 __attribute__((unused))
 void idt_handle_fault_error(uint16_t vec);

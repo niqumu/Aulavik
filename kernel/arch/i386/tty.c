@@ -12,6 +12,7 @@
 
 #include <kernel/driver/ports.h>
 #include <kernel/driver/tty.h>
+#include <kernel/logger.h>
 
 #include "vga.h"
 
@@ -204,4 +205,6 @@ void terminal_init(void)
 	terminal_set_cursor(0, 0);
 	terminal_set_color(VGA_COLOR_LIGHT_GRAY, VGA_COLOR_BLACK);
 	terminal_clear();
+
+	k_ok("Initialized terminal");
 }

@@ -11,7 +11,12 @@
 
 #include <kernel/driver/keyboard.h>
 
+#include <kernel/logger.h>
 #include <kernel/kernel.h>
+
+/* -----------------------------------
+ *  Exceptions
+ * ----------------------------------- */
 
 int exception_depth = 0;
 
@@ -27,7 +32,7 @@ __attribute__((unused)) void idt_handle_vec0(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(0, "#DE", "Division Error", 1, 1); // TODO temporarily fatal
+	k_except(0, "#DE", "Division Error", 1, 1);
 	exception_depth--;
 }
 
@@ -259,26 +264,27 @@ __attribute__((unused)) void idt_handle_vec31(uint32_t error)
 	idt_handle_reserved(31);
 }
 
-/* IRQs */
-
-int flag = 0;
+/* -----------------------------------
+ *  IRQs
+ * ----------------------------------- */
 
 /* clock */
-__attribute__((unused)) void idt_handle_vec80(uint32_t error)
+__attribute__((unused)) void idt_handle_vec80()
 {
-//	if (flag == 5) {
-//		terminal_putchar(0x08);
-//	} else if (flag == 10) {
-//		terminal_putchar('X');
-//		flag = 0;
-//	}
-//
-//	flag++;
-//	port_pic_eoi();
+
 }
 
 /* keyboard */
-__attribute__((unused)) void idt_handle_vec81(uint32_t error)
+__attribute__((unused)) void idt_handle_vec81()
 {
 	keyboard_handle_press();
+}
+
+
+/* -----------------------------------
+ *  syscall
+ * ----------------------------------- */
+__attribute__((unused)) void idt_handle_vec128()
+{
+	k_ok("Syscall");
 }

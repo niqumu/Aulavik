@@ -75,7 +75,8 @@ static void create_default_descriptors(void) {
 	access = (ACCESS_PRESENT | ACCESS_PRIVILEGE_0 | ACCESS_EXECUTABLE |
 		  ACCESS_ACCESSED);
 	gdt[GDT_SEGMENT_TASK_STATE] = gdt_create_descriptor(0, 0xfffff,
-							    flags, access);}
+							    flags, access);
+}
 
 void gdt_init(void)
 {
@@ -83,4 +84,6 @@ void gdt_init(void)
 
 	load_gdt((GDT_MAX_ENTRIES * DESCRIPTOR_SIZE) - 1, (uint32_t) &gdt[0]);
 	reload_registers();
+
+	k_ok("Initialized GDT");
 }

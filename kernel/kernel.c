@@ -18,6 +18,7 @@
 #include <kernel/idt/idt.h> /* idt_init() */
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
 #include <kernel/memory/memory_manager.h>
+#include <kernel/memory/paging.h>
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -53,29 +54,26 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 		panic("Bootloader didn't give a memory map!");
 	}
 
-	memory_manager_init();
+//	memory_manager_init();
+//	paging_init();
 }
 
 __attribute__((unused))
 void kernel_main(void)
 {
 	terminal_init();
-	k_ok("Initialized terminal");
 	gdt_init();
-	k_ok("Initialized GDT");
 	idt_init();
-	k_ok("Initialized IDT");
 	k_ok("Loading drivers...");
 	serial_init(PORT_COM_1, BAUD_38400);
-	k_ok("Loaded serial driver");
 	ps2_init();
-	k_ok("Loaded PS/2 driver");
 	keyboard_init();
-	k_ok("Loaded keyboard driver");
 
 	k_print("\nKernel ready!");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
+
+	paging_init();
 
 	while (1) {
 		asm("sti; hlt");

@@ -11,10 +11,12 @@
 
 #include <kernel/driver/ports.h>
 #include <kernel/gdt/gdt.h>
+#include <kernel/logger.h>
 
 /* defined in _idt.asm */
 extern void *except_isr_stubs[];
 extern void *irq_isr_stubs[];
+extern void *syscall_isr_stub;
 
 /* idt itself */
 uint64_t idt[IDT_MAX_ENTRIES];
@@ -82,6 +84,12 @@ void idt_init(void)
 		        FLAG_PRESENT | FLAG_PRIVILEGE_0 | FLAG_GATE_TYPE_INT);
 	}
 
+	/* syscall */
+	idt[128] = idt_create_descriptor((uintptr_t) syscall_isr_stub,
+			 FLAG_PRESENT | FLAG_PRIVILEGE_0 | FLAG_GATE_TYPE_INT);
+
 	idt_configure_pic();
 	load_idt((IDT_MAX_ENTRIES * DESCRIPTOR_SIZE) - 1, (uintptr_t) &idt[0]);
+
+	k_ok("Initialized IDT");
 }

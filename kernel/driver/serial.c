@@ -90,4 +90,6 @@ void serial_init(uint16_t port, enum baud baud)
 
 	k_ok("serial: UART check passed (sent %x got %x)", 0xae, in);
 	k_ok("serial: Set up serial port %x", port);
+
+	k_ok("Loaded serial driver (port: %x, baud: %x)", port, baud);
 }

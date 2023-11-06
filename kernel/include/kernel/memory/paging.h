@@ -1,4 +1,4 @@
-/*====------------------- FILENAME - SHORT DESCRIPTION -------------------====*\
+/*====-------------------- paging.c - Paging header ---- -----------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -12,8 +12,12 @@
 #ifndef _KERNEL_PAGING_H
 #define _KERNEL_PAGING_H
 
-#define FRAME_SIZE              0x1000
+/* bitmap helpers */
+#define INDEX_FROM_BIT(n)       (n / 32)
+#define OFFSET_FROM_BIT(n)      (n % 32)
 
+/* constants */
+#define FRAME_SIZE              0x1000
 #define DIRECTORY_LOCATION      ((void *) 0x9c000)
 #define TABLE_BASE_LOCATION     ((void *) 0x9d000)
 
@@ -34,9 +38,5 @@ typedef struct page_directory {
 } page_directory_t;
 
 void paging_init(void);
-
-#ifdef __cplusplus
-};
-#endif
 
 #endif /* _KERNEL_PAGING_H */

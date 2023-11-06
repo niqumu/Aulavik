@@ -1,4 +1,4 @@
-/*====------------------- FILENAME - SHORT DESCRIPTION -------------------====*\
+/*====----------------- paging.c - Paging implementation -----------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -12,29 +12,90 @@
 #include <kernel/kernel.h> /* kernel_get_mb_info() */
 #include <kernel/logger.h>
 
+/* frames bitmap */
+uint32_t *frame_bitmap;
+uint32_t frame_count;
+
 page_directory_t *page_directory = DIRECTORY_LOCATION;
 
-void write_cr3(uint32_t value)
+/* mark the frame at the provided addr as used in the bitmap */
+static void mark_frame_used(uintptr_t frame_address)
 {
-	asm volatile ("mov %0, %%cr3" :: "r" (value));
+	uint32_t frame = frame_address / FRAME_SIZE;
+	uint32_t index = INDEX_FROM_BIT(frame);
+	frame_bitmap[index] |= (1 << OFFSET_FROM_BIT(frame));
 }
 
-void write_cr0(uint32_t value)
+/* mark the frame at the provided addr as free in the bitmap */
+static void mark_frame_free(uintptr_t frame_address)
 {
-	asm volatile ("mov %0, %%cr0" :: "r" (value));
+	uint32_t frame = frame_address / FRAME_SIZE;
+	uint32_t index = INDEX_FROM_BIT(frame);
+	frame_bitmap[index] &= ~(1 << OFFSET_FROM_BIT(frame));
 }
 
-uint32_t read_cr0()
+/* tests if the frame at the provided addr is free in the bitmap */
+static uint8_t is_frame_free(uintptr_t frame_address)
 {
-	uint32_t value;
-	asm volatile ("mov %%cr0, %0" : "=r" (value));
-	return value;
+	uint32_t frame = frame_address / FRAME_SIZE;
+	uint32_t index = INDEX_FROM_BIT(frame);
+	return frame_bitmap[index] & (1 << OFFSET_FROM_BIT(frame));
 }
 
-static void paging_fill_table(page_table_t *table, uint64_t *address)
+/* returns the address of the first free frame, or 1 if none exist */
+static uint32_t find_first_free_frame()
+{
+	for (uint32_t i = 0; i < INDEX_FROM_BIT(frame_count); i++) {
+
+		/* if the entry is completely full, skip it */
+		if (frame_bitmap[i] == 0xffffffff) {
+			continue;
+		}
+
+		/* iterate over all bits in the entry */
+		for (int bit = 0; bit < 32; bit++) {
+			if (!(frame_bitmap[i] & (1 << bit))) {
+				return i * bit * 32;
+			}
+		}
+	}
+
+	return 1; /* zero is a valid return value, one is impossible */
+}
+
+static void allocate_frame(uint32_t *page, uint8_t user, uint8_t writable)
+{
+	uint32_t first_free = find_first_free_frame();
+
+	if (first_free == 1) {
+		panic("Paging: No free frames");
+		return;
+	}
+
+	mark_frame_used(first_free * FRAME_SIZE);
+	*page = first_free;
+	*page |= writable ? PAGE_FLAG_WRITABLE : 0;
+	*page |= user ? PAGE_FLAG_USER_MODE : 0;
+}
+
+static void free_frame(uint32_t *page)
+{
+	mark_frame_free((uintptr_t) page);
+	*page = 0;
+}
+
+static void enable_paging()
+{
+	asm volatile ("mov %0, %%cr3" :: "r" ((uint32_t) page_directory));
+	uint32_t cr0;
+	asm volatile ("mov %%cr0, %0" : "=r" (cr0));
+	asm volatile ("mov %0, %%cr0" :: "r" (cr0 | 0x80000000));
+}
+
+static void populate_table(page_table_t *table, uint32_t *address)
 {
 	for (int i = 0; i < 1024; i++) {
-		table->entries[i] = *address | PAGE_FLAG_WRITABLE | PAGE_FLAG_PRESENT;
+		table->entries[i] = *address | PAGE_FLAG_WRITABLE | 1;
 		*address += FRAME_SIZE;
 	}
 }
@@ -45,18 +106,19 @@ void paging_init(void)
 	page_table_t *page_table = TABLE_BASE_LOCATION;
 
 	/* the address of the next frame to assign */
-	uint64_t address = 0;
+	uint32_t address = 0;
 
 	uint32_t memory = kernel_get_mb_info()->mem_upper * 1000;
-	uint32_t needed_frames = memory / 0x1000;
-	uint32_t needed_tables = needed_frames / 1024;
+	frame_count = memory / 0x1000;
+	uint32_t needed_tables = frame_count / 1024;
 
-	k_debug("%d bytes of ram, need %d frames, need %d tables", memory, needed_frames, needed_tables);
+	k_debug("Paging: %d bytes of ram, need %d frames, need %d tables",
+		memory, frame_count, needed_tables);
 
 	for (uint32_t i = 0; i < needed_tables; i++) {
 
 		/* populate a page table */
-		paging_fill_table(page_table, &address);
+		populate_table(page_table, &address);
 
 		/* put the page table in the directory */
 		page_directory->entries[i] = (uintptr_t) page_table;
@@ -65,7 +127,6 @@ void paging_init(void)
 		page_table += 0x1000;
 	}
 
-	write_cr3((uint32_t) page_directory);
-	write_cr0(read_cr0() | 0x80000000);
+	enable_paging();
 	k_ok("Paging enabled!");
 }

@@ -55,7 +55,7 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 	}
 
 //	memory_manager_init();
-//	paging_init();
+	paging_init();
 }
 
 __attribute__((unused))
@@ -72,8 +72,6 @@ void kernel_main(void)
 	k_print("\nKernel ready!");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
-
-	paging_init();
 
 	while (1) {
 		asm("sti; hlt");

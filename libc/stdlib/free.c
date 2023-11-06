@@ -9,9 +9,9 @@
 
 #include <stdlib.h>
 
-#include <kernel/memory/memory_manager.h>
+#include <kernel/memory/heap.h>
 
 void free(void *ptr)
 {
-	return memman_free(ptr);
+	return heap_free(ptr);
 }

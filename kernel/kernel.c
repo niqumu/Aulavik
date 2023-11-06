@@ -17,7 +17,7 @@
 #include <kernel/logger.h>
 #include <kernel/idt/idt.h> /* idt_init() */
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
-#include <kernel/memory/memory_manager.h>
+#include <kernel/memory/heap.h>
 #include <kernel/memory/paging.h>
 
 multiboot_info_t *mb_info;
@@ -54,8 +54,8 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 		panic("Bootloader didn't give a memory map!");
 	}
 
-//	memory_manager_init();
 	paging_init();
+	heap_init();
 }
 
 __attribute__((unused))

@@ -9,9 +9,9 @@
 
 #include <stdlib.h>
 
-#include <kernel/memory/memory_manager.h>
+#include <kernel/memory/heap.h>
 
 void* malloc(size_t size)
 {
-	return memman_allocate(size);
+	return heap_alloc(size);
 }

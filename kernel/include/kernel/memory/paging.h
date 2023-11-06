@@ -27,14 +27,16 @@
 #define PAGE_FLAG_ACCESSED      0b00100000
 #define PAGE_FLAG_DIRTY         0b01000000
 
-/* an array of 1024 pointers to frames of physical memory */
+/* an array of 1024 page table entries, containing a pointer to a page
+ * each entry also contains the flags of that page */
 typedef struct page_table {
-	uintptr_t entries[1024];
+	uint32_t entries[1024];
 } page_table_t;
 
-/* an array of 1024 pointers to page tables */
+/* an array of 1024 page directory entries, containing a pointer to a table
+ * each entry also contains the flags of that page table */
 typedef struct page_directory {
-	uintptr_t entries[1024];
+	uint32_t entries[1024];
 } page_directory_t;
 
 void paging_init(void);

@@ -95,7 +95,7 @@ static void enable_paging()
 static void populate_table(page_table_t *table, uint32_t *address)
 {
 	for (int i = 0; i < 1024; i++) {
-		table->entries[i] = *address | PAGE_FLAG_WRITABLE | 1;
+		table->entries[i] = (*address) | PAGE_FLAG_WRITABLE | 1;
 		*address += FRAME_SIZE;
 	}
 }
@@ -106,23 +106,40 @@ void paging_init(void)
 	page_table_t *page_table = TABLE_BASE_LOCATION;
 
 	/* the address of the next frame to assign */
-	uint32_t address = 0;
+	uint32_t frame = 0;
 
 	uint32_t memory = kernel_get_mb_info()->mem_upper * 1000;
-	frame_count = memory / 0x1000;
+	frame_count = memory / FRAME_SIZE;
 	uint32_t needed_tables = frame_count / 1024;
 
 	k_debug("Paging: %d bytes of ram, need %d frames, need %d tables",
 		memory, frame_count, needed_tables);
 
+	/*
+	 * TODO/FIXME:
+	 *
+	 * This is broken. I've spent days debugging it and I can't figure it
+	 * out. Page tables do not generate correctly beyond the 0x2000000
+	 * mark, even though the addresses being passed to the populate_table()
+	 * function are correct, the entry is always zero when read back.
+	 *
+	 * I'm going to go insane if I try and spend any more time on this
+	 * right now, but just do more investigation sooner rather than later
+	 * and don't completely forget about this nasty bug.
+	 *
+	 * Sigh 11/6/23
+	 */
 	for (uint32_t i = 0; i < needed_tables; i++) {
 
 		/* populate a page table */
-		populate_table(page_table, &address);
+		populate_table(page_table, &frame);
 
 		/* put the page table in the directory */
-		page_directory->entries[i] = (uintptr_t) page_table;
-		page_directory->entries[i] |= PAGE_FLAG_WRITABLE | PAGE_FLAG_PRESENT;
+		page_directory->entries[i] = (uint32_t) page_table;
+		page_directory->entries[i] |= PAGE_FLAG_WRITABLE | 1;
+
+//		k_ok("Page table %d: %x\t  table sample (entry 0): %x", i,
+//		     page_directory->entries[i], page_table->entries[0]);
 
 		page_table += 0x1000;
 	}

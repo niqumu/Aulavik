@@ -1,4 +1,4 @@
-/*====------------ memory_manager.c - Physical memory manager ------------====*\
+/*====---------------- heap.h - Basic heap implementation ----------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -8,7 +8,7 @@
 \*====--------------------------------------------------------------------====*/
 
 #include <kernel/logger.h>
-#include <kernel/memory/memory_manager.h>
+#include <kernel/memory/heap.h>
 
 uint64_t memory_end = 0;
 block_header_t *first_block;
@@ -80,7 +80,7 @@ static void memman_merge_blocks()
 
 }
 
-void memman_dump(void)
+void heap_dump(void)
 {
 	k_debug("Memory dump:");
 	block_header_t *block = first_block;
@@ -95,7 +95,7 @@ void memman_dump(void)
 	}
 }
 
-void* memman_allocate(size_t size)
+void* heap_alloc(size_t size)
 {
 	/* the block needs to be bigger than the requested size in order
 	 *   to fit the header as well */
@@ -132,7 +132,7 @@ void* memman_allocate(size_t size)
 	}
 }
 
-void memman_free(void *ptr)
+void heap_free(void *ptr)
 {
 	uint64_t block_addr = ((uint64_t) ptr) - sizeof(block_header_t);
 	block_header_t *block = (block_header_t *) block_addr;
@@ -147,7 +147,7 @@ void memman_free(void *ptr)
 	memman_merge_blocks();
 }
 
-void memory_manager_init(void)
+void heap_init(void)
 {
 	uint64_t free = 0;
 

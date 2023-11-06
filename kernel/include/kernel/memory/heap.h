@@ -1,4 +1,4 @@
-/*====-------- memory_manager.h - Physical memory manager header ---------====*\
+/*====------------ heap.h - Basic heap implementation header -------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -12,8 +12,8 @@
 
 #include <kernel/kernel.h>
 
-#ifndef _KERNEL_MEMORY_MANAGER_H
-#define _KERNEL_MEMORY_MANAGER_H
+#ifndef _KERNEL_HEAP_H
+#define _KERNEL_HEAP_H
 
 /* where the start of our region to hand out memory from starts */
 #define MEMORY_START 0x200000
@@ -29,12 +29,12 @@ typedef struct block_header  {
 	uint16_t used;
 } __attribute__((packed)) block_header_t;
 
-void memman_dump(void);
+void heap_dump(void);
 
-void* memman_allocate(size_t size);
+void* heap_alloc(size_t size);
 
-void memman_free(void *ptr);
+void heap_free(void *ptr);
 
-void memory_manager_init(void);
+void heap_init(void);
 
-#endif /* _KERNEL_MEMORY_MANAGER_H */
+#endif /* _KERNEL_HEAP_H */

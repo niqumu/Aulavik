@@ -69,12 +69,11 @@ void kernel_main(void)
 	serial_init(PORT_COM_1, BAUD_38400);
 	ps2_init();
 	keyboard_init();
+	pci_init();
 
 	k_print("\nKernel ready!");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
-
-	pci_init();
 
 	while (1) {
 		asm("sti; hlt");

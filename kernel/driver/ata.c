@@ -9,7 +9,7 @@
 
 #include <kernel/driver/ata.h>
 
-ata_device_t ata_devices[4];
+struct ata_device ata_devices[4];
 
 void init_ata(uint32_t primary_addr, uint32_t primary_ctrl_addr,
               uint32_t secondary_addr, uint32_t secondary_ctrl_addr,

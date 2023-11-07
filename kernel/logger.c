@@ -11,7 +11,7 @@
 
 #include <stdarg.h> /* va_list, va_start(), va_end() */
 #include <stdio.h> /* printf() */
-#include <string.h> /* strcat() */
+#include <string.h>
 
 #include <kernel/driver/serial.h> /* serial_write_string() */
 
@@ -28,12 +28,14 @@ void k_debug(const char* restrict format, ...)
 #else
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_DEBUG_M);
 #endif
+//	char *str = malloc(64);
 	char *str;
-	memset(str, 0, 64); // todo this needs to be malloc()!
+	memset(str, 0, 64); /* todo investigate malloc/free page fault */
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+//	free(str);
 #endif
 
 	vprintf(format, args);
@@ -47,12 +49,14 @@ void k_print(const char* __restrict format, ...)
 	va_start(args, format);
 
 #ifdef SERIAL_LOGGING_ENABLED
+//	char *str = malloc(64);
 	char *str;
-	memset(str, 0, 64); // todo this needs to be malloc()!
+	memset(str, 0, 64); /* todo investigate malloc/free page fault */
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+//	free(str);
 #endif
 
 	vprintf(format, args);
@@ -73,12 +77,14 @@ void k_ok(const char* restrict format, ...)
 #else
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_OK_M);
 #endif
+//	char *str = malloc(64);
 	char *str;
-	memset(str, 0, 64); // todo this needs to be malloc()!
+	memset(str, 0, 64); /* todo investigate malloc/free page fault */
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+//	free(str);
 #endif
 
 	vprintf(format, args);
@@ -100,12 +106,14 @@ void k_warn(const char* restrict format, ...)
 #else
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_WARN_M);
 #endif
+//	char *str = malloc(64);
 	char *str;
-	memset(str, 0, 64); // todo this needs to be malloc()!
+	memset(str, 0, 64); /* todo investigate malloc/free page fault */
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+//	free(str);
 #endif
 
 	vprintf(format, args);
@@ -127,12 +135,14 @@ void k_error(const char* restrict format, ...)
 #else
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_ERROR_M);
 #endif
+//	char *str = malloc(64);
 	char *str;
-	memset(str, 0, 64); // todo this needs to be malloc()!
+	memset(str, 0, 64); /* todo investigate malloc/free page fault */
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+//	free(str);
 #endif
 
 	vprintf(format, args);

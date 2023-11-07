@@ -13,6 +13,9 @@
 uint64_t memory_end = 0;
 block_header_t *first_block;
 
+/* state */
+bool heap_ready = false;
+
 static int memman_verify_header(uint64_t address)
 {
 	return ((block_header_t *) address)->magic == BLOCK_MAGIC;
@@ -41,7 +44,7 @@ static block_header_t* memman_write_header(uint64_t address, uint64_t size)
 	return header;
 }
 
-static void memman_merge_blocks()
+static void memman_merge_blocks(void)
 {
 	block_header_t *block = first_block;
 
@@ -152,8 +155,8 @@ void heap_init(void)
 	uint64_t free = 0;
 
 	/* find how big our usable memory is by reading multiboot info */
-	for (uint32_t i = 0; i < kernel_get_mb_memmap_size(); i++) {
-		mb_memory_block_t mb_block = kernel_get_mb_memmap()[i];
+	for (uint32_t i = 0; i < mb_memory_map_size; i++) {
+		mb_memory_block_t mb_block = mb_memory_map[i];
 
 		if (mb_block.type == MULTIBOOT_MEMORY_AVAILABLE) {
 			if (!mb_block.address)
@@ -170,4 +173,5 @@ void heap_init(void)
 
 	/* create one big block to start with */
 	first_block = memman_write_header(MEMORY_START, free);
+	heap_ready = true;
 }

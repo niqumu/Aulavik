@@ -9,18 +9,19 @@
 
 #include <kernel/driver/serial.h>
 
+#include <stdbool.h>
 #include <stdint.h> /* uint8_t, uint16_t */
 
 #include <kernel/driver/ports.h>
 #include <kernel/logger.h>
 
-static int serial_write_ready(uint16_t port)
+static bool serial_write_ready(uint16_t port)
 {
 	return port_inb(port + REGISTER_PORT_LINE_STATUS) &
 			  REGISTER_LINE_STATUS_THRE;
 }
 
-static int serial_read_ready(uint16_t port)
+static bool serial_read_ready(uint16_t port)
 {
 	return port_inb(port + REGISTER_PORT_LINE_STATUS) &
 			  REGISTER_LINE_STATUS_DR;
@@ -50,9 +51,9 @@ void serial_write_string(uint16_t port, char *data)
 
 void serial_init(uint16_t port, enum baud baud)
 {
-	uint64_t *data = (uint64_t*) 0x400;
-	for (int port = 1; port <= 4; port++)
-		k_debug("serial: COM %d is assigned to %x", port, *data++);
+//	uint64_t *data = (uint64_t*) 0x400;
+//	for (int port = 1; port <= 4; port++)
+//		k_debug("serial: COM %d is assigned to %x", port, *data++);
 
 	port_outb(port + REGISTER_PORT_INT_ENABLE, 0);
 	port_outb(port + REGISTER_PORT_LINE_CONTROL, 0b10000000);

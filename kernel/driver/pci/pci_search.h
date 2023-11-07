@@ -1,4 +1,4 @@
-/*====------------------- FILENAME - SHORT DESCRIPTION -------------------====*\
+/*====------------ pci_search.h - PCI search functions header ------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -7,9 +7,9 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef DRIVER_GRAPHICS_H
-#define DRIVER_GRAPHICS_H
+#ifndef DRIVER_PCI_SEARCH_H
+#define DRIVER_PCI_SEARCH_H
 
-void graphics_init(void);
+void pci_scan(void);
 
-#endif /* DRIVER_GRAPHICS_H */
+#endif /* DRIVER_PCI_SEARCH_H */

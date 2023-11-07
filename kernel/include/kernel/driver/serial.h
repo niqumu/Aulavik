@@ -7,10 +7,10 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <stdint.h> /* uint32_t */
+#ifndef DRIVER_SERIAL_H
+#define DRIVER_SERIAL_H
 
-#ifndef _DRIVER_SERIAL_H
-#define _DRIVER_SERIAL_H
+#include <stdint.h> /* uint32_t */
 
 #define UART_RATE       115200
 
@@ -90,4 +90,4 @@ char* serial_read_string(uint16_t port);
 
 void serial_init(uint16_t port, enum baud);
 
-#endif /* _DRIVER_SERIAL_H */
+#endif /* DRIVER_SERIAL_H */

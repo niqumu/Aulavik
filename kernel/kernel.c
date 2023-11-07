@@ -25,21 +25,6 @@ multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
 uint32_t mb_memory_map_size;
 
-multiboot_info_t* kernel_get_mb_info()
-{
-	return mb_info;
-}
-
-mb_memory_block_t* kernel_get_mb_memmap()
-{
-	return mb_memory_map;
-}
-
-uint32_t kernel_get_mb_memmap_size()
-{
-	return mb_memory_map_size;
-}
-
 __attribute__((unused))
 void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 {
@@ -59,7 +44,7 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 	heap_init();
 }
 
-__attribute__((unused))
+__attribute__((unused, __noreturn__))
 void kernel_main(void)
 {
 	terminal_init();
@@ -75,7 +60,6 @@ void kernel_main(void)
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	while (1) {
-		asm("sti; hlt");
-	}
+	while (1)
+		asm("hlt");
 }

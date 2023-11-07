@@ -8,10 +8,15 @@
 \*====--------------------------------------------------------------------====*/
 
 #include <kernel/gdt/gdt.h>
+
 #include <kernel/logger.h>
+#include <kernel/gdt/tss.h>
 
 /* gdt itself */
 uint64_t gdt[GDT_MAX_ENTRIES];
+
+/* tss */
+tss_t tss = {0};
 
 uint64_t* gdt_get_descriptor(uint8_t index)
 {
@@ -53,29 +58,43 @@ static void create_default_descriptors(void) {
 	/* create kernel code segment */
 	access = (ACCESS_PRESENT | ACCESS_PRIVILEGE_0 | ACCESS_TYPE |
 		  ACCESS_EXECUTABLE | ACCESS_READWRITE);
-	gdt[GDT_SEGMENT_KERNEL_CODE] = gdt_create_descriptor(0, 0xfffff,
-							     flags, access);
+	gdt[GDT_SEGMENT_KERNEL_CODE] = gdt_create_descriptor(
+		0, 0xfffff, flags, access);
 
 	/* create kernel data segment */
 	access = (ACCESS_PRESENT | ACCESS_PRIVILEGE_0 | ACCESS_TYPE |
 		  ACCESS_READWRITE);
-	gdt[GDT_SEGMENT_KERNEL_DATA] = gdt_create_descriptor(0, 0xfffff,
-	                                                     flags, access);
+	gdt[GDT_SEGMENT_KERNEL_DATA] = gdt_create_descriptor(
+		0, 0xfffff, flags, access);
+
 	/* create user code segment */
 	access = (ACCESS_PRESENT | ACCESS_PRIVILEGE_3 | ACCESS_TYPE |
 		  ACCESS_EXECUTABLE | ACCESS_READWRITE);
-	gdt[GDT_SEGMENT_USER_CODE] = gdt_create_descriptor(0, 0xfffff,
-							   flags, access);
+	gdt[GDT_SEGMENT_USER_CODE] = gdt_create_descriptor(
+		0, 0xfffff, flags, access);
+
 	/* create user data segment */
 	access = (ACCESS_PRESENT | ACCESS_PRIVILEGE_3 | ACCESS_TYPE |
 		  ACCESS_READWRITE);
-	gdt[GDT_SEGMENT_USER_DATA] = gdt_create_descriptor(0, 0xfffff,
-							   flags, access);
-	/* create task sate segment */
+	gdt[GDT_SEGMENT_USER_DATA] = gdt_create_descriptor(
+		0, 0xfffff, flags, access);
+
+	/* create task state segment */
 	access = (ACCESS_PRESENT | ACCESS_PRIVILEGE_0 | ACCESS_EXECUTABLE |
 		  ACCESS_ACCESSED);
-	gdt[GDT_SEGMENT_TASK_STATE] = gdt_create_descriptor(0, 0xfffff,
-							    flags, access);
+	gdt[GDT_SEGMENT_TASK_STATE] = gdt_create_descriptor(
+		(uint32_t) &tss, sizeof(tss_t), FLAG_SIZE, access);
+}
+
+static void load_tss(void)
+{
+	/* 5 is the index of the task state segment in the gdt */
+	asm volatile ("ltr %0" :: "a" (5 * DESCRIPTOR_SIZE));
+}
+
+void ring3_test(void)
+{
+	k_print("Hello from ring 3!"); // :(
 }
 
 void gdt_init(void)
@@ -84,6 +103,7 @@ void gdt_init(void)
 
 	load_gdt((GDT_MAX_ENTRIES * DESCRIPTOR_SIZE) - 1, (uint32_t) &gdt[0]);
 	reload_registers();
+	load_tss();
 
 	k_ok("Initialized GDT");
 }

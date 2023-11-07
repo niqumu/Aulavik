@@ -7,10 +7,10 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <stdint.h>
+#ifndef DRIVER_ATA_H
+#define DRIVER_ATA_H
 
-#ifndef _DRIVER_ATA_H
-#define _DRIVER_ATA_H
+#include <stdint.h>
 
 /* commands sent over command/status port */
 #define ATA_COMMAND_READ_PIO            0x20
@@ -56,7 +56,7 @@
 #define ATA_MASTER      0
 #define ATA_SLAVE       1
 
-typedef struct ata_device {
+struct ata_device {
 	uint8_t present;
 	uint8_t secondary;
 	uint8_t slave;
@@ -66,10 +66,10 @@ typedef struct ata_device {
 	uint32_t command_sets;
 	uint32_t sectors;
 	char name[64];
-} ata_device_t;
+};
 
 void init_ata(uint32_t primary_addr, uint32_t primary_ctrl_addr,
 	      uint32_t secondary_addr, uint32_t secondary_ctrl_addr,
 	      uint32_t bus_master);
 
-#endif /* _DRIVER_ATA_H */
+#endif /* DRIVER_ATA_H */

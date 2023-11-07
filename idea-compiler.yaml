@@ -1,0 +1,10 @@
+# If you are using CLion, navigate to Build, Execution, Deployment ->
+# Toolchains -> Custom Compiler, and use this file to use Aulavik's libc.
+
+compilers:
+
+  - description: C11
+    match-sources: ".c"
+    match-language: C
+    match-compiler-exe: "~/opt/cross/bin/i686-elf-gcc"
+    include-dirs: "./libc/include"

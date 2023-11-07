@@ -108,12 +108,12 @@ void paging_init(void)
 	/* the address of the next frame to assign */
 	uint32_t frame = 0;
 
-	uint32_t memory = kernel_get_mb_info()->mem_upper * 1000;
+	uint32_t memory = mb_info->mem_upper * 1000;
 	frame_count = memory / FRAME_SIZE;
 	uint32_t needed_tables = frame_count / 1024;
 
-	k_debug("Paging: %d bytes of ram, need %d frames, need %d tables",
-		memory, frame_count, needed_tables);
+//	k_debug("Paging: %d bytes of ram, need %d frames, need %d tables",
+//		memory, frame_count, needed_tables);
 
 	/*
 	 * TODO/FIXME:
@@ -145,5 +145,5 @@ void paging_init(void)
 	}
 
 	enable_paging();
-	k_ok("Paging enabled!");
+//	k_ok("Paging enabled!");
 }

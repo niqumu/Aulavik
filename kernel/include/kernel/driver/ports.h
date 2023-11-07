@@ -7,10 +7,10 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <stdint.h> /* uint8_t, uint16_t */
+#ifndef DRIVER_PORTS_H
+#define DRIVER_PORTS_H
 
-#ifndef _DRIVER_PORTS_H
-#define _DRIVER_PORTS_H
+#include <stdint.h> /* uint8_t, uint16_t */
 
 #define PORT_PIC_MASTER_COMMAND         0x20
 #define PORT_PIC_MASTER_DATA            0x21
@@ -22,10 +22,6 @@
 #define PORT_PS2_WRITE_CMD      0x64
 
 #define PORT_PIC_EOI    0x20
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void port_outl(uint16_t port, uint32_t data);
 uint32_t port_inl(uint16_t port);
@@ -41,8 +37,4 @@ void port_pic_eoi(void);
 /* issues an end of interrupt command to both pics */
 void port_pic_eoi_slave(void);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _DRIVER_PORTS_H */
+#endif /* DRIVER_PORTS_H */

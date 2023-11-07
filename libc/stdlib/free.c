@@ -13,5 +13,5 @@
 
 void free(void *ptr)
 {
-	return heap_free(ptr);
+	heap_free(ptr);
 }

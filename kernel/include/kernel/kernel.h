@@ -31,9 +31,9 @@ typedef struct multiboot_memory_map {
 	uint16_t type;
 } mb_memory_block_t;
 
-multiboot_info_t* kernel_get_mb_info();
-mb_memory_block_t* kernel_get_mb_memmap();
-uint32_t kernel_get_mb_memmap_size();
+extern multiboot_info_t *mb_info;
+extern mb_memory_block_t *mb_memory_map;
+extern uint32_t mb_memory_map_size;
 
 __attribute__((__noreturn__))
 void panic(char *msg);

@@ -100,6 +100,12 @@ extern void load_gdt(uint16_t limit, uintptr_t base);
 /* reload the segment registers, required after loading gdt. impl: _gdt.asm */
 extern void reload_registers(void);
 
+/* jump to ring 3 */ // TODO triple fault is going to make me lose it
+extern void gdt_jump_ring3(void);
+
+/* testing */
+void ring3_test(void);
+
 /* creates and load a gdt */
 void gdt_init(void);
 

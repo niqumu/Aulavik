@@ -7,8 +7,8 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef _DRIVER_KEYBOARD_H
-#define _DRIVER_KEYBOARD_H
+#ifndef DRIVER_KEYBOARD_H
+#define DRIVER_KEYBOARD_H
 
 /* outgoing commands to keyboard */
 #define KBD_COMMAND_SET_LEDS                0xed
@@ -31,16 +31,8 @@
 extern char primary_scan_codes[0xff];
 extern char shift_scan_codes[0xff];
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void keyboard_handle_press(void);
 
 void keyboard_init(void);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _DRIVER_KEYBOARD_H */
+#endif /* DRIVER_KEYBOARD_H */

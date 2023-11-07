@@ -7,8 +7,8 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef _DRIVER_TTY_H
-#define _DRIVER_TTY_H
+#ifndef DRIVER_TTY_H
+#define DRIVER_TTY_H
 
 #define FE_CONTROL_SEQUENCE_INTRODUCER '['
 #define FE_CONTROL_SEQUENCE FE_CONTROL_SEQUENCE_INTRODUCER
@@ -38,4 +38,4 @@ int terminal_get_color(int *fg_dest, int *bg_dest);
 /* set the text mode cursor position */
 void terminal_set_cursor(int row, int col);
 
-#endif /* _DRIVER_TTY_H */
+#endif /* DRIVER_TTY_H */

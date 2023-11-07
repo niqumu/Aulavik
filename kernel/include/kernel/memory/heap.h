@@ -7,6 +7,7 @@
  *
 \*====--------------------------------------------------------------------====*/
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -22,6 +23,8 @@
 
 #define BLOCK_FLAG_AVAILABLE 0
 #define BLOCK_FLAG_USED 1
+
+extern bool heap_ready;
 
 typedef struct block_header  {
 	uint16_t magic;

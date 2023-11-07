@@ -12,7 +12,7 @@ LDFLAGS:=$(LDFLAGS)
 NASMFLAGS:=$(NASMFLAGS) -felf32
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
 
-include driver/make.config
+include driver/Makefile
 include file/make.config
 include gdt/make.config
 include idt/make.config

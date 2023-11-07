@@ -7,10 +7,10 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <kernel/driver/ports.h>
+#ifndef DRIVER_PS2_H
+#define DRIVER_PS2_H
 
-#ifndef _DRIVER_PS2_H
-#define _DRIVER_PS2_H
+#include <kernel/driver/ports.h>
 
 /* PS/2 controller status */
 #define PS2_STATUS_OUT_BUFFER   0b00000001
@@ -77,4 +77,4 @@
 
 void ps2_init(void);
 
-#endif /* _DRIVER_PS2_H */
+#endif /* DRIVER_PS2_H */

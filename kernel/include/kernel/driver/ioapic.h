@@ -7,10 +7,10 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <stdint.h> /* uint64_t */
+#ifndef DRIVER_IOAPIC_H
+#define DRIVER_IOAPIC_H
 
-#ifndef _DRIVER_IOAPIC_H
-#define _DRIVER_IOAPIC_H
+#include <stdint.h> /* uint64_t */
 
 #define IOAPICID        0
 #define IOAPICVER       1
@@ -29,4 +29,4 @@
 
 uint64_t ioapic_create_entry(uint8_t vector, uint8_t);
 
-#endif /* _DRIVER_IOAPIC_H */
+#endif /* DRIVER_IOAPIC_H */

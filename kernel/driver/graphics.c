@@ -7,15 +7,11 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <stdint.h>
-
 #include <kernel/logger.h>
 #include <kernel/kernel.h>
 
 void graphics_init(void)
 {
-	multiboot_info_t *mb_info = kernel_get_mb_info();
-
 	uint32_t bpp = mb_info->framebuffer_bpp;
 	uint32_t pixel_width = bpp / 8;
 	uint32_t pitch = mb_info->framebuffer_pitch;

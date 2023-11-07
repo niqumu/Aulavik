@@ -43,3 +43,24 @@ reload_registers:
 	mov gs, ax
 	mov ss, ax
 	ret
+
+; -----------------------------------------------------------------------------
+;
+; -----------------------------------------------------------------------------
+global gdt_jump_ring3
+gdt_jump_ring3:
+	mov ax, (4 * 8) | 3     ; ring 3
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+
+	mov eax, esp
+	push (4 * 8) | 3        ; data selector
+	push eax
+	pushf
+	push (3 * 8) | 3        ; code selector
+	push ring3_test         ; return address
+	iret
+
+extern ring3_test

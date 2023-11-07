@@ -1,3 +1,18 @@
+# Aulavik master Makefile
+
+# Troubleshooting:
+# * Is the file listed in its directories make.config?
+# * Is the directories make.config included in the next higher Makefile/config?
+# * Is the directories list used in the next higher Makefile/make.config?
+#
+# Weird Makefile parsing errors (like expecting a tab, something about ***,
+#   etc) coming from a source file likely means it was accidentally added to
+#   a make.config file as a .c/.asm (or whatever) file rather than a .o file.
+#
+# GCC errors about -lk being an unrecognized option/file mean that the libk
+#   did not compile or link correctly. Clean and build again, looking for
+#   issues coming from libk sources.
+
 # Default CFLAGS
 CFLAGS?=-O2 -g
 CFLAGS+= -Wall -Wextra
@@ -34,11 +49,13 @@ export DESTDIR=$(SYSROOT)
 
 .PHONY: all build clean iso run
 
+# Build Aulavik
 build:
 	mkdir -p $(SYSROOT)
 	$(foreach module, $(MODULES), $(MAKE) -C $(module) install-headers;) \
 	$(foreach module, $(MODULES), $(MAKE) -C $(module) install;)
 
+# Clean binaries. Good first resort if Make is acting strange
 clean:
 	$(foreach module, $(MODULES), $(MAKE) -C $(module) clean;) \
 	rm -rf ./sysroot 		\
@@ -46,14 +63,23 @@ clean:
 	rm -rf ./out 			\
 	rm -rf ./aulavik.iso
 
+# Create a bootable image with GRUB
 iso:
 	mkdir -p ./isodir/boot/grub
 	cp ./sysroot/boot/aulavik.kernel ./isodir/boot/aulavik.kernel
 	cp ./grub.cfg ./isodir/boot/grub/grub.cfg
 	grub-mkrescue -o aulavik.iso ./isodir
 
+# Launch QEMU, boot the image, mount the virtual drive
 run:
-	qemu-system-$(HOST_ARCH) -serial stdio -cdrom aulavik.iso
+	# Start the VM, mounting the ./sysroot directory as a FAT formatted ATA
+	#   drive, and the aulavik ISO as a CD-ROM. -d flag forces CD boot.
+	#
+	#   https://wiki.gentoo.org/wiki/QEMU/Options#Hard_drive
+	qemu-system-$(HOST_ARCH) -serial stdio -hdb fat:rw:./sysroot -cdrom ./aulavik.iso -boot d
+
+	#qemu-system-$(HOST_ARCH) -serial stdio -drive file="./aulavik.iso",
+	#media=disk -drive file=fat:rw:"./sysroot",format=raw
 
 # Builds Aulavik, images it, and launches QEMU
 all: build iso run

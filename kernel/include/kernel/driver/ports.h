@@ -27,6 +27,9 @@
 extern "C" {
 #endif
 
+void port_outl(uint16_t port, uint32_t data);
+uint32_t port_inl(uint16_t port);
+
 void port_outb(uint16_t port, uint8_t data);
 uint8_t port_inb(uint16_t port);
 

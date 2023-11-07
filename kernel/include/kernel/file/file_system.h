@@ -25,7 +25,7 @@ struct file_system_node;
 typedef struct dir_entry
 {
 	char name[256];
-	uint32_t node_id;
+	uint32_t inode;
 } dir_entry_t;
 
 /* posix-style function pointer for file read */
@@ -55,7 +55,7 @@ typedef struct file_system_node
 	uint8_t type;
 	uint32_t size;
 	uint32_t permissions;
-	uint32_t node_id;
+	uint32_t inode;
 
 	/* file/directory operation function pointers */
 	read_type_t     read_file;

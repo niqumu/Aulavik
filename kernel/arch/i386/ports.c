@@ -11,6 +11,17 @@
 
 #include <stdint.h> /* uint8_t, uint16_t */
 
+void port_outl(uint16_t port, uint32_t data)
+{
+	asm volatile ("outl %0, %1" :: "a" (data), "Nd" (port) : "memory");
+}
+
+uint32_t port_inl(uint16_t port)
+{
+	uint32_t response;
+	asm volatile ("inl %1, %0" : "=a" (response) : "Nd" (port) : "memory");
+	return response;
+}
 
 void port_outb(uint16_t port, uint8_t data)
 {

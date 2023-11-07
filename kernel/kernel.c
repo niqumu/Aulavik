@@ -19,6 +19,7 @@
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
 #include <kernel/memory/heap.h>
 #include <kernel/memory/paging.h>
+#include "kernel/driver/pci.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -72,6 +73,8 @@ void kernel_main(void)
 	k_print("\nKernel ready!");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
+
+	pci_init();
 
 	while (1) {
 		asm("sti; hlt");

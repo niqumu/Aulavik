@@ -60,7 +60,7 @@ void kernel_main(void)
 	pci_init();
 
 	k_print("\nKernel ready");
-	k_print("Memory: %dkb lower, %dkb upper\n\n", mb_info->mem_lower,
+	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
 	shell_main();

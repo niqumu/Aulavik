@@ -101,13 +101,14 @@ static void pci_list_functions(struct pci_device device)
 		struct pci_function func = device.functions[f];
 
 		if (func.subclass_code) {
-			k_print("   | %d: vendor: %x, ID: %x, "
-			        "class: %x, subclass: %x", f,
+			k_print("   \e[90m|\e[97m %d: vendor: \e[94m%x\e[97m, "
+				"ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m, "
+				"subclass: \e[94m%x\e[97m", f,
 			        func.vendor_id, func.device_id,
 			        func.class_code, func.subclass_code);
 		} else {
-			k_print("   | %d: vendor: %x, ID: %x, "
-			        "class: %x", f,
+			k_print("   \e[90m|\e[97m %d: vendor: \e[94m%x\e[97m, "
+				"ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m", f,
 			        func.vendor_id, func.device_id,
 			        func.class_code);
 		}
@@ -121,12 +122,13 @@ void pci_list_devices(void)
 		struct pci_device device = pci_devices[index];
 
 		if (device.subclass_code) {
-			k_print("Device %d: vendor: %x, ID: %x, "
-			        "class: %x, subclass: %x", index,
+			k_print("Device %d: vendor: \e[94m%x\e[97m, ID: \e[94m%x\e[97m, "
+			        "class: \e[94m%x\e[97m, subclass: \e[94m%x\e[97m", index,
 			        device.vendor_id, device.device_id,
 			        device.class_code, device.subclass_code);
 		} else {
-			k_print("Device %d: vendor: %x, ID: %x, class: %x",
+			k_print("Device %d: vendor: \e[94m%x\e[97m, "
+				"ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m",
 			        index, device.vendor_id, device.device_id,
 			        device.class_code);
 		}

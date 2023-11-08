@@ -13,6 +13,7 @@
 
 #include <kernel/terminal.h>
 #include "commands/info_cmd.h"
+#include "commands/fetch_cmd.h"
 
 struct shell_command commands[16];
 
@@ -46,9 +47,10 @@ void shell_process_command(char *cmd)
 void shell_main(void)
 {
 	commands[0] = *info_init();
+	commands[1] = *fetch_init();
 
 	while (alive) {
-		terminal_puts("\n$ ");
+		terminal_puts("\n\e[90m$ \e[97m");
 
 		char *input = terminal_get_input();
 		shell_process_command(input);

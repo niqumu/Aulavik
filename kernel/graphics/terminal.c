@@ -42,7 +42,7 @@ void terminal_handle_key(char c)
 	switch (c) {
 	case 0x08: /* backspace */
 		if (!input_index)
-			break;
+			return;
 
 		input_index--;
 		input[input_index] = '\0';
@@ -190,7 +190,7 @@ void terminal_init(struct render_context *context)
 {
 	render_context = context;
 
-	terminal_state.x = TERMINAL_PADDING + 5;
+	terminal_state.x = TERMINAL_PADDING;
 	terminal_state.y = TERMINAL_PADDING;
 	terminal_state.color = color_15;
 }

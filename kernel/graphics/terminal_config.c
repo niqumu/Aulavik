@@ -7,7 +7,7 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <kernel/driver/graphics.h>
+#include <kernel/graphics/graphics.h>
 
 struct color background = {
 	0x1d, 0x1f, 0x21

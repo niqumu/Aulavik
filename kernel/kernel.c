@@ -11,16 +11,17 @@
 
 #include <kernel/driver/keyboard.h>
 #include <kernel/driver/ps2.h>
+#include <kernel/driver/pci.h>
 #include <kernel/driver/tty.h> /* terminal_init(); */
 #include <kernel/driver/serial.h>
 
 #include <kernel/logger.h>
 #include <kernel/idt/idt.h> /* idt_init() */
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
+#include <kernel/graphics/graphics.h>
+#include <kernel/graphics/font_renderer.h>
 #include <kernel/memory/heap.h>
 #include <kernel/memory/paging.h>
-#include <kernel/driver/pci.h>
-#include <kernel/driver/graphics.h>
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -48,7 +49,8 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 __attribute__((unused, __noreturn__))
 void kernel_main(void)
 {
-	terminal_init();
+//	terminal_init();
+	graphics_init();
 	gdt_init();
 	idt_init();
 	k_ok("Loading drivers...");
@@ -61,7 +63,8 @@ void kernel_main(void)
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	graphics_init();
+	terminal_write("hello, world!");
+//	terminal_write("!");
 
 	while (1)
 		asm("hlt");

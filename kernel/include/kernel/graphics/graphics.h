@@ -19,7 +19,7 @@ struct color {
 };
 
 struct render_context {
-	uint8_t *vram;
+	uint8_t *framebuffer;
 
 	uint32_t width;
 	uint32_t height;
@@ -46,6 +46,11 @@ extern struct color color_12;
 extern struct color color_13;
 extern struct color color_14;
 extern struct color color_15;
+
+void graphics_plot_pixel(uint32_t x, uint32_t y, struct color color);
+
+void graphics_rect(uint32_t x, uint32_t y, uint32_t width,
+                   uint32_t height, struct color color);
 
 void graphics_init(void);
 

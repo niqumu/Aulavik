@@ -14,6 +14,11 @@
 
 struct render_context context;
 
+struct render_context* graphics_get_context(void)
+{
+	return &context;
+}
+
 void graphics_plot_pixel(uint32_t x, uint32_t y, struct color color)
 {
 	uint8_t *pixel = context.framebuffer + (y * context.pitch +

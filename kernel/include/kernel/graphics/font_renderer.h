@@ -10,6 +10,18 @@
 #ifndef GRAPHICS_FONT_RENDERER_H
 #define GRAPHICS_FONT_RENDERER_H
 
-void terminal_write(const char *string);
+#include <stdint.h>
+
+#include <kernel/graphics/graphics.h>
+
+#define FR_LINE_SPACING 3
+#define FR_KERNING      3
+
+extern uint8_t char_width;
+extern uint8_t char_height;
+
+void fr_render_char(uint32_t x, uint32_t y, char c, struct color color);
+
+void fr_render_string(uint32_t x, uint32_t y, const char *str, struct color c);
 
 #endif /* GRAPHICS_FONT_RENDERER_H */

@@ -9,10 +9,12 @@
 
 #include <kernel/graphics/font_renderer.h>
 
-#include <kernel/graphics/graphics.h>
 #include <kernel/logger.h>
 
 #include "font.h"
+
+uint8_t char_width = 8;
+uint8_t char_height = 13;
 
 void fr_render_char(uint32_t x, uint32_t y, char c, struct color color)
 {
@@ -36,13 +38,10 @@ void fr_render_char(uint32_t x, uint32_t y, char c, struct color color)
 		for (uint8_t j = 0; j < 8; j++) {
 			uint8_t bit = byte & (1 << j);
 
-			if (bit) {
+			if (bit)
 				graphics_plot_pixel(draw_x, draw_y, color);
-			}
 
-			draw_x--;
-
-			if (draw_x <= x) {
+			if (--draw_x <= x) {
 				draw_x = x + width;
 				draw_y--;
 			}
@@ -50,12 +49,10 @@ void fr_render_char(uint32_t x, uint32_t y, char c, struct color color)
 	}
 }
 
-void terminal_write(const char *string)
+void fr_render_string(uint32_t x, uint32_t y, const char *str, struct color c)
 {
-	uint8_t render_x = 15;
-
-	for (int i = 0; string[i]; i++) {
-		fr_render_char(render_x, 15, string[i], color_15);
-		render_x += char_width + 3;
+	for (int i = 0; str[i]; i++) {
+		fr_render_char(x, 15, str[i], c);
+		x += char_width + FR_KERNING;
 	}
 }

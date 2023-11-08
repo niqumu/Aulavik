@@ -21,7 +21,7 @@
 void terminal_set_cursor_enabled(int state);
 
 /* initialize the terminal, clearing the screen */
-void terminal_init(void);
+void vga_terminal_init(void);
 
 /* write c in the terminal at the current position */
 void terminal_putchar(char c);

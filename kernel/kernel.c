@@ -12,7 +12,6 @@
 #include <kernel/driver/keyboard.h>
 #include <kernel/driver/ps2.h>
 #include <kernel/driver/pci.h>
-#include <kernel/driver/tty.h> /* terminal_init(); */
 #include <kernel/driver/serial.h>
 
 #include <kernel/logger.h>
@@ -22,6 +21,7 @@
 #include <kernel/graphics/font_renderer.h>
 #include <kernel/memory/heap.h>
 #include <kernel/memory/paging.h>
+#include <kernel/terminal.h>
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -51,6 +51,7 @@ void kernel_main(void)
 {
 //	terminal_init();
 	graphics_init();
+	terminal_init(graphics_get_context());
 	gdt_init();
 	idt_init();
 	k_ok("Loading drivers...");
@@ -63,8 +64,9 @@ void kernel_main(void)
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	terminal_write("hello, world!");
-//	terminal_write("!");
+	k_ok("Color test");
+	k_warn("Color test");
+	k_error("Color test");
 
 	while (1)
 		asm("hlt");

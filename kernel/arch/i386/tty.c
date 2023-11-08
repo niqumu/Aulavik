@@ -111,6 +111,7 @@ static void terminal_process_escape()
 		if (ctrl_seq_part_count == 1) {
 			uint8_t fg_id = ctrl_seq_parts[0];
 			uint8_t fg = vga_get_color(fg_id, 0);
+
 			terminal_set_color(fg, term_bg_color);
 		}
 
@@ -200,7 +201,7 @@ void terminal_puts(const char *string)
 		terminal_putchar(string[i]);
 }
 
-void terminal_init(void)
+void vga_terminal_init(void)
 {
 	terminal_set_cursor(0, 0);
 	terminal_set_color(VGA_COLOR_LIGHT_GRAY, VGA_COLOR_BLACK);

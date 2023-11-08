@@ -47,6 +47,8 @@ extern struct color color_13;
 extern struct color color_14;
 extern struct color color_15;
 
+struct render_context* graphics_get_context(void);
+
 void graphics_plot_pixel(uint32_t x, uint32_t y, struct color color);
 
 void graphics_rect(uint32_t x, uint32_t y, uint32_t width,

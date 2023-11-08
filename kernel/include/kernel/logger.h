@@ -20,15 +20,15 @@
 #define FG_ORANGE       "\e[93m"
 #define FG_RED          "\e[91m"
 #define FG_DARK_GRAY    "\e[90m"
-#define FG_GRAY         "\e[37m"
+#define FG_WHITE        "\e[97m"
 
-#define PREFIX_DEBUG    "[ " FG_DARK_GRAY "DBG" FG_GRAY " ] "
+#define PREFIX_DEBUG    "[ " FG_DARK_GRAY "DBG" FG_WHITE " ] "
 #define PREFIX_DEBUG_M  "[ DBG ]"
-#define PREFIX_OK       "[ " FG_GREEN "OK" FG_GRAY " ] "
+#define PREFIX_OK       "[ " FG_GREEN "OK" FG_WHITE " ] "
 #define PREFIX_OK_M     "[ OK ]"
-#define PREFIX_WARN     "[ " FG_ORANGE "WARN" FG_GRAY " ] "
+#define PREFIX_WARN     "[ " FG_ORANGE "WARN" FG_WHITE " ] "
 #define PREFIX_WARN_M   "[ WARN ]"
-#define PREFIX_ERROR    "[ " FG_RED "ERR" FG_GRAY " ] "
+#define PREFIX_ERROR    "[ " FG_RED "ERR" FG_WHITE " ] "
 #define PREFIX_ERROR_M  "[ ERR ]"
 
 void k_print(const char* __restrict, ...);

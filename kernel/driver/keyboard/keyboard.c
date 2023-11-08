@@ -12,7 +12,7 @@
 #include <kernel/driver/ports.h>
 #include <kernel/idt/idt.h>
 #include <kernel/logger.h>
-#include <kernel/driver/tty.h>
+#include <kernel/terminal.h>
 
 int shift_down = 0;
 
@@ -33,7 +33,7 @@ void keyboard_handle_press(void)
 		resolved_char = primary_scan_codes[key];
 
 	if (resolved_char) {
-		terminal_putchar(resolved_char);
+		terminal_putc(resolved_char);
 	}
 
 	port_pic_eoi();

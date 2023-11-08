@@ -15,7 +15,7 @@
 #include <kernel/graphics/graphics.h>
 
 #define FR_LINE_SPACING 3
-#define FR_KERNING      3
+#define FR_KERNING      2
 
 extern uint8_t char_width;
 extern uint8_t char_height;

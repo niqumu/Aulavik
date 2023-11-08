@@ -90,6 +90,8 @@ uint8_t pci_get_header_type(uint8_t bus, uint8_t slot, uint8_t function);
 /* test if the device at the given location has functions */
 bool pci_is_multifunction(uint8_t bus, uint8_t slot);
 
+void pci_list_devices(void);
+
 void pci_init(void);
 
 #endif /* DRIVER_PCI_H */

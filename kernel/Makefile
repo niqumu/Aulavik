@@ -12,6 +12,7 @@ LDFLAGS:=$(LDFLAGS)
 NASMFLAGS:=$(NASMFLAGS) -felf32
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
 
+include bin/make.config
 include driver/Makefile
 include file/make.config
 include gdt/make.config
@@ -28,6 +29,7 @@ LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
  
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
+$(KERNEL_BIN_OBJS) \
 $(KERNEL_DRIVER_OBJS) \
 $(KERNEL_FILE_OBJS) \
 $(KERNEL_GDT_OBJS) \

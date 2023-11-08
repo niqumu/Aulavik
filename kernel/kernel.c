@@ -14,13 +14,12 @@
 #include <kernel/driver/pci.h>
 #include <kernel/driver/serial.h>
 
+#include <kernel/bin/shell.h>
 #include <kernel/logger.h>
 #include <kernel/idt/idt.h> /* idt_init() */
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
 #include <kernel/graphics/graphics.h>
-#include <kernel/graphics/font_renderer.h>
 #include <kernel/memory/heap.h>
-#include <kernel/memory/paging.h>
 #include <kernel/terminal.h>
 
 multiboot_info_t *mb_info;
@@ -60,13 +59,11 @@ void kernel_main(void)
 	keyboard_init();
 	pci_init();
 
-	k_print("\nKernel ready!");
-	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
+	k_print("\nKernel ready");
+	k_print("Memory: %dkb lower, %dkb upper\n\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	k_ok("Color test");
-	k_warn("Color test");
-	k_error("Color test");
+	shell_main();
 
 	while (1)
 		asm("hlt");

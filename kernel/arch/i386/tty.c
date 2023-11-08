@@ -36,21 +36,21 @@ char sequence;
 int ctrl_seq_part_count = 0;
 int ctrl_seq_parts[10] = {0};
 
-void terminal_set_color(int fg, int bg)
+void vga_terminal_set_color(int fg, int bg)
 {
 	term_fg_color = fg;
 	term_bg_color = bg;
 	term_style = vga_create_style(fg, bg);
 }
 
-int terminal_get_color(int *fg_dest, int *bg_dest)
+int vga_terminal_get_color(int *fg_dest, int *bg_dest)
 {
 	*fg_dest = term_fg_color;
 	*bg_dest = term_bg_color;
 	return term_style;
 }
 
-void terminal_set_cursor(int row, int col)
+void vga_terminal_set_cursor(int row, int col)
 {
 	uint16_t position = col + (row * VGA_WIDTH);
 	port_outb(0x3d4, 0x0f);
@@ -62,7 +62,7 @@ void terminal_set_cursor(int row, int col)
 	term_cursor_column = col;
 }
 
-void terminal_set_cursor_enabled(int state)
+void vga_terminal_set_cursor_enabled(int state)
 {
 	if ((term_cursor_enabled = state)) {
 		port_outb(0x3d4, 0x0a);
@@ -112,7 +112,7 @@ static void terminal_process_escape()
 			uint8_t fg_id = ctrl_seq_parts[0];
 			uint8_t fg = vga_get_color(fg_id, 0);
 
-			terminal_set_color(fg, term_bg_color);
+			vga_terminal_set_color(fg, term_bg_color);
 		}
 
 		/* foreground and background provided */
@@ -121,7 +121,7 @@ static void terminal_process_escape()
 			uint8_t fg = vga_get_color(fg_id, 0);
 			uint8_t bg_id = ctrl_seq_parts[1];
 			uint8_t bg = vga_get_color(bg_id, 1);
-			terminal_set_color(fg, bg);
+			vga_terminal_set_color(fg, bg);
 		}
 	}
 }
@@ -153,7 +153,7 @@ static void terminal_parse_escape(char next)
 	}
 }
 
-void terminal_putchar(char c)
+void vga_terminal_putchar(char c)
 {
 	if (escaped) {
 		terminal_parse_escape(c);
@@ -163,48 +163,48 @@ void terminal_putchar(char c)
 	switch (c) {
 	case 0x08: /* backspace */
 		if (term_cursor_column > 0) {
-			terminal_set_cursor(term_cursor_row, term_cursor_column - 1);
+			vga_terminal_set_cursor(term_cursor_row, term_cursor_column - 1);
 		}
 		terminal_put_at(' ', term_style, term_cursor_column, term_cursor_row);
 		break;
 	case 0x09: /* tab */
 		int column = ((term_cursor_column + 7 + 1) / 8) * 8;
-		terminal_set_cursor(term_cursor_row , column);
+		vga_terminal_set_cursor(term_cursor_row , column);
 		break;
 	case '\n': /* line feed */
-		terminal_set_cursor(term_cursor_row + 1, 0);
+		vga_terminal_set_cursor(term_cursor_row + 1, 0);
 		break;
 	case 0x0d: /* carriage return */
-		terminal_set_cursor(term_cursor_row, 0);
+		vga_terminal_set_cursor(term_cursor_row, 0);
 		break;
 	case 0x1b: /* escape */
 		escaped = 1;
 		break;
 	default:
 		terminal_put_at(c, term_style, term_cursor_column, term_cursor_row);
-		terminal_set_cursor(term_cursor_row, term_cursor_column + 1);
+		vga_terminal_set_cursor(term_cursor_row, term_cursor_column + 1);
 	}
 
 	if (term_cursor_column >= VGA_WIDTH) {
-		terminal_set_cursor(term_cursor_row + 1, 0);
+		vga_terminal_set_cursor(term_cursor_row + 1, 0);
 	}
 
 	if (term_cursor_row >= VGA_HEIGHT) {
 		terminal_scroll();
-		terminal_set_cursor(VGA_HEIGHT - 1, 0);
+		vga_terminal_set_cursor(VGA_HEIGHT - 1, 0);
 	}
 }
 
-void terminal_puts(const char *string)
+void vga_terminal_puts(const char *string)
 {
 	for (int i = 0; string[i]; i++)
-		terminal_putchar(string[i]);
+		vga_terminal_putchar(string[i]);
 }
 
 void vga_terminal_init(void)
 {
-	terminal_set_cursor(0, 0);
-	terminal_set_color(VGA_COLOR_LIGHT_GRAY, VGA_COLOR_BLACK);
+	vga_terminal_set_cursor(0, 0);
+	vga_terminal_set_color(VGA_COLOR_LIGHT_GRAY, VGA_COLOR_BLACK);
 	terminal_clear();
 
 	k_ok("Initialized terminal");

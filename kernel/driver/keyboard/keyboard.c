@@ -33,7 +33,7 @@ void keyboard_handle_press(void)
 		resolved_char = primary_scan_codes[key];
 
 	if (resolved_char) {
-		terminal_putc(resolved_char);
+		terminal_handle_key(resolved_char);
 	}
 
 	port_pic_eoi();

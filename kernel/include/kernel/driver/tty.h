@@ -18,24 +18,24 @@
 #define SEPERATOR ';'
 
 /* enable/disable the text mode cursor */
-void terminal_set_cursor_enabled(int state);
+void vga_terminal_set_cursor_enabled(int state);
 
 /* initialize the terminal, clearing the screen */
 void vga_terminal_init(void);
 
 /* write c in the terminal at the current position */
-void terminal_putchar(char c);
+void vga_terminal_putchar(char c);
 
 /* write string in the terminal at the current position */
-void terminal_puts(const char *string);
+void vga_terminal_puts(const char *string);
 
 /* set the terminal color */
-void terminal_set_color(int fg, int bg);
+void vga_terminal_set_color(int fg, int bg);
 
 /* get the terminal color */
-int terminal_get_color(int *fg_dest, int *bg_dest);
+int vga_terminal_get_color(int *fg_dest, int *bg_dest);
 
 /* set the text mode cursor position */
-void terminal_set_cursor(int row, int col);
+void vga_terminal_set_cursor(int row, int col);
 
 #endif /* DRIVER_TTY_H */

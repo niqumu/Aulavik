@@ -16,6 +16,51 @@ struct render_context *render_context;
 struct ansi_state ansi_state;
 struct terminal_state terminal_state;
 
+volatile char input[512];
+uint16_t input_index;
+volatile bool enter_pressed, dirty = false;
+
+char* terminal_get_input()
+{
+	while (!enter_pressed)
+		;
+
+	dirty = true;
+	enter_pressed = false;
+	return &input[0];
+}
+
+void terminal_handle_key(char c)
+{
+	if (dirty || enter_pressed) {
+		enter_pressed = false;
+		dirty = false;
+		input_index = 0;
+		memset(&input[0], 0, 512);
+	}
+
+	switch (c) {
+	case 0x08: /* backspace */
+		if (!input_index)
+			break;
+
+		input_index--;
+		input[input_index] = '\0';
+		break;
+	case '\n':
+		enter_pressed = true;
+		break;
+	default:
+		if (input_index >= 511)
+			break;
+
+		input[input_index] = c;
+		input_index++;
+	}
+
+	terminal_putc(c);
+}
+
 /* converts an ANSI color code to a terminal color */
 static struct color get_ansi_color(uint8_t color)
 {
@@ -101,7 +146,7 @@ void terminal_putc(char c)
 	}
 
 	switch (c) {
-	case 0x08:
+	case 0x08: /* backspace */
 		terminal_state.x -= char_width + FR_KERNING;
 
 		if (terminal_state.x < TERMINAL_PADDING)
@@ -109,8 +154,11 @@ void terminal_putc(char c)
 
 		/* I have no idea where these values come from, but this
 		 * perfectly covers up the old character */
-		graphics_rect(terminal_state.x + 1, terminal_state.y + 9, char_width,
-			      char_height, background);
+		graphics_rect(terminal_state.x + 1, terminal_state.y + 9,
+			      char_width,char_height, background);
+		break;
+	case 0x09: /* tab */
+		terminal_state.x = ((terminal_state.x + TAB) / TAB) * TAB;
 		break;
 	case '\n': /* line feed */
 		terminal_state.x = TERMINAL_PADDING;
@@ -132,11 +180,17 @@ void terminal_putc(char c)
 	}
 }
 
+void terminal_puts(char *str)
+{
+	for (int i = 0; str[i]; i++)
+		terminal_putc(str[i]);
+}
+
 void terminal_init(struct render_context *context)
 {
 	render_context = context;
 
-	terminal_state.x = TERMINAL_PADDING;
+	terminal_state.x = TERMINAL_PADDING + 5;
 	terminal_state.y = TERMINAL_PADDING;
 	terminal_state.color = color_15;
 }

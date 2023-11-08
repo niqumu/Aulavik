@@ -15,7 +15,8 @@
 #include <kernel/graphics/font_renderer.h>
 #include <kernel/graphics/graphics.h>
 
-#define TERMINAL_PADDING        15
+#define TERMINAL_PADDING        25
+#define TAB                     8
 
 #define CONTROL_SEQUENCE_INTRODUCER     '['
 #define SEPERATOR                       ';'
@@ -38,7 +39,13 @@ struct terminal_state {
 	uint16_t x, y;
 };
 
+char* terminal_get_input();
+
+void terminal_handle_key(char c);
+
 void terminal_putc(char c);
+
+void terminal_puts(char *s);
 
 void terminal_init(struct render_context *context);
 

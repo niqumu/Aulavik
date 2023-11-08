@@ -28,9 +28,9 @@ align 4
 	dd 0 ;
 	dd 0 ;
 	dd 0
-	;dd 1920
-	;dd 1080
-	;dd 0
+	dd 1920
+	dd 1080
+	dd 0
 
 section .bss
 align 16

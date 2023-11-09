@@ -17,9 +17,6 @@
 #define FR_LINE_SPACING 3
 #define FR_KERNING      2
 
-extern uint8_t char_width;
-extern uint8_t char_height;
-
 void fr_render_char(uint32_t x, uint32_t y, char c, struct color color);
 
 void fr_render_string(uint32_t x, uint32_t y, const char *str, struct color c);

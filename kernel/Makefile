@@ -17,7 +17,7 @@ include driver/Makefile
 include file/make.config
 include gdt/make.config
 include graphics/make.config
-include idt/make.config
+include interrupts/make.config
 include memory/make.config
 include $(ARCHDIR)/make.config
  
@@ -34,7 +34,7 @@ $(KERNEL_DRIVER_OBJS) \
 $(KERNEL_FILE_OBJS) \
 $(KERNEL_GDT_OBJS) \
 $(KERNEL_GRAPHICS_OBJS) \
-$(KERNEL_IDT_OBJS) \
+$(KERNEL_INTERRUPT_OBJS) \
 $(KERNEL_MEMORY_OBJS) \
 kernel.o \
 logger.o \

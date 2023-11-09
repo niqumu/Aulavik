@@ -9,25 +9,20 @@
 
 #include <kernel/graphics/font_renderer.h>
 
-#include <kernel/logger.h>
-
-#include "font.h"
-
-uint8_t char_width = 8;
-uint8_t char_height = 13;
+#include <kernel/graphics/font.h>
 
 void fr_render_char(uint32_t x, uint32_t y, char c, struct color color)
 {
-	if (c < 33)
+	if (c < 33) /* no visible ascii characters exist below this */
 		return;
 
-	int index = c - 32;
-	uint8_t *character = characters[index];
-	uint8_t height = char_height;
-	uint8_t width = char_width;
-	uint8_t bytes = (height * width) / 8;
+	int index = c - 32; /* font starts with space (char 32) */
+	uint8_t *character = font_characters[index];
+	uint8_t bytes = (font_height * font_width) / 8;
 
-	uint32_t draw_x = x + width, draw_y = y + height + width;
+	/* rendering starts at the bottom right */
+	uint32_t draw_x = x + font_width;
+	uint32_t draw_y = y + font_height;
 
 	/* iterate over each byte in the character */
 	for (uint8_t i = 0; i < bytes; i++) {
@@ -42,7 +37,7 @@ void fr_render_char(uint32_t x, uint32_t y, char c, struct color color)
 				graphics_plot_pixel(draw_x, draw_y, color);
 
 			if (--draw_x <= x) {
-				draw_x = x + width;
+				draw_x = x + font_width;
 				draw_y--;
 			}
 		}
@@ -52,7 +47,7 @@ void fr_render_char(uint32_t x, uint32_t y, char c, struct color color)
 void fr_render_string(uint32_t x, uint32_t y, const char *str, struct color c)
 {
 	for (int i = 0; str[i]; i++) {
-		fr_render_char(x, 15, str[i], c);
-		x += char_width + FR_KERNING;
+		fr_render_char(x, y, str[i], c);
+		x += font_width + FR_KERNING;
 	}
 }

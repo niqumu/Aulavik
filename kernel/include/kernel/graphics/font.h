@@ -12,6 +12,8 @@
 
 #include <stdint.h>
 
-extern uint8_t characters[95][13];
+extern uint8_t font_width;
+extern uint8_t font_height;
+extern uint8_t font_characters[95][13];
 
-#endif
+#endif /* GRAPHICS_FONT_H */

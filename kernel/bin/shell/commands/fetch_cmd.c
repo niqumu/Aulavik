@@ -34,6 +34,7 @@ bool execute_fetch_command(char *cmd)
 	       "\e[96m     \\/___________/\n", "Aulavik", mb_info->boot_loader_name,
 	       graphics_get_context()->width, graphics_get_context()->height,
 	       mb_info->mem_upper / 1024);
+	return true;
 }
 
 struct shell_command* fetch_init(void)

@@ -11,7 +11,8 @@
 
 #include <string.h>
 
-#include <kernel/idt/idt.h>
+#include <kernel/graphics/font.h>
+#include <kernel/interrupts/pic.h>
 
 struct render_context *render_context;
 
@@ -22,11 +23,11 @@ volatile char input[512];
 uint16_t input_index;
 volatile bool enter_pressed, dirty = false;
 
-void terminal_handle_cursor(bool state)
+void terminal_render_cursor(bool state)
 {
 	struct color color = state ? color_7 : background;
-	graphics_rect(terminal_state.x + 1, terminal_state.y + 8,
-	              char_width,char_height, color);
+	graphics_rect(terminal_state.x + 1, terminal_state.y + 1,
+	              font_width,font_height, color);
 }
 
 void terminal_tick(void)
@@ -34,11 +35,11 @@ void terminal_tick(void)
 	switch (terminal_state.ticks) {
 	case 7:
 		if (!terminal_state.cursor_type_ticks)
-			terminal_handle_cursor(false);
+			terminal_render_cursor(false);
 
 		break;
 	case 14:
-		terminal_handle_cursor(true);
+		terminal_render_cursor(true);
 		terminal_state.ticks = 0;
 		break;
 	}
@@ -170,8 +171,7 @@ static void terminal_parse_escape(char c)
 void terminal_putc(char c)
 {
 	/* remove the cursor */
-	graphics_rect(terminal_state.x + 1, terminal_state.y + 8,
-	              char_width,char_height, background);
+	terminal_render_cursor(false);
 
 	if (ansi_state.escaped) {
 		terminal_parse_escape(c);
@@ -180,22 +180,19 @@ void terminal_putc(char c)
 
 	switch (c) {
 	case 0x08: /* backspace */
-		terminal_state.x -= char_width + FR_KERNING;
+		terminal_state.x -= font_width + FR_KERNING;
 
 		if (terminal_state.x < TERMINAL_PADDING)
 			terminal_state.x = TERMINAL_PADDING;
 
-		/* I have no idea where these values come from, but this
-		 * perfectly covers up the old character */
-		graphics_rect(terminal_state.x + 1, terminal_state.y + 9,
-			      char_width,char_height, background);
+		terminal_render_cursor(false);
 		break;
 	case 0x09: /* tab */
 		terminal_state.x = ((terminal_state.x + TAB) / TAB) * TAB;
 		break;
 	case '\n': /* line feed */
 		terminal_state.x = TERMINAL_PADDING;
-		terminal_state.y += char_height + FR_LINE_SPACING;
+		terminal_state.y += font_height + FR_LINE_SPACING;
 		break;
 	case 0x1b: /* escape */
 		ansi_state.escaped = true;
@@ -203,20 +200,20 @@ void terminal_putc(char c)
 	default:
 		fr_render_char(terminal_state.x, terminal_state.y,
 			       c, terminal_state.color);
-		terminal_state.x += char_width + FR_KERNING;
+		terminal_state.x += font_width + FR_KERNING;
 	}
 
 	/* new line if x is too high */
 	if (terminal_state.x + TERMINAL_PADDING > render_context->width) {
 		terminal_state.x = TERMINAL_PADDING;
-		terminal_state.y += char_height + FR_LINE_SPACING;
+		terminal_state.y += font_height + FR_LINE_SPACING;
 	}
 
 	/* scroll if y is too high */
 	if (terminal_state.y + TERMINAL_PADDING > render_context->height) {
 		/* todo this isn't easy and I can't think of a sane way */
 
-		uint16_t line_size = char_height + FR_LINE_SPACING;
+		uint16_t line_size = font_height + FR_LINE_SPACING;
 		uint16_t overscan = line_size * 10;
 		terminal_state.y -= overscan;
 
@@ -232,8 +229,7 @@ void terminal_putc(char c)
 	}
 
 	/* redraw cursor at the new position */
-	graphics_rect(terminal_state.x + 1, terminal_state.y + 8,
-	              char_width,char_height, color_7);
+	terminal_render_cursor(true);
 	terminal_state.cursor_type_ticks = 3;
 }
 
@@ -260,5 +256,5 @@ void terminal_init(struct render_context *context)
 	terminal_state.color = color_15;
 
 	/* enable the clock for the cursor */
-	idt_set_pic_mask(0, 0);
+	pic_set_mask(0, false);
 }

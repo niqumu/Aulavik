@@ -7,7 +7,7 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <kernel/idt/idt.h>
+#include <kernel/interrupts/idt.h>
 
 #include <kernel/driver/keyboard.h>
 
@@ -27,23 +27,26 @@ static void idt_handle_reserved(int vec)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(0, "RESERVED", "Unimplemented", 0, 0);
+	k_except(0, "RESERVED", "Unimplemented - triggered "
+				"vector stored in error", vec, true);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec0(uint32_t error)
+/* division error, no error code, no abort */
+__attribute__((unused)) void idt_handle_vec0(void)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(0, "#DE", "Division Error", 1, 1);
+	k_except(0, "#DE", "Division Error", 0, false);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec1(uint32_t error)
+/* debug, no error code, no abort */
+__attribute__((unused)) void idt_handle_vec1(void)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(1, "#DB", "Debug", error, 0);
+	k_except(1, "#DB", "Debug", 0, false);
 	exception_depth--;
 }
 
@@ -51,23 +54,25 @@ __attribute__((unused)) void idt_handle_vec2(uint32_t error) // TODO not an exce
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(2, "NMI", "Non-maskable Interrupt", error, 0);
+	k_except(2, "NMI", "Non-maskable Interrupt", error, false);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec3(uint32_t error)
+/* breakpoint, no error, no abort */
+__attribute__((unused)) void idt_handle_vec3(void)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(3, "#BP", "Breakpoint", error, 0);
+	k_except(3, "#BP", "Breakpoint", 0, false);
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec4(uint32_t error)
+/* overflow, no error, no abort */
+__attribute__((unused)) void idt_handle_vec4(void)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(4, "#OF", "Overflow", error, 0);
+	k_except(4, "#OF", "Overflow", 0, false);
 	exception_depth--;
 }
 
@@ -95,11 +100,12 @@ __attribute__((unused)) void idt_handle_vec7(uint32_t error)
 	exception_depth--;
 }
 
+/* double fault, error code, abort */
 __attribute__((unused)) void idt_handle_vec8(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(8, "#DF", "Double Fault", 1, 1);
+	k_except(8, "#DF", "Double Fault", error, true);
 	exception_depth--;
 }
 
@@ -156,11 +162,12 @@ __attribute__((unused)) void idt_handle_vec15(uint32_t error)
 	idt_handle_reserved(15);
 }
 
-__attribute__((unused)) void idt_handle_vec16(uint32_t error)
+/* Floating-Point exception, no error, no abort */
+__attribute__((unused)) void idt_handle_vec16(void)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(16, "#MF", "x87 Floating-Point Exception", 0, 0);
+	k_except(16, "#MF", "x87 Floating-Point Exception", 0, false);
 	exception_depth--;
 }
 
@@ -172,11 +179,12 @@ __attribute__((unused)) void idt_handle_vec17(uint32_t error)
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec18(uint32_t error)
+/* machine check, no error, abort */
+__attribute__((unused)) void idt_handle_vec18(void)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(18, "#MC", "Machine Check", 0, 1);
+	k_except(18, "#MC", "Machine Check", 0, true);
 	exception_depth--;
 }
 
@@ -242,7 +250,7 @@ __attribute__((unused)) void idt_handle_vec28(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(28, "#HV", "Hypervisor Injection Exception", 0, 0);
+	k_except(28, "#HV", "Hypervisor Injection Exception", 0, false);
 	exception_depth--;
 }
 
@@ -250,7 +258,7 @@ __attribute__((unused)) void idt_handle_vec29(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(29, "#VC", "VMM Communication Exception", error, 0);
+	k_except(29, "#VC", "VMM Communication Exception", error, false);
 	exception_depth--;
 }
 
@@ -258,7 +266,7 @@ __attribute__((unused)) void idt_handle_vec30(uint32_t error)
 {
 	if (exception_depth++ >= MAX_EXCEPTION_DEPTH)
 		panic("Exception depth exceeded MAX_EXCEPTION_DEPTH");
-	k_except(29, "#SX", "Security Exception", error, 0);
+	k_except(29, "#SX", "Security Exception", error, false);
 	exception_depth--;
 }
 

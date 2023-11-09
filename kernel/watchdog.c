@@ -13,7 +13,7 @@
 
 #include <kernel/logger.h>
 
-void k_except(int vec, char *nmon, char *name, uint32_t error, int abort)
+void k_except(int vec, char *nmon, char *name, uint32_t error, bool abort)
 {
 	k_print("");
 	k_error("Exception caught!");

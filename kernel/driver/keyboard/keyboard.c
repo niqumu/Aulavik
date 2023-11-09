@@ -10,7 +10,7 @@
 #include <kernel/driver/keyboard.h>
 
 #include <kernel/driver/ports.h>
-#include <kernel/idt/idt.h>
+#include <kernel/interrupts/pic.h>
 #include <kernel/logger.h>
 #include <kernel/terminal.h>
 
@@ -42,7 +42,7 @@ void keyboard_handle_press(void)
 void keyboard_init(void)
 {
 	/* unmask keyboard irqs on the pic */
-	idt_set_pic_mask(1, 0);
+	pic_set_mask(1, false);
 
 //	port_outb(PORT_PS2_RW_DATA, PS2_DEV_COMMAND_IDENTIFY);
 //	k_debug("%x", port_inb(PORT_PS2_RW_DATA));

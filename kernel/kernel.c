@@ -17,7 +17,7 @@
 
 #include <kernel/bin/shell.h>
 #include <kernel/logger.h>
-#include <kernel/idt/idt.h> /* idt_init() */
+#include <kernel/interrupts/idt.h> /* idt_init() */
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
 #include <kernel/graphics/graphics.h>
 #include <kernel/memory/heap.h>
@@ -61,18 +61,12 @@ void kernel_main(void)
 	pci_init();
 	ide_init();
 
-	paging_init();
-
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	pci_list_devices();
-	k_print("\n\n");
-	ide_dump_info();
-
 	shell_main();
 
-	while (1)
+	while (true)
 		asm("hlt");
 }

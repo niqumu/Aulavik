@@ -7,10 +7,10 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <kernel/idt/idt.h>
+#include <kernel/interrupts/idt.h>
 
-#include <kernel/driver/ports.h>
 #include <kernel/gdt/gdt.h>
+#include <kernel/interrupts/pic.h>
 #include <kernel/logger.h>
 
 /* defined in _idt.asm */
@@ -20,39 +20,6 @@ extern void *syscall_isr_stub;
 
 /* idt itself */
 uint64_t idt[IDT_MAX_ENTRIES];
-
-/* pic state */
-// TODO move pic to its own file it's messy here
-uint16_t pic_mask = 0xffff; /* all irqs masked until something changes */
-
-void idt_set_pic_mask(uint8_t irq, uint8_t masked)
-{
-	if (masked)
-		pic_mask |= (1 << irq);
-	else
-		pic_mask &= ~(1 << irq);
-
-	port_outb(PORT_PIC_MASTER_DATA, pic_mask & 0xff);
-	port_outb(PORT_PIC_SLAVE_DATA, pic_mask >> 8);
-}
-
-static void idt_configure_pic(void)
-{
-
-	/* start pic initialization */
-	port_outb(PORT_PIC_MASTER_COMMAND, 0x01 | 0x10);
-	port_outb(PORT_PIC_SLAVE_COMMAND, 0x01 | 0x10);
-
-	/* set offsets and set up master/slave cascade */
-	port_outb(PORT_PIC_MASTER_DATA, PIC_OFFSET);
-	port_outb(PORT_PIC_SLAVE_DATA, PIC_OFFSET + 8);
-	port_outb(PORT_PIC_MASTER_DATA, 0x04);
-	port_outb(PORT_PIC_SLAVE_DATA, 0x02);
-
-	/* enable 8086 mode */
-	port_outb(PORT_PIC_MASTER_DATA, 0x01);
-	port_outb(PORT_PIC_SLAVE_DATA, 0x01);
-}
 
 uint64_t idt_create_descriptor(uintptr_t base, uint8_t flags)
 {
@@ -83,7 +50,7 @@ void idt_init(void)
 	idt[128] = idt_create_descriptor((uintptr_t) syscall_isr_stub,
 			 FLAG_PRESENT | FLAG_PRIVILEGE_0 | FLAG_GATE_TYPE_INT);
 
-	idt_configure_pic();
+	pic_init();
 	load_idt((IDT_MAX_ENTRIES * DESCRIPTOR_SIZE) - 1, (uintptr_t) &idt[0]);
 
 	k_ok("Initialized IDT");

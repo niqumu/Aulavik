@@ -20,14 +20,14 @@ struct color {
 
 struct render_context {
 	uint8_t *framebuffer;
-	uint32_t framebuffer_size;
+	uint32_t framebuffer_size;      // the size of the framebuffer in bytes
 
-	uint32_t width;
-	uint32_t height;
+	uint32_t width;                 // pixel width of the framebuffer
+	uint32_t height;                // pixel height of the framebuffer
 
-	uint32_t bpp;
-	uint32_t pixel_width;
-	uint32_t pitch;
+	uint32_t bpp;                   // bits per pixel
+	uint32_t pixel_width;           // byte size of a pixel
+	uint32_t pitch;                 // byte size of a row
 };
 
 extern struct color background;
@@ -50,8 +50,12 @@ extern struct color color_15;
 
 struct render_context* graphics_get_context(void);
 
+/* draw a pixel at the specified location, in the specified color. for bulk
+ * rendering (e.g. rectangles), the specialized functions are far faster */
 void graphics_plot_pixel(uint32_t x, uint32_t y, struct color color);
 
+/* draw a rectangle of the specified dimensions at the specified location,
+ * in the specified color */
 void graphics_rect(uint32_t x, uint32_t y, uint32_t width,
                    uint32_t height, struct color color);
 

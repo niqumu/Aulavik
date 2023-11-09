@@ -9,6 +9,7 @@
 
 #include <kernel/kernel.h>
 
+#include <kernel/driver/ide.h>
 #include <kernel/driver/keyboard.h>
 #include <kernel/driver/ps2.h>
 #include <kernel/driver/pci.h>
@@ -20,6 +21,7 @@
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
 #include <kernel/graphics/graphics.h>
 #include <kernel/memory/heap.h>
+#include <kernel/memory/paging.h>
 #include <kernel/terminal.h>
 
 multiboot_info_t *mb_info;
@@ -48,7 +50,6 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 __attribute__((unused, __noreturn__))
 void kernel_main(void)
 {
-//	terminal_init();
 	graphics_init();
 	terminal_init(graphics_get_context());
 	gdt_init();
@@ -58,6 +59,7 @@ void kernel_main(void)
 	ps2_init();
 	keyboard_init();
 	pci_init();
+	ide_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,

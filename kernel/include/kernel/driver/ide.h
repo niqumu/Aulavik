@@ -1,4 +1,4 @@
-/*====------------------ ata.c - ATA disk driver header ------------------====*\
+/*====------------------ ide.h - IDE disk driver header ------------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -7,8 +7,8 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef DRIVER_ATA_H
-#define DRIVER_ATA_H
+#ifndef DRIVER_IDE_H
+#define DRIVER_IDE_H
 
 #include <stdint.h>
 
@@ -56,7 +56,7 @@
 #define ATA_MASTER      0
 #define ATA_SLAVE       1
 
-struct ata_device {
+struct ide_device {
 	uint8_t present;
 	uint8_t secondary;
 	uint8_t slave;
@@ -68,8 +68,6 @@ struct ata_device {
 	char name[64];
 };
 
-void init_ata(uint32_t primary_addr, uint32_t primary_ctrl_addr,
-	      uint32_t secondary_addr, uint32_t secondary_ctrl_addr,
-	      uint32_t bus_master);
+void ide_init();
 
-#endif /* DRIVER_ATA_H */
+#endif /* DRIVER_IDE_H */

@@ -70,7 +70,7 @@ extern bool scanned;
 
 /* returns a pointer to the list of devices, setting device_count to the
  *   number of devices present */
-struct pci_device* get_pci_devices(int *device_count);
+struct pci_device* pci_get_devices(int *device_count);
 
 /* get the vendor id of the device at the given location */
 uint16_t pci_get_vendor(uint8_t bus, uint8_t slot, uint8_t function);
@@ -91,6 +91,8 @@ uint8_t pci_get_header_type(uint8_t bus, uint8_t slot, uint8_t function);
 bool pci_is_multifunction(uint8_t bus, uint8_t slot);
 
 void pci_list_devices(void);
+
+void pci_scan(void);
 
 void pci_init(void);
 

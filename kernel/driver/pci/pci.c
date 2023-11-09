@@ -23,7 +23,7 @@ bool scanned = false;
 
 /* returns a pointer to the list of devices, setting device_count to the
  *   number of devices present */
-struct pci_device* get_pci_devices(int *device_count)
+struct pci_device* pci_get_devices(int *device_count)
 {
 	/* if something is somehow trying to fetch the devices before we've
 	 * scanned them, stop and scan first */
@@ -97,18 +97,23 @@ bool pci_is_multifunction(uint8_t bus, uint8_t slot)
 
 static void pci_list_functions(struct pci_device device)
 {
+	if (!device.function_count)
+		return;
+
+	k_print("  Functions:");
+
 	for (int f = 0; f < device.function_count; f++) {
 		struct pci_function func = device.functions[f];
 
 		if (func.subclass_code) {
-			k_print("   \e[90m|\e[97m %d: vendor: \e[94m%x\e[97m, "
-				"ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m, "
-				"subclass: \e[94m%x\e[97m", f,
+			k_print("   \e[90m|\e[97m %d: vendor: \e[92m%x\e[97m, "
+				"ID: \e[92m%x\e[97m, class: \e[92m%x\e[97m, "
+				"subclass: \e[92m%x\e[97m", f,
 			        func.vendor_id, func.device_id,
 			        func.class_code, func.subclass_code);
 		} else {
-			k_print("   \e[90m|\e[97m %d: vendor: \e[94m%x\e[97m, "
-				"ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m", f,
+			k_print("   \e[90m|\e[97m %d: vendor: \e[92m%x\e[97m, "
+				"ID: \e[92m%x\e[97m, class: \e[92m%x\e[97m", f,
 			        func.vendor_id, func.device_id,
 			        func.class_code);
 		}
@@ -118,22 +123,29 @@ static void pci_list_functions(struct pci_device device)
 /* print a list of all devices and their functions */
 void pci_list_devices(void)
 {
+	k_print("%d PCI devices present\n", pci_device_count);
+
 	for (int index = 0; index < pci_device_count; index++) {
 		struct pci_device device = pci_devices[index];
 
 		if (device.subclass_code) {
-			k_print("Device %d: vendor: \e[94m%x\e[97m, ID: \e[94m%x\e[97m, "
-			        "class: \e[94m%x\e[97m, subclass: \e[94m%x\e[97m", index,
+			k_print("Device \e[96m%d\e[97m: vendor: \e[94m%x\e[97m,"
+				" ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m, "
+				"subclass: \e[94m%x\e[97m", index,
 			        device.vendor_id, device.device_id,
 			        device.class_code, device.subclass_code);
 		} else {
-			k_print("Device %d: vendor: \e[94m%x\e[97m, "
-				"ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m",
+			k_print("Device \e[96m%d\e[97m: vendor: \e[94m%x\e[97m,"
+				" ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m",
 			        index, device.vendor_id, device.device_id,
 			        device.class_code);
 		}
 
+		k_print("  Device location: bus: %d, slot: %d",
+			device.bus, device.slot);
+
 		pci_list_functions(device);
+		k_print("");
 	}
 }
 

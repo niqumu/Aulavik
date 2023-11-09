@@ -44,11 +44,13 @@ void ide_dump_info(void)
 		struct ide_device device = ide_get_devices()[i];
 
 		if (!device.present) {
-			k_print(" \e[90m|\e[37m %d: absent\e[97m", i);
+			k_print(" \e[90m|\e[37m %d: (not detected)\e[97m", i);
 			continue;
 		}
 
-		k_print(" \e[90m|\e[97m %d: %s %s", i, device.channel ?
-			"Secondary" : "Primary", device.drive ? "slave" : "master");
+//		k_print(" \e[90m|\e[97m %d: %s %s", i, device.channel ?
+//			"Secondary" : "Primary", device.drive ? "slave" : "master");
+
+		k_print(" \e[90m|\e[97m %d: \"%s\": %d bytes", i, device.name, device.size);
 	}
 }

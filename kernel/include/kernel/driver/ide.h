@@ -99,6 +99,19 @@
 #define ATA_ERROR_UNCORRECTABLE 0b01000000
 #define ATA_ERROR_BAD_BLOCK     0b10000000
 
+/* offsets of values in the identification buffer */
+#define ATA_IDENTIFY_TYPE               0
+#define ATA_IDENTIFY_CYLINDERS          2
+#define ATA_IDENTIFY_HEADS              6
+#define ATA_IDENTIFY_SECTORS            12
+#define ATA_IDENTIFY_SERIAL             20
+#define ATA_IDENTIFY_MODEL              54
+#define ATA_IDENTIFY_CAPABILITIES       98
+#define ATA_IDENTIFY_FIELD_VALID        106
+#define ATA_IDENTIFY_MAX_LBA            120
+#define ATA_IDENTIFY_COMMAND_SETS       164
+#define ATA_IDENTIFY_MAX_LBA_EXT        200
+
 #define ATA_READ        0
 #define ATA_WRITE       1
 
@@ -137,6 +150,8 @@ struct ide_device {
 	uint16_t capabilities;
 	uint32_t command_sets;
 	uint32_t sectors;
+
+	uint64_t size;
 	char name[64];
 };
 

@@ -13,7 +13,12 @@
 #include <kernel/logger.h>
 
 struct ide_device ide_devices[4];
+uint8_t drives = 0;
+
 struct ide_controller ide_controller;
+
+uint8_t ide_buffer[2048] = {0};
+static uint8_t atapi_packet[12] = {0xab, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 volatile bool waiting = false;
 
@@ -40,6 +45,27 @@ void ide_wait(void)
 		;
 }
 
+uint32_t ide_read_dword(uint8_t channel, uint8_t registr)
+{
+	if (channel == ATA_CHANNEL_PRIMARY) {
+		if (registr >= 10) { /* register on control port */
+			uint16_t port = ide_controller.primary_ctrl_port;
+			return port_inl(port + registr - 10);
+		} else { /* register on main port */
+			uint16_t port = ide_controller.primary_port;
+			return port_inl(port + registr);
+		}
+	} else { /* secondary channel */
+		if (registr >= 10) { /* register on control port */
+			uint16_t port = ide_controller.secondary_ctrl_port;
+			return port_inl(port + registr - 10);
+		} else { /* register on main port */
+			uint16_t port = ide_controller.secondary_port;
+			return port_inl(port + registr);
+		}
+	}
+}
+
 uint8_t ide_read_byte(uint8_t channel, uint8_t registr)
 {
 	if (channel == ATA_CHANNEL_PRIMARY) {
@@ -47,7 +73,7 @@ uint8_t ide_read_byte(uint8_t channel, uint8_t registr)
 			uint16_t port = ide_controller.primary_ctrl_port;
 			return port_inb(port + registr - 10);
 		} else { /* register on main port */
-			uint16_t port =ide_controller.primary_port;
+			uint16_t port = ide_controller.primary_port;
 			return port_inb(port + registr);
 		}
 	} else { /* secondary channel */
@@ -55,7 +81,7 @@ uint8_t ide_read_byte(uint8_t channel, uint8_t registr)
 			uint16_t port = ide_controller.secondary_ctrl_port;
 			return port_inb(port + registr - 10);
 		} else { /* register on main port */
-			uint16_t port =ide_controller.secondary_port;
+			uint16_t port = ide_controller.secondary_port;
 			return port_inb(port + registr);
 		}
 	}
@@ -69,7 +95,7 @@ void ide_write_byte(uint8_t channel, uint8_t registr, uint8_t data)
 			port_outb(port + registr - 10, data);
 			return;
 		} else { /* register on main port */
-			uint16_t port =ide_controller.primary_port;
+			uint16_t port = ide_controller.primary_port;
 			port_outb(port + registr, data);
 			return;
 		}
@@ -79,10 +105,21 @@ void ide_write_byte(uint8_t channel, uint8_t registr, uint8_t data)
 			port_outb(port + registr - 10, data);
 			return;
 		} else { /* register on main port */
-			uint16_t port =ide_controller.secondary_port;
+			uint16_t port = ide_controller.secondary_port;
 			port_outb(port + registr, data);
 			return;
 		}
+	}
+}
+
+void ide_read_buffer(uint8_t channel, uint8_t registr)
+{
+	for (int i = 0; i < 512; i += 4) {
+		uint32_t data = ide_read_dword(channel, registr);
+		ide_buffer[i + 1] = (data >> 0) & 0xff;
+		ide_buffer[i + 0] = (data >> 8) & 0xff;
+		ide_buffer[i + 3] = (data >> 16) & 0xff;
+		ide_buffer[i + 2] = (data >> 24) & 0xff;
 	}
 }
 
@@ -150,7 +187,7 @@ void ide_init(void) {
 	ide_scan();
 
 	if (!ide_controller.function.vendor_id) {
-		k_warn("IDE: No IDE controller found!");
+		k_error("IDE: No IDE controller found!");
 		return;
 	}
 
@@ -212,11 +249,40 @@ void ide_init(void) {
 			}
 
 			/* todo read id space */
+			ide_read_buffer(channel, ATA_REGISTER_DATA);
 
 			ide_devices[index].present = true;
 			ide_devices[index].type = type;
 			ide_devices[index].channel = channel;
 			ide_devices[index].drive = drive;
+			ide_devices[index].signature = *((uint16_t*)(ide_buffer + ATA_IDENTIFY_TYPE));
+			ide_devices[index].capabilities = *((uint16_t *)(ide_buffer + ATA_IDENTIFY_CAPABILITIES));
+			ide_devices[index].command_sets = *((uint32_t *)(ide_buffer + ATA_IDENTIFY_COMMAND_SETS));
+
+			/* get size */
+			if (ide_devices[index].command_sets & (1 << 26))
+				ide_devices[index].size = *((uint64_t *)
+					(ide_buffer + ATA_IDENTIFY_MAX_LBA_EXT));
+			else
+				ide_devices[index].size = *((uint64_t *)
+					(ide_buffer + ATA_IDENTIFY_MAX_LBA));
+
+			/* get name */
+			for (int k = 0; k < 40; k ++) {
+				ide_devices[index].name[k] = ide_buffer[ATA_IDENTIFY_MODEL + k];
+			}
+
+			/* clean up the name */
+			for (int k = 39; k > 0; k--) {
+				if (ide_devices[index].name[k] != ' ') {
+					ide_devices[index].name[k + 1] = '\0';
+					break;
+				}
+			}
+
+			drives++;
 		}
 	}
+
+	k_ok("Loaded IDE driver, found %d drives", drives);
 }

@@ -20,6 +20,7 @@ struct color {
 
 struct render_context {
 	uint8_t *framebuffer;
+	uint32_t framebuffer_size;
 
 	uint32_t width;
 	uint32_t height;

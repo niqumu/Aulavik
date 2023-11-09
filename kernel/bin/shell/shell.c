@@ -14,6 +14,7 @@
 #include <kernel/terminal.h>
 #include "commands/info_cmd.h"
 #include "commands/fetch_cmd.h"
+#include "commands/clear_cmd.h"
 
 struct shell_command commands[16];
 
@@ -48,6 +49,7 @@ void shell_main(void)
 {
 	commands[0] = *info_init();
 	commands[1] = *fetch_init();
+	commands[2] = *clear_init();
 
 	while (alive) {
 		terminal_puts("\n\e[90m$ \e[97m");

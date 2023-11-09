@@ -37,15 +37,21 @@ struct ansi_state {
 struct terminal_state {
 	struct color color;
 	uint16_t x, y;
+	uint8_t ticks;
+	uint8_t cursor_type_ticks;
 };
 
-char* terminal_get_input();
+char* terminal_get_input(void);
 
 void terminal_handle_key(char c);
 
 void terminal_putc(char c);
 
 void terminal_puts(char *s);
+
+void terminal_tick(void);
+
+void terminal_clear(void);
 
 void terminal_init(struct render_context *context);
 

@@ -23,10 +23,11 @@ uint64_t idt[IDT_MAX_ENTRIES];
 
 /* pic state */
 // TODO move pic to its own file it's messy here
-uint16_t pic_mask;
+uint16_t pic_mask = 0xffff; /* all irqs masked until something changes */
 
 void idt_set_pic_mask(uint8_t irq, uint8_t masked)
 {
+	k_debug("1: %x", pic_mask);
 	if (masked)
 		pic_mask |= (1 << irq);
 	else
@@ -34,6 +35,7 @@ void idt_set_pic_mask(uint8_t irq, uint8_t masked)
 
 	port_outb(PORT_PIC_MASTER_DATA, pic_mask & 0xff);
 	port_outb(PORT_PIC_SLAVE_DATA, pic_mask >> 8);
+	k_debug("2: %x", pic_mask);
 }
 
 static void idt_configure_pic(void)
@@ -52,11 +54,6 @@ static void idt_configure_pic(void)
 	/* enable 8086 mode */
 	port_outb(PORT_PIC_MASTER_DATA, 0x01);
 	port_outb(PORT_PIC_SLAVE_DATA, 0x01);
-
-	/* disable all irqs until an appropriate driver enables them */
-	port_outb(PORT_PIC_MASTER_DATA, 0xff);
-	port_outb(PORT_PIC_SLAVE_DATA, 0xff);
-	pic_mask = 0xffff;
 }
 
 uint64_t idt_create_descriptor(uintptr_t base, uint8_t flags)

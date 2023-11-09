@@ -11,6 +11,8 @@
 
 #include <string.h>
 
+#include <kernel/idt/idt.h>
+
 struct render_context *render_context;
 
 struct ansi_state ansi_state;
@@ -20,7 +22,34 @@ volatile char input[512];
 uint16_t input_index;
 volatile bool enter_pressed, dirty = false;
 
-char* terminal_get_input()
+void terminal_handle_cursor(bool state)
+{
+	struct color color = state ? color_7 : background;
+	graphics_rect(terminal_state.x + 1, terminal_state.y + 9,
+	              char_width,char_height, color);
+}
+
+void terminal_tick(void)
+{
+	switch (terminal_state.ticks) {
+	case 7:
+		if (!terminal_state.cursor_type_ticks)
+			terminal_handle_cursor(false);
+
+		break;
+	case 14:
+		terminal_handle_cursor(true);
+		terminal_state.ticks = 0;
+		break;
+	}
+
+	terminal_state.ticks++;
+
+	if (terminal_state.cursor_type_ticks)
+		terminal_state.cursor_type_ticks--;
+}
+
+char* terminal_get_input(void)
 {
 	while (!enter_pressed)
 		;
@@ -140,6 +169,10 @@ static void terminal_parse_escape(char c)
 
 void terminal_putc(char c)
 {
+	/* remove the cursor */
+	graphics_rect(terminal_state.x + 1, terminal_state.y + 9,
+	              char_width,char_height, background);
+
 	if (ansi_state.escaped) {
 		terminal_parse_escape(c);
 		return;
@@ -178,12 +211,44 @@ void terminal_putc(char c)
 		terminal_state.x = TERMINAL_PADDING;
 		terminal_state.y += char_height + FR_LINE_SPACING;
 	}
+
+	/* scroll if y is too high */
+	if (terminal_state.y + TERMINAL_PADDING > render_context->height) {
+		/* todo this isn't easy and I can't think of a sane way */
+
+		uint16_t line_size = char_height + FR_LINE_SPACING;
+		uint16_t overscan = line_size * 10;
+		terminal_state.y -= overscan;
+
+		uint32_t i;
+		for (i = 0; i < render_context->framebuffer_size; i++) {
+			render_context->framebuffer[i] = render_context->
+				framebuffer[i +
+				(render_context->pitch * overscan)];
+		}
+
+		graphics_rect(0, render_context->height - overscan,
+			      render_context->width, overscan, background);
+	}
+
+	/* redraw cursor at the new position */
+	graphics_rect(terminal_state.x + 1, terminal_state.y + 9,
+	              char_width,char_height, color_7);
+	terminal_state.cursor_type_ticks = 3;
 }
 
 void terminal_puts(char *str)
 {
 	for (int i = 0; str[i]; i++)
 		terminal_putc(str[i]);
+}
+
+void terminal_clear(void)
+{
+	terminal_state.x = TERMINAL_PADDING;
+	terminal_state.y = TERMINAL_PADDING;
+	graphics_rect(0, 0, render_context->width,
+		      render_context->height, background);
 }
 
 void terminal_init(struct render_context *context)
@@ -193,4 +258,7 @@ void terminal_init(struct render_context *context)
 	terminal_state.x = TERMINAL_PADDING;
 	terminal_state.y = TERMINAL_PADDING;
 	terminal_state.color = color_15;
+
+	/* enable the clock for the cursor */
+	idt_set_pic_mask(0, 0);
 }

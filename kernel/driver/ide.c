@@ -18,11 +18,12 @@ void ide_scan_pci_device(struct pci_device device)
 	for (int j = 0; j < device.function_count; j++) {
 		struct pci_function function = device.functions[j];
 
-		if (function.class_code == PCI_CLASS_MASS_STORAGE) {
-			k_print("ATA: Storage controller at %d.%d:%d!",
-			        device.bus, device.slot,
-			        function.function_index);
-		}
+		if (function.class_code != PCI_CLASS_MASS_STORAGE)
+			continue;
+
+		k_print("IDE: Storage controller at %d.%d:%d!",
+		        device.bus, device.slot,
+		        function.function_index);
 	}
 }
 

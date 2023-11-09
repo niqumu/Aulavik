@@ -17,7 +17,7 @@
 void pci_scan_function(uint8_t bus, uint8_t slot, uint8_t function)
 {
 	uint32_t vendor_id = pci_get_vendor(bus, slot, function);
-	uint16_t device_id, class_code, subclass_code;
+	uint16_t device_id, class_code, subclass_code, revision, prog_if;
 
 	if (!vendor_id || vendor_id == PCI_VENDOR_NONE)
 		return; /* function doesn't exist */
@@ -25,6 +25,8 @@ void pci_scan_function(uint8_t bus, uint8_t slot, uint8_t function)
 	device_id = pci_get_device_id(bus, slot, function);
 	class_code = pci_get_class(bus, slot, function);
 	subclass_code = pci_get_subclass(bus, slot, function);
+	revision = pci_get_revision(bus, slot, function);
+	prog_if = pci_get_prog_ifs(bus, slot, function);
 
 	/* create and populate a function struct */
 	struct pci_function function_s;
@@ -32,6 +34,8 @@ void pci_scan_function(uint8_t bus, uint8_t slot, uint8_t function)
 	function_s.device_id = device_id;
 	function_s.class_code = class_code;
 	function_s.subclass_code = subclass_code;
+	function_s.device_revision = revision;
+	function_s.prog_if = prog_if;
 
 	/* add the function, increment function_count */
 	struct pci_device device_s = pci_devices[pci_device_count];
@@ -45,7 +49,7 @@ void pci_scan_function(uint8_t bus, uint8_t slot, uint8_t function)
 void pci_scan_device(uint8_t bus, uint8_t slot)
 {
 	uint32_t vendor_id = pci_get_vendor(bus, slot, 0);
-	uint16_t device_id, class_code, subclass_code;
+	uint16_t device_id, class_code, subclass_code, revision, prog_if;
 
 	if (!vendor_id || vendor_id == PCI_VENDOR_NONE)
 		return; /* device doesn't exist */
@@ -53,6 +57,8 @@ void pci_scan_device(uint8_t bus, uint8_t slot)
 	device_id = pci_get_device_id(bus, slot, 0);
 	class_code = pci_get_class(bus, slot, 0);
 	subclass_code = pci_get_subclass(bus, slot, 0);
+	revision = pci_get_revision(bus, slot, 0);
+	prog_if = pci_get_prog_ifs(bus, slot, 0);
 
 	pci_devices[pci_device_count].bus = bus;
 	pci_devices[pci_device_count].slot = slot;
@@ -61,6 +67,8 @@ void pci_scan_device(uint8_t bus, uint8_t slot)
 	pci_devices[pci_device_count].vendor_id = vendor_id;
 	pci_devices[pci_device_count].class_code = class_code;
 	pci_devices[pci_device_count].subclass_code = subclass_code;
+	pci_devices[pci_device_count].device_revision = revision;
+	pci_devices[pci_device_count].prog_if = prog_if;
 
 	/* if it's a multifunction device we need to scan its functions */
 	if (pci_is_multifunction(bus, slot)) {

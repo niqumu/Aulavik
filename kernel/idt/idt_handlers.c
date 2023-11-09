@@ -13,6 +13,8 @@
 
 #include <kernel/logger.h>
 #include <kernel/kernel.h>
+#include <kernel/terminal.h>
+#include <kernel/driver/ports.h>
 
 /* -----------------------------------
  *  Exceptions
@@ -271,7 +273,8 @@ __attribute__((unused)) void idt_handle_vec31(uint32_t error)
 /* clock */
 __attribute__((unused)) void idt_handle_vec80()
 {
-
+	terminal_tick();
+	port_pic_eoi();
 }
 
 /* keyboard */

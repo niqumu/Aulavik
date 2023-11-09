@@ -68,17 +68,33 @@ uint16_t pci_get_device_id(uint8_t bus, uint8_t slot, uint8_t function)
 /* get the class id of the device at the given location */
 uint8_t pci_get_class(uint8_t bus, uint8_t slot, uint8_t function)
 {
-	/* 10th byte of config */
-	uint16_t class_data = pci_config_rword(bus, slot, function, 10);
-	return (class_data >> 8) & 0xff;
+	/* 11th byte of config */
+	uint16_t byte = pci_config_rword(bus, slot, function, 10);
+	return (byte >> 8) & 0xff;
 }
 
 /* get the subclass id of the device at the given location */
 uint8_t pci_get_subclass(uint8_t bus, uint8_t slot, uint8_t function)
 {
-	/* 11th byte of config */
-	uint16_t class_data = pci_config_rword(bus, slot, function, 10);
-	return class_data & 0xff;
+	/* 10th byte of config */
+	uint16_t byte = pci_config_rword(bus, slot, function, 10);
+	return byte & 0xff;
+}
+
+/* get the programming interfaces of the device at the given location */
+uint8_t pci_get_prog_ifs(uint8_t bus, uint8_t slot, uint8_t function)
+{
+	/* 9th byte of config */
+	uint16_t byte = pci_config_rword(bus, slot, function, 8);
+	return (byte >> 8) & 0xff;
+}
+
+/* get the revision id of the device at the given location */
+uint8_t pci_get_revision(uint8_t bus, uint8_t slot, uint8_t function)
+{
+	/* 8th byte of config */
+	uint16_t byte = pci_config_rword(bus, slot, function, 8);
+	return byte & 0xff;
 }
 
 /* get the header type of the device at the given location */
@@ -100,23 +116,17 @@ static void pci_list_functions(struct pci_device device)
 	if (!device.function_count)
 		return;
 
-	k_print("  Functions:");
+	k_print(" \e[90m|\e[97m Functions:");
 
 	for (int f = 0; f < device.function_count; f++) {
 		struct pci_function func = device.functions[f];
 
-		if (func.subclass_code) {
-			k_print("   \e[90m|\e[97m %d: vendor: \e[92m%x\e[97m, "
-				"ID: \e[92m%x\e[97m, class: \e[92m%x\e[97m, "
-				"subclass: \e[92m%x\e[97m", f,
-			        func.vendor_id, func.device_id,
-			        func.class_code, func.subclass_code);
-		} else {
-			k_print("   \e[90m|\e[97m %d: vendor: \e[92m%x\e[97m, "
-				"ID: \e[92m%x\e[97m, class: \e[92m%x\e[97m", f,
-			        func.vendor_id, func.device_id,
-			        func.class_code);
-		}
+		k_print(" \e[90m|\e[97m \e[90m|\e[97m %d: vendor: "
+		        "\e[92m%x\e[97m, ID: \e[92m%x\e[97m, "
+		        "type: \e[92m%x\e[97m, subclass: \e[92m%x"
+		        "\e[97m, interface: \e[92m%x\e[97m", f, func.vendor_id,
+			func.device_id, func.class_code, func.subclass_code,
+			func.prog_if);
 	}
 }
 
@@ -128,20 +138,16 @@ void pci_list_devices(void)
 	for (int index = 0; index < pci_device_count; index++) {
 		struct pci_device device = pci_devices[index];
 
-		if (device.subclass_code) {
-			k_print("Device \e[96m%d\e[97m: vendor: \e[94m%x\e[97m,"
-				" ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m, "
-				"subclass: \e[94m%x\e[97m", index,
-			        device.vendor_id, device.device_id,
-			        device.class_code, device.subclass_code);
-		} else {
-			k_print("Device \e[96m%d\e[97m: vendor: \e[94m%x\e[97m,"
-				" ID: \e[94m%x\e[97m, class: \e[94m%x\e[97m",
-			        index, device.vendor_id, device.device_id,
-			        device.class_code);
-		}
+		k_print("Device \e[96m%d\e[97m: device type: \e[94m%x\e[97m, "
+			"device subclass: \e[94m%x\e[97m, device interface: "
+			"\e[94m%x\e[97m", index, device.class_code,
+			device.subclass_code, device.prog_if);
 
-		k_print("  Device location: bus: %d, slot: %d",
+		k_print(" \e[90m|\e[97m Vendor: %x, device: %x, device "
+			"revision: %x", device.vendor_id, device.device_id,
+		        device.device_revision);
+
+		k_print(" \e[90m|\e[97m Device location: bus: %d, slot: %d",
 			device.bus, device.slot);
 
 		pci_list_functions(device);

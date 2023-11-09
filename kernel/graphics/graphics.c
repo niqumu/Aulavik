@@ -58,7 +58,9 @@ void graphics_init(void)
 	context.bpp = mb_info->framebuffer_bpp;
 	context.pixel_width = context.bpp / 8;
 	context.pitch = mb_info->framebuffer_pitch;
+	context.framebuffer_size = (context.height * context.pitch) +
+		(context.width * context.pixel_width);
 
-	/* draw the background */
+		/* draw the background */
 	graphics_rect(0, 0, context.width, context.height, background);
 }

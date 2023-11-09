@@ -9,8 +9,6 @@
 
 #include <kernel/driver/ports.h>
 
-#include <stdint.h> /* uint8_t, uint16_t */
-
 void port_outl(uint16_t port, uint32_t data)
 {
 	asm volatile ("outl %0, %1" :: "a" (data), "Nd" (port) : "memory");
@@ -42,11 +40,11 @@ void port_wait(void)
 
 void port_pic_eoi(void)
 {
-	port_outb(PORT_PIC_MASTER_COMMAND, PORT_PIC_EOI);
+	port_outb(PORT_PIC_MASTER_COMMAND, PIC_EOI);
 }
 
 void port_pic_eoi_slave(void)
 {
-	port_outb(PORT_PIC_MASTER_COMMAND, PORT_PIC_EOI);
-	port_outb(PORT_PIC_SLAVE_COMMAND, PORT_PIC_EOI);
+	port_outb(PORT_PIC_MASTER_COMMAND, PIC_EOI);
+	port_outb(PORT_PIC_SLAVE_COMMAND, PIC_EOI);
 }

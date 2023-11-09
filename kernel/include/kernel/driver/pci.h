@@ -19,9 +19,9 @@
 #define PCI_MAX_SLOTS           32
 #define PCI_MAX_FUNCTIONS       8
 
-#define PCI_HEADER_STANDARD     1
-#define PCI_HEADER_PCI_PCI      2
-#define PCI_HEADER_CARDBUS      3
+#define PCI_HEADER_STANDARD     0
+#define PCI_HEADER_PCI_PCI      1
+#define PCI_HEADER_CARDBUS      2
 
 /* todo load all these from a file eventually, there are
  *   a lot of these, and thousands of vendors */
@@ -46,15 +46,21 @@
 struct pci_function {
 
 	/* location */
-	uint8_t function_index;
+	struct pci_device *parent_device;
+	uint8_t index;
 
 	/* header info */
+	uint8_t header_type;
 	uint16_t vendor_id;
 	uint16_t device_id;
 	uint8_t device_revision;
 	uint8_t class_code;
 	uint8_t subclass_code;
 	uint8_t prog_if;
+
+	/* base address registers */
+	uint32_t bars[6]; /* all six BARs are not guaranteed to exist, the
+			     number present depends on the header type. */
 };
 
 /* representation of a pci device */
@@ -65,12 +71,17 @@ struct pci_device {
 	uint8_t slot;
 
 	/* header info */
+	uint8_t header_type;
 	uint16_t vendor_id;
 	uint16_t device_id;
 	uint8_t device_revision;
 	uint8_t class_code;
 	uint8_t subclass_code;
 	uint8_t prog_if;
+
+	/* base address registers */
+	uint32_t bars[6]; /* all six BARs are not guaranteed to exist, the
+			     number present depends on the header type. */
 
 	/* functions */
 	struct pci_function functions[PCI_MAX_FUNCTIONS];
@@ -108,6 +119,9 @@ uint8_t pci_get_revision(uint8_t bus, uint8_t slot, uint8_t function);
 
 /* get the header type of the device at the given location */
 uint8_t pci_get_header_type(uint8_t bus, uint8_t slot, uint8_t function);
+
+/* get the (bar)th base address register from the device */
+uint32_t pci_get_bar(uint8_t bus, uint8_t slot, uint8_t function, uint8_t bar);
 
 /* test if the device at the given location has functions */
 bool pci_is_multifunction(uint8_t bus, uint8_t slot);

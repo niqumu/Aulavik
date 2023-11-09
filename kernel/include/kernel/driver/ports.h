@@ -21,11 +21,13 @@
 #define PORT_PS2_READ_STATUS    0x64
 #define PORT_PS2_WRITE_CMD      0x64
 
-#define PORT_PIC_EOI    0x20
+#define PIC_EOI    0x20
 
+/* read/write 4 bytes to/from a port */
 void port_outl(uint16_t port, uint32_t data);
 uint32_t port_inl(uint16_t port);
 
+/* read/write a byte to/from a port */
 void port_outb(uint16_t port, uint8_t data);
 uint8_t port_inb(uint16_t port);
 

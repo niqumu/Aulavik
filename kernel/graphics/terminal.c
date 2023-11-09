@@ -25,7 +25,7 @@ volatile bool enter_pressed, dirty = false;
 void terminal_handle_cursor(bool state)
 {
 	struct color color = state ? color_7 : background;
-	graphics_rect(terminal_state.x + 1, terminal_state.y + 9,
+	graphics_rect(terminal_state.x + 1, terminal_state.y + 8,
 	              char_width,char_height, color);
 }
 
@@ -170,7 +170,7 @@ static void terminal_parse_escape(char c)
 void terminal_putc(char c)
 {
 	/* remove the cursor */
-	graphics_rect(terminal_state.x + 1, terminal_state.y + 9,
+	graphics_rect(terminal_state.x + 1, terminal_state.y + 8,
 	              char_width,char_height, background);
 
 	if (ansi_state.escaped) {
@@ -232,7 +232,7 @@ void terminal_putc(char c)
 	}
 
 	/* redraw cursor at the new position */
-	graphics_rect(terminal_state.x + 1, terminal_state.y + 9,
+	graphics_rect(terminal_state.x + 1, terminal_state.y + 8,
 	              char_width,char_height, color_7);
 	terminal_state.cursor_type_ticks = 3;
 }

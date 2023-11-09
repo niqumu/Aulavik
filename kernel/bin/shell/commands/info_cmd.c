@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <kernel/driver/ide.h>
 #include <kernel/driver/pci.h>
 #include <kernel/bin/shell.h>
 
@@ -47,7 +48,8 @@ void cpuid(void)
 bool execute_info_command(char *cmd)
 {
 	if (!cmd[4]) {
-		printf("Invalid usage: supply an argument\n");
+		printf("Invalid usage: supply an option\n");
+		printf("Valid options: \"cpu\", \"ide\", \"pci\"\n");
 		return false;
 	}
 
@@ -55,11 +57,15 @@ bool execute_info_command(char *cmd)
 		case 'c':
 			cpuid();
 			return true;
+		case 'i':
+			ide_dump_info();
+			return true;
 		case 'p':
 			pci_list_devices();
 			return true;
 		default:
-			printf("Unrecognized argument: \"%s\"\n", &cmd[5]);
+			printf("Unrecognized option: \"%s\"\n", &cmd[5]);
+			printf("Valid options: \"cpu\", \"ide\", \"pci\"\n");
 			return false;
 	}
 

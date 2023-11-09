@@ -44,7 +44,7 @@ uint16_t pci_config_rword(uint8_t bus, uint8_t slot,
 	/* find configuration address */
 	uint32_t address = (uint32_t) ((bus_l << 16) | (slot_l << 11) |
 	                               (func_l << 8) | (offset & 0xfc));
-	address |= 0x80000000; /* enable bit */
+	address |= 0x80000000; /* enable bit for config access */
 
 	/* request the config by address */
 	port_outl(PCI_CONFIG_ADDRESS, address);
@@ -104,6 +104,15 @@ uint8_t pci_get_header_type(uint8_t bus, uint8_t slot, uint8_t function)
 	return header_data & 0xf;
 }
 
+/* get the (bar)th base address register from the device */
+uint32_t pci_get_bar(uint8_t bus, uint8_t slot, uint8_t function, uint8_t bar)
+{
+	uint8_t offset = 16 + (4 * bar);
+	uint32_t lower_bar = pci_config_rword(bus, slot, function, offset);
+	uint32_t upper_bar = pci_config_rword(bus, slot, function, offset + 2);
+	return lower_bar | (upper_bar << 16);
+}
+
 /* test if the device at the given location has functions */
 bool pci_is_multifunction(uint8_t bus, uint8_t slot)
 {
@@ -121,7 +130,7 @@ static void pci_list_functions(struct pci_device device)
 	for (int f = 0; f < device.function_count; f++) {
 		struct pci_function func = device.functions[f];
 
-		k_print(" \e[90m|\e[97m \e[90m|\e[97m %d: vendor: "
+		k_print(" \e[90m|\e[97m  \e[90m|\e[97m %d: vendor: "
 		        "\e[92m%x\e[97m, ID: \e[92m%x\e[97m, "
 		        "type: \e[92m%x\e[97m, subclass: \e[92m%x"
 		        "\e[97m, interface: \e[92m%x\e[97m", f, func.vendor_id,

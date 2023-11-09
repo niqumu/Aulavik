@@ -11,8 +11,6 @@
 
 #include <stdbool.h>
 
-#include <kernel/graphics/graphics.h>
-#include <kernel/kernel.h>
 #include <kernel/terminal.h>
 
 struct shell_command clear_command;

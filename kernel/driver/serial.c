@@ -15,6 +15,8 @@
 #include <kernel/driver/ports.h>
 #include <kernel/logger.h>
 
+bool serial_enabled = false;
+
 static bool serial_write_ready(uint16_t port)
 {
 	return port_inb(port + REGISTER_PORT_LINE_STATUS) &
@@ -29,6 +31,9 @@ static bool serial_read_ready(uint16_t port)
 
 void serial_write(uint16_t port, uint8_t data)
 {
+	if (!serial_enabled)
+		return;
+
 	while (!serial_write_ready(port))
 		;
 
@@ -37,6 +42,9 @@ void serial_write(uint16_t port, uint8_t data)
 
 uint8_t serial_read(uint16_t port)
 {
+	if (!serial_enabled)
+		return 0;
+
 	while (!serial_read_ready(port))
 		;
 
@@ -45,15 +53,29 @@ uint8_t serial_read(uint16_t port)
 
 void serial_write_string(uint16_t port, char *data)
 {
+	if (!serial_enabled)
+		return;
+
 	while (*data)
 		serial_write(port, *data++);
 }
 
-void serial_init(uint16_t port, enum baud baud)
+void serial_init(enum baud baud)
 {
 	uint64_t *data = (uint64_t*) 0x400;
-	for (int port = 1; port <= 4; port++)
-		k_debug("serial: COM %d is assigned to %x", port, *data++);
+	uint16_t port1 = 0, port2 = 0, port;
+
+	k_debug("serial: COM 1 is assigned to %x", *data);
+	port1 = *data++;
+	k_debug("serial: COM 2 is assigned to %x", *data);
+	port2 = *data++;
+
+	if (!port1 && !port2) {
+		k_warn("serial: Disabling since no interface is present!");
+		return;
+	}
+
+	port = port1 ? port1 : port2;
 
 	port_outb(port + REGISTER_PORT_INT_ENABLE, 0);
 	port_outb(port + REGISTER_PORT_LINE_CONTROL, 0b10000000);
@@ -91,6 +113,8 @@ void serial_init(uint16_t port, enum baud baud)
 
 	k_ok("serial: UART check passed (sent %x got %x)", 0xae, in);
 	k_ok("serial: Set up serial port %x", port);
+
+	serial_enabled = true;
 
 	k_ok("Loaded serial driver (port: %x, baud: %x)", port, baud);
 }

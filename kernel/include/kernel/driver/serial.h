@@ -17,8 +17,6 @@
 /* serial port addresses, not always guaranteed to exist! */
 #define PORT_COM_1      0x3f8
 #define PORT_COM_2      0x2f8
-#define PORT_COM_3      0x3e8
-#define PORT_COM_4      0x2e8
 
 /* byte offsets */
 #define REGISTER_PORT_DATA              0
@@ -88,6 +86,6 @@ uint8_t serial_read(uint16_t port);
 void serial_write_string(uint16_t port, char *data);
 char* serial_read_string(uint16_t port);
 
-void serial_init(uint16_t port, enum baud);
+void serial_init(enum baud);
 
 #endif /* DRIVER_SERIAL_H */

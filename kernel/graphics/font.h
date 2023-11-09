@@ -12,16 +12,6 @@
 
 #include <stdint.h>
 
-// Header File for SSD1306 characters
-// Generated with TTF2BMH
-// Font Ubuntu Mono
-// Font Size: 24
-//extern uint8_t char_height;
-//extern uint8_t char_width[];
-//extern uint8_t* char_addr[];
-
 extern uint8_t characters[95][13];
-//extern uint8_t char_width;
-//extern uint8_t char_height;
 
 #endif

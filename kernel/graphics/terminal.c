@@ -57,7 +57,7 @@ char* terminal_get_input(void)
 
 	dirty = true;
 	enter_pressed = false;
-	return &input[0];
+	return (char *) &input[0];
 }
 
 void terminal_handle_key(char c)
@@ -91,30 +91,6 @@ void terminal_handle_key(char c)
 	terminal_putc(c);
 }
 
-/* converts an ANSI color code to a terminal color */
-static struct color get_ansi_color(uint8_t color)
-{
-	switch (color) {
-		case 30: return color_0;
-		case 31: return color_1;
-		case 32: return color_2;
-		case 33: return color_3;
-		case 34: return color_4;
-		case 35: return color_5;
-		case 36: return color_6;
-		case 37: return color_7;
-		case 90: return color_8;
-		case 91: return color_9;
-		case 92: return color_10;
-		case 93: return color_11;
-		case 94: return color_12;
-		case 95: return color_13;
-		case 96: return color_14;
-		case 97:
-		default: return color_15;
-	}
-}
-
 /* process ("run") the current escape sequence */
 static void terminal_process_escape()
 {
@@ -124,16 +100,24 @@ static void terminal_process_escape()
 
 		/* foreground provided */
 		if (ansi_state.sequence_part_count == 1) {
-			uint8_t fg_id = ansi_state.sequence_parts[0];
-			terminal_state.color = get_ansi_color(fg_id);
+
+			/* reset */
+			if (!ansi_state.sequence_parts[0]) {
+				terminal_state.foreground = color_15;
+				terminal_state.background = background;
+				return;
+			}
+
+			uint8_t fg = ansi_state.sequence_parts[0];
+			terminal_state.foreground = get_ansi_color(fg);
 		}
 
 		/* foreground and background provided */
 		else if (ansi_state.sequence_part_count == 2) {
-			uint8_t fg_id = ansi_state.sequence_parts[0];
-			terminal_state.color = get_ansi_color(fg_id);
-//			uint8_t bg_id = ansi_state.sequence_parts[1];
-//			terminal_state.color = get_ansi_color(fg_id);
+			uint8_t fg = ansi_state.sequence_parts[0];
+			terminal_state.foreground = get_ansi_color(fg);
+			uint8_t bg = ansi_state.sequence_parts[1];
+			terminal_state.background = get_ansi_color(bg - 10);
 		}
 	}
 }
@@ -198,8 +182,13 @@ void terminal_putc(char c)
 		ansi_state.escaped = true;
 		break;
 	default:
+		/* character background color */
+		graphics_rect(terminal_state.x, terminal_state.y - 1,
+		              font_width + 2,font_height + 3,
+			      terminal_state.background);
+
 		fr_render_char(terminal_state.x, terminal_state.y,
-			       c, terminal_state.color);
+			       c, terminal_state.foreground);
 		terminal_state.x += font_width + FR_KERNING;
 	}
 
@@ -253,7 +242,8 @@ void terminal_init(struct render_context *context)
 
 	terminal_state.x = TERMINAL_PADDING;
 	terminal_state.y = TERMINAL_PADDING;
-	terminal_state.color = color_15;
+	terminal_state.foreground = color_15;
+	terminal_state.background = background;
 
 	/* enable the clock for the cursor */
 	pic_set_mask(0, false);

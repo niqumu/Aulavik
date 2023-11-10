@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <kernel/driver/ide.h>
+#include <kernel/driver/ata.h>
 #include <kernel/driver/pci.h>
 #include <kernel/bin/shell.h>
 
@@ -49,23 +49,23 @@ bool execute_info_command(char *cmd)
 {
 	if (!cmd[4]) {
 		printf("Invalid usage: supply an option\n");
-		printf("Valid options: \"cpu\", \"ide\", \"pci\"\n");
+		printf("Valid options: \"ata\", \"cpu\", \"pci\"\n");
 		return false;
 	}
 
 	switch (cmd[5]) {
+		case 'a':
+			ata_dump_info();
+			return true;
 		case 'c':
 			cpuid();
-			return true;
-		case 'i':
-			ide_dump_info();
 			return true;
 		case 'p':
 			pci_list_devices();
 			return true;
 		default:
 			printf("Unrecognized option: \"%s\"\n", &cmd[5]);
-			printf("Valid options: \"cpu\", \"ide\", \"pci\"\n");
+			printf("Valid options: \"ata\", \"cpu\", \"pci\"\n");
 			return false;
 	}
 

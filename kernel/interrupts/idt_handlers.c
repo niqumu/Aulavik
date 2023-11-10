@@ -15,7 +15,7 @@
 #include <kernel/kernel.h>
 #include <kernel/terminal.h>
 #include <kernel/driver/ports.h>
-#include "kernel/driver/ide.h"
+#include "kernel/driver/ata.h"
 
 /* -----------------------------------
  *  Exceptions
@@ -283,7 +283,7 @@ __attribute__((unused)) void idt_handle_vec31(uint32_t error)
 __attribute__((unused)) void idt_handle_vec80()
 {
 	terminal_tick();
-	ide_tick();
+	ata_tick();
 	port_pic_eoi();
 }
 

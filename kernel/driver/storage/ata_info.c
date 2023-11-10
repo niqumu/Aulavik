@@ -1,4 +1,4 @@
-/*====----------------- ide_info.c - IDE information tool ----------------====*\
+/*====------------- ata_info.c - Parallel ATA information tool -----------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -7,21 +7,20 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#include <kernel/driver/ide.h>
+#include <kernel/driver/ata.h>
 
-#include <kernel/driver/pci.h>
 #include <kernel/logger.h>
 
-void ide_dump_info(void)
+void ata_dump_info(void)
 {
-	struct ide_controller controller = ide_get_controller();
+	struct ata_controller controller = ata_get_controller();
 
 	if (!controller.function.vendor_id) {
-		k_print("\e[91mNo IDE controller present.");
+		k_print("\e[91mNo ATA/IDE controller present.");
 		return;
 	}
 
-	k_print("IDE controller located at %d.%d:%d\n", 
+	k_print("ATA controller located at %d.%d:%d\n",
 		controller.function.parent_device->bus,
 		controller.function.parent_device->slot, 
 		controller.function.index);
@@ -41,16 +40,14 @@ void ide_dump_info(void)
 	k_print("Connected drives");
 
 	for (int i = 0; i < 4; i++) {
-		struct ide_device device = ide_get_devices()[i];
+		struct ata_device device = ata_get_devices()[i];
 
 		if (!device.present) {
 			k_print(" \e[90m|\e[37m %d: (not detected)\e[97m", i);
 			continue;
 		}
 
-//		k_print(" \e[90m|\e[97m %d: %s %s", i, device.channel ?
-//			"Secondary" : "Primary", device.drive ? "slave" : "master");
-
-		k_print(" \e[90m|\e[97m %d: \"%s\": %d bytes", i, device.name, device.size);
+		k_print(" \e[90m|\e[97m %d: \"%s\": %d bytes", i,
+			device.name, device.size);
 	}
 }

@@ -9,7 +9,7 @@
 
 #include <kernel/kernel.h>
 
-#include <kernel/driver/ide.h>
+#include <kernel/driver/ata.h>
 #include <kernel/driver/keyboard.h>
 #include <kernel/driver/ps2.h>
 #include <kernel/driver/pci.h>
@@ -59,7 +59,7 @@ void kernel_main(void)
 	ps2_init();
 	keyboard_init();
 	pci_init();
-	ide_init();
+	ata_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,

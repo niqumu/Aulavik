@@ -1,4 +1,4 @@
-/*====------------------ ide.h - IDE disk driver header ------------------====*\
+/*====-------------- ata.h - Parallel ATA disk driver header -------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -7,8 +7,8 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef DRIVER_IDE_H
-#define DRIVER_IDE_H
+#ifndef DRIVER_ATA_H
+#define DRIVER_ATA_H
 
 #include <stdint.h>
 
@@ -33,6 +33,9 @@
 #define ATA_CHANNEL_PRIMARY             0
 #define ATA_CHANNEL_SECONDARY           1
 
+#define ATA_CAPABILITIES_LBA            0x200
+#define ATA_LBA28_MAX                   0x10000000
+
 /* ------------------------------------------ */
 /*  Registers                                 */
 /* ------------------------------------------ */
@@ -42,20 +45,20 @@
 #define ATA_REGISTER_ERROR              1       // read only 
 #define ATA_REGISTER_FEATURES           1       // write only 
 #define ATA_REGISTER_SEC_COUNT_0        2       // read/write
-#define ATA_REGISTER_LBA_0              3       // read/write 
-#define ATA_REGISTER_LBA_1              4       // read/write 
-#define ATA_REGISTER_LBA_2              5       // read/write 
+#define ATA_REGISTER_LBA_0              3       // read/write  bits 0-7 of lba
+#define ATA_REGISTER_LBA_1              4       // read/write  bits 8-15 of lba
+#define ATA_REGISTER_LBA_2              5       // read/write  bits 16-25 of lba
 #define ATA_REGISTER_DRIVE_SELECT       6       // read/write 
 #define ATA_REGISTER_COMMAND            7       // write only 
 #define ATA_REGISTER_STATUS             7       // read only
 #define ATA_REGISTER_SEC_COUNT_1        8
-#define ATA_REGISTER_LBA_3              9
+#define ATA_REGISTER_LBA_3              9       // bits 24-31 of lba
 
 /* channel registers, offset from their base control port */
 /* the actual values are ten lower, but they have been raised by ten here
  *   to be able to be distinguished from base port offsets. */
-#define ATA_REGISTER_LBA_4              10
-#define ATA_REGISTER_LBA_5              11
+#define ATA_REGISTER_LBA_4              10      // bits 32-39 of lba
+#define ATA_REGISTER_LBA_5              11      // bits 40-47 of lba
 #define ATA_CTRL_REGISTER_STATUS_ALT    12      // read only
 #define ATA_CTRL_REGISTER_CONTROL       12      // write only
 #define ATA_CTRL_REGISTER_ADDRESS       13      // read only
@@ -115,7 +118,7 @@
 #define ATA_READ        0
 #define ATA_WRITE       1
 
-struct ide_controller {
+struct ata_controller {
 	struct pci_function function;
 
 	/* primary channel */
@@ -131,7 +134,7 @@ struct ide_controller {
 	uint8_t secondary_irq;
 };
 
-struct ide_device {
+struct ata_device {
 	bool present;
 
 #define ATA_CHANNEL_PRIMARY     0
@@ -146,23 +149,29 @@ struct ide_device {
 #define ATA_TYPE_ATAPI  1
 	uint8_t type;
 
+#define ATA_ADDRESSING_UNKNOWN  0
+#define ATA_ADDRESSING_CHS      1
+#define ATA_ADDRESSING_LBA28    2
+#define ATA_ADDRESSING_LBA48    3
+	uint8_t address_mode;
+
 	uint16_t signature;
 	uint16_t capabilities;
 	uint32_t command_sets;
 	uint32_t sectors;
 
 	uint64_t size;
-	char name[64];
+	char name[40];
 };
 
-struct ide_device* ide_get_devices(void);
+struct ata_device* ata_get_devices(void);
 
-struct ide_controller ide_get_controller(void);
+struct ata_controller ata_get_controller(void);
 
-void ide_tick(void);
+void ata_tick(void);
 
-void ide_dump_info(void);
+void ata_dump_info(void);
 
-void ide_init(void);
+void ata_init(void);
 
-#endif /* DRIVER_IDE_H */
+#endif /* DRIVER_ATA_H */

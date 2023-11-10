@@ -88,6 +88,8 @@ struct __attribute__((packed)) long_sys_segment {
 	uint8_t access;
 };
 
+extern uint32_t stack_top; /* boot.asm */
+
 uint64_t* gdt_get_descriptor(uint8_t index);
 
 /* creates and returns a segment descriptor with the provided data */

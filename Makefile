@@ -76,7 +76,7 @@ run:
 	#   drive, and the aulavik ISO as a CD-ROM. -d flag forces CD boot.
 	#
 	#   https://wiki.gentoo.org/wiki/QEMU/Options#Hard_drive
-	qemu-system-$(HOST_ARCH) -serial stdio -hdb fat:rw:./sysroot -cdrom ./aulavik.iso -boot d
+	qemu-system-$(HOST_ARCH) -d int -serial stdio -hdb fat:rw:./sysroot -cdrom ./aulavik.iso -boot d
 
 	#qemu-system-$(HOST_ARCH) -serial stdio -drive file="./aulavik.iso",
 	#media=disk -drive file=fat:rw:"./sysroot",format=raw

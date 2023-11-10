@@ -23,6 +23,7 @@
 #include <kernel/memory/heap.h>
 #include <kernel/memory/paging.h>
 #include <kernel/terminal.h>
+#include "kernel/interrupts/pic.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -65,11 +66,20 @@ void kernel_main(void)
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	gdt_jump_ring3();
+//	pic_set_mask(0, true);
+//	pic_set_mask(1, true);
+//	gdt_jump_ring3();
 
 //	shell_main();
 
 
+	while (true)
+		asm("hlt");
+}
+
+__attribute__((__noreturn__))
+void kernel_loop(void)
+{
 	while (true)
 		asm("hlt");
 }

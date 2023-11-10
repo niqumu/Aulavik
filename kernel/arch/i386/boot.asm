@@ -32,6 +32,8 @@ align 4
 	dd 1080
 	dd 0
 
+global stack_top
+
 section .bss
 align 16
 stack_bottom:
@@ -60,6 +62,9 @@ _start:
         ; Call the global constructors
         extern _init
         call _init
+
+        ; Reset the stack to remove garbage data from stack traces
+	xor ebp, ebp
 
 	; Call the high-level kernel and pass execution to it. 
 	extern kernel_main

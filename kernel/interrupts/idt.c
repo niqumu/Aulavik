@@ -48,7 +48,7 @@ void idt_init(void)
 
 	/* syscall */
 	idt[128] = idt_create_descriptor((uintptr_t) syscall_isr_stub,
-			 FLAG_PRESENT | FLAG_PRIVILEGE_0 | FLAG_GATE_TYPE_INT);
+			 FLAG_PRESENT | FLAG_PRIVILEGE_3 | FLAG_GATE_TYPE_INT);
 
 	pic_init();
 	load_idt((IDT_MAX_ENTRIES * DESCRIPTOR_SIZE) - 1, (uintptr_t) &idt[0]);

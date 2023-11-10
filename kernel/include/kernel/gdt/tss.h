@@ -9,10 +9,10 @@
 
 #include <stdint.h> /* uint16_t, uint32_t */
 
-#ifndef _KERNEL_TSS_H
-#define _KERNEL_TSS_H
+#ifndef KERNEL_TSS_H
+#define KERNEL_TSS_H
 
-typedef struct tss {
+struct tss {
 	uint32_t prev_tss;
 	uint32_t esp0;     /* stack pointer to load when switching to ring 0 */
 	uint32_t ss0;      /* stack segment to load when switching to ring 0 */
@@ -42,6 +42,6 @@ typedef struct tss {
 	uint32_t ldt;
 	uint16_t trap;
 	uint16_t iomap_base;
-} __attribute__((packed)) tss_t;
+} __attribute__((packed));
 
-#endif /* _KERNEL_TSS_H */
+#endif /* KERNEL_TSS_H */

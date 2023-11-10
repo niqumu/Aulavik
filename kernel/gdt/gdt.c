@@ -9,6 +9,8 @@
 
 #include <kernel/gdt/gdt.h>
 
+#include <string.h>
+
 #include <kernel/logger.h>
 #include <kernel/gdt/tss.h>
 
@@ -16,7 +18,7 @@
 uint64_t gdt[GDT_MAX_ENTRIES];
 
 /* tss */
-tss_t tss = {0};
+struct tss tss = {0};
 
 uint64_t* gdt_get_descriptor(uint8_t index)
 {
@@ -80,21 +82,23 @@ static void create_default_descriptors(void) {
 		0, 0xfffff, flags, access);
 
 	/* create task state segment */
-	access = (ACCESS_PRESENT | ACCESS_PRIVILEGE_0 | ACCESS_EXECUTABLE |
-		  ACCESS_ACCESSED);
-	gdt[GDT_SEGMENT_TASK_STATE] = gdt_create_descriptor(
-		(uint32_t) &tss, sizeof(tss_t), FLAG_SIZE, access);
+	access = (SYS_ACCESS_PRESENT | SYS_ACCESS_PRIVILEGE_0 |
+		  SYS_ACCESS_TSS_32_AVAIL);
+	gdt[GDT_SEGMENT_TSS] = gdt_create_descriptor(
+		(uint32_t) &tss, sizeof(struct tss), 0, access);
 }
 
 static void load_tss(void)
 {
-	/* 5 is the index of the task state segment in the gdt */
-	asm volatile ("ltr %0" :: "a" (5 * DESCRIPTOR_SIZE));
+	memset(&tss, 0, sizeof(struct tss));
+	asm volatile ("ltr %0" :: "a" (GDT_SEGMENT_TSS * DESCRIPTOR_SIZE));
 }
 
 void ring3_test(void)
 {
-	k_print("Hello from ring 3!"); // :(
+	asm volatile ("1: jmp 1b");
+
+//	k_print("Hello from ring 3!"); // :(
 }
 
 void gdt_init(void)

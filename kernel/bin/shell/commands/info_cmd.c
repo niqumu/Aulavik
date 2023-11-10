@@ -11,19 +11,22 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <kernel/driver/ata.h>
 #include <kernel/driver/pci.h>
 #include <kernel/bin/shell.h>
+#include <cpuid.h>
 
 struct shell_command info_command;
 
 void cpuid(void)
 {
 	unsigned char chars[16];
-	uint32_t ebx, ecx, edx;
+	uint32_t eax, ebx, ecx, edx;
 	asm volatile ("mov $0, %eax");
 	asm volatile ("cpuid");
+	asm volatile ("mov %%eax, %0" : "=a" (eax));
 	asm volatile ("mov %%ebx, %0" : "=b" (ebx));
 	asm volatile ("mov %%ecx, %0" : "=c" (ecx));
 	asm volatile ("mov %%edx, %0" : "=d" (edx));
@@ -42,7 +45,35 @@ void cpuid(void)
 	chars[11] = (ecx >> 24) & 0xff;
 	chars[12] = '\0';
 
+
+	unsigned int regs[12];
+	char model[sizeof(regs) + 1];
+
+	__cpuid(0x80000000, regs[0], regs[1], regs[2], regs[3]);
+
+	if (regs[0] < 0x80000004)
+		return;
+
+	__cpuid(0x80000002, regs[0], regs[1], regs[2], regs[3]);
+	__cpuid(0x80000003, regs[4], regs[5], regs[6], regs[7]);
+	__cpuid(0x80000004, regs[8], regs[9], regs[10], regs[11]);
+
+	memcpy(model, regs, sizeof(regs));
+	model[sizeof(regs)] = '\0';
+
 	printf("Vendor: %s\n", chars);
+	printf("  Model name: %s\n", model);
+
+	printf("    Max leaf: %x\n", eax);
+
+	asm volatile ("mov $1, %eax");
+	asm volatile ("cpuid");
+	asm volatile ("mov %%eax, %0" : "=a" (eax));
+
+	printf("    Stepping version: %d\n", eax & 0b1111);
+	printf("    Model ID: %d\n", (eax > 4) & 0b1111);
+	printf("    Family ID: %d\n", (eax > 8) & 0b1111);
+	printf("    Type: %d\n", (eax > 12) & 0b11);
 }
 
 bool execute_info_command(char *cmd)

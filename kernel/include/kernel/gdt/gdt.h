@@ -51,7 +51,7 @@
 #define GDT_SEGMENT_KERNEL_DATA 2
 #define GDT_SEGMENT_USER_CODE   3
 #define GDT_SEGMENT_USER_DATA   4
-#define GDT_SEGMENT_TASK_STATE  5
+#define GDT_SEGMENT_TSS  5
 
 /* the byte size of a single segment descriptor */
 #define DESCRIPTOR_SIZE 8

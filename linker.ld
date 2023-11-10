@@ -2,9 +2,7 @@ ENTRY(_start)
 
 SECTIONS
 {
-	/* I'll be honest, I have zero idea what I'm doing here, but mint says
-	     to use 2mb over 1mb, and I trust them, so... */
-        . = 2M;
+        . = 1M;
 
         .text BLOCK(4K) : ALIGN(4K)
         {

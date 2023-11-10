@@ -59,13 +59,16 @@ void kernel_main(void)
 	ps2_init();
 	keyboard_init();
 	pci_init();
-	ata_init();
+//	ata_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	shell_main();
+	gdt_jump_ring3();
+
+//	shell_main();
+
 
 	while (true)
 		asm("hlt");

@@ -48,6 +48,7 @@ reload_registers:
 ;
 ; -----------------------------------------------------------------------------
 global gdt_jump_ring3
+extern ring3_test
 gdt_jump_ring3:
 	mov ax, (4 * 8) | 3     ; ring 3
 	mov ds, ax
@@ -62,5 +63,3 @@ gdt_jump_ring3:
 	push (3 * 8) | 3        ; code selector
 	push ring3_test         ; return address
 	iret
-
-extern ring3_test

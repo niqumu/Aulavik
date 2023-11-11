@@ -7,17 +7,17 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef _AULAVIK_H
-#define _AULAVIK_H
+#ifndef AULAVIK_H
+#define AULAVIK_H
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 int aulavik_main(int argc, char *argv[]);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
-#endif /* _AULAVIK_H */
+#endif /* AULAVIK_H */

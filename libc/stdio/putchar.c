@@ -1,16 +1,15 @@
 #include <stdio.h>
 
-#ifdef __is_libk
+#ifdef __AULAVIK_LIBK
 #include <kernel/terminal.h>
 #endif
 
 int putchar(int i)
 {
-#ifdef __is_libk
-        char c = (char) i;
-        terminal_putc(c);
+#ifdef __AULAVIK_LIBK
+        terminal_putc((char) i);
 #else
         // TODO implement and write system calls
-#endif
+#endif /* __AULAVIK_LIBK */
         return i;
 }

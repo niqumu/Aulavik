@@ -7,13 +7,17 @@ NASMFLAGS?=
 LIBS?=
 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
-CPPFLAGS:=$(CPPFLAGS) -D__is_libc -Iinclude
+CPPFLAGS:=$(CPPFLAGS) -D__AULAVIK_LIBC -Iinclude
 LIBK_CFLAGS:=$(CFLAGS)
 NASMFLAGS:=$(NASMFLAGS) -felf32
-LIBK_CPPFLAGS:=$(CPPFLAGS) -D__is_libk
+LIBK_CPPFLAGS:=$(CPPFLAGS) -D__AULAVIK_LIBK
 
 include $(ARCHDIR)/make.config
- 
+
+include stdio/make.config
+include stdlib/make.config
+include string/make.config
+
 CFLAGS:=$(CFLAGS) $(ARCH_CFLAGS)
 CPPFLAGS:=$(CPPFLAGS) $(ARCH_CPPFLAGS)
 LIBK_CFLAGS:=$(LIBK_CFLAGS) $(KERNEL_ARCH_CFLAGS)
@@ -21,21 +25,9 @@ LIBK_CPPFLAGS:=$(LIBK_CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
  
 FREEOBJS=\
 $(ARCH_FREEOBJS) \
-stdio/printf.o \
-stdio/putchar.o \
-stdio/puts.o \
-stdio/vsprintf.o \
-stdio/vprintf.o \
-stdlib/abort.o \
-stdlib/free.o \
-stdlib/malloc.o \
-string/memcmp.o \
-string/memcpy.o \
-string/memmove.o \
-string/memset.o \
-string/strcat.o \
-string/strcmp.o \
-string/strlen.o \
+$(LIBC_STDIO_OBJS) \
+$(LIBC_STDLIB_OBJS) \
+$(LIBC_STRING_OBJS) \
  
 HOSTEDOBJS=\
 $(ARCH_HOSTEDOBJS) \
@@ -46,11 +38,10 @@ $(HOSTEDOBJS) \
  
 LIBK_OBJS=$(FREEOBJS:.o=.libk.o)
  
-#BINARIES=libc.a libk.a # Not ready for libc yet.
-BINARIES=libk.a
+BINARIES=libc.a libk.a
  
 .PHONY: all clean install install-headers install-libs
-.SUFFIXES: .o .libk.o .c .asm
+.SUFFIXES: .o .libc.o .libk.o .c .asm
  
 all: $(BINARIES)
  

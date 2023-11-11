@@ -22,6 +22,7 @@ CFLAGS+= -Wall -Wextra
 # Each one is expected to have clean and install tasks
 MODULES=\
 libc\
+bin\
 kernel\
 
 # Targeted architecture for build
@@ -33,10 +34,12 @@ export ARCHDIR=arch/$(HOST_ARCH)
 # Architecture-specific toolchain
 export AR=$(HOST)-ar
 export CC=$(HOST)-gcc
+export LD=$(HOST)-ld
 
 # File system layout for libraries and headers
 export PREFIX=/usr
 export EXEC_PREFIX=$(PREFIX)
+export BINDIR=/bin
 export BOOTDIR=/boot
 export LIBDIR=$(EXEC_PREFIX)/lib
 export INCLUDEDIR=$(PREFIX)/include
@@ -52,8 +55,9 @@ export DESTDIR=$(SYSROOT)
 # Build Aulavik
 build:
 	mkdir -p $(SYSROOT)
-	$(foreach module, $(MODULES), $(MAKE) -C $(module) install-headers;) \
-	$(foreach module, $(MODULES), $(MAKE) -C $(module) install;)
+	# The || exit at the end stops the build process immediately on error
+	$(foreach module, $(MODULES), $(MAKE) -C $(module) install-headers || exit;) \
+	$(foreach module, $(MODULES), $(MAKE) -C $(module) install || exit;)
 
 # Clean binaries. Good first resort if Make is acting strange
 clean:
@@ -76,7 +80,7 @@ run:
 	#   drive, and the aulavik ISO as a CD-ROM. -d flag forces CD boot.
 	#
 	#   https://wiki.gentoo.org/wiki/QEMU/Options#Hard_drive
-	qemu-system-$(HOST_ARCH) -d int -serial stdio -hdb fat:rw:./sysroot -cdrom ./aulavik.iso -boot d
+	qemu-system-$(HOST_ARCH) -serial stdio -hdb fat:rw:./sysroot -cdrom ./aulavik.iso -boot d
 
 	#qemu-system-$(HOST_ARCH) -serial stdio -drive file="./aulavik.iso",
 	#media=disk -drive file=fat:rw:"./sysroot",format=raw

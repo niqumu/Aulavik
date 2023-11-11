@@ -28,8 +28,10 @@ ssize_t syscall_write(unsigned int fd, const void *buf, size_t count)
 	ASM("mov %0, %%esi" :: "g" (buf));
 	ASM("mov %0, %%edx" :: "g" (count));
 
+	/* return -1 if we got 1 when invoking the syscall */
 	if (syscall() == SYSCALL_KERNEL_ERR)
 		return SYSCALL_ERR;
 
+	/* return the amount of bytes written */
 	return count;
 }

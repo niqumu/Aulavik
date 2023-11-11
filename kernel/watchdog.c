@@ -5,22 +5,28 @@
  * with the works, so that any entity that uses the works is notified of this
  * instrument. These works are provided without any warranty.
  *
+ * Defines kernel methods k_except() and panic() for exception-handling and
+ * kernel panics, respectively, as defined in kernel.h
+ *
 \*====--------------------------------------------------------------------====*/
 
 #include <kernel/kernel.h>
 
 #include <stdint.h> /* uint_32_t */
+#include <stdio.h> /* printf() */
+#include <stdlib.h> /* abort() */
 
+#include <kernel/driver/serial.h>
 #include <kernel/logger.h>
 
-void k_except(int vec, char *nmon, char *name, uint32_t error, bool abort)
+void k_except(int vec, char *nmon, char *name, uint32_t error, bool abrt)
 {
 	k_print("");
 	k_error("Exception caught!");
 	k_print("----------------------------------------");
 	k_print("Exception: %x %s (%s)", vec, nmon, name);
 
-	k_print("error: %x, abort: %d", error, abort);
+	k_print("error: %x, abort: %d", error, abrt);
 	k_print("Stack dump:");
 
 	/* pointer to the bottom of the stack is located in ebp */
@@ -58,14 +64,27 @@ done_stack_trace:
 	k_print("  esp: %x\t\tstack pointer", esp);
 	k_print("  ebp: %x\t\tstack base pointer", ebp);
 
-//	if (abort)
-		panic("Abort");
+	if (abrt)
+		abort();
 }
 
 __attribute__((__noreturn__))
 void panic(char *msg)
 {
-	k_print("\nKernel panic: %s", msg);
+	/*
+	 * printing directly then using serial, rather than calling
+	 * k_print() (which does both), in case the system is in such an
+	 * unstable state that serial usage will prevent the message from
+	 * displaying on-screen
+	 */
+	printf("\nKernel panic: %s", msg);
+
+#ifdef SERIAL_LOGGING_ENABLED
+	serial_write_string(SERIAL_LOGGING_PORT, "Kernel panic: ");
+	serial_write_string(SERIAL_LOGGING_PORT, msg);
+	serial_write_string(SERIAL_LOGGING_PORT, "\n");
+#endif /* SERIAL_LOGGING_ENABLED */
+
 	while (1)
 		asm volatile ("cli; hlt");
 }

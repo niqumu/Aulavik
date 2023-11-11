@@ -100,7 +100,7 @@ __attribute__((unused)) void idt_handle_vec81();
 /* -----------------------------------------
  *  Syscall
  * --------------------------------------- */
-__attribute__((unused)) void idt_handle_vec128();
+__attribute__((unused)) void idt_handle_vec128(void);
 
 __attribute__((unused))
 void idt_handle_fault_error(uint16_t vec);

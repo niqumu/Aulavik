@@ -19,6 +19,7 @@ include gdt/make.config
 include graphics/make.config
 include interrupts/make.config
 include memory/make.config
+include syscalls/make.config
 include $(ARCHDIR)/make.config
  
 CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
@@ -36,6 +37,7 @@ $(KERNEL_GDT_OBJS) \
 $(KERNEL_GRAPHICS_OBJS) \
 $(KERNEL_INTERRUPT_OBJS) \
 $(KERNEL_MEMORY_OBJS) \
+$(KERNEL_SYSCALLS_OBJS) \
 kernel.o \
 logger.o \
 watchdog.o \

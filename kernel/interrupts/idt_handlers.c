@@ -9,14 +9,15 @@
 
 #include <kernel/interrupts/idt.h>
 
-#include <stddef.h>
-
+#include <kernel/driver/ata.h>
 #include <kernel/driver/keyboard.h>
-#include <kernel/logger.h>
-#include <kernel/kernel.h>
-#include <kernel/terminal.h>
 #include <kernel/driver/ports.h>
-#include "kernel/driver/ata.h"
+#include <kernel/kernel.h>
+#include <kernel/syscalls/syscalls.h>
+#include <kernel/terminal.h>
+#include <stddef.h>
+#include "kernel/logger.h"
+#include "../../libc/include/stdio.h"
 
 /* -----------------------------------
  *  Exceptions
@@ -298,24 +299,15 @@ __attribute__((unused)) void idt_handle_vec81()
 /* -----------------------------------
  *  syscall
  * ----------------------------------- */
-__attribute__((unused)) void idt_handle_vec128()
+__attribute__((unused)) void idt_handle_vec128(void)
 {
 	uint32_t syscall;
 	uint32_t edi, esi, edx;
-	asm volatile ("mov %%eax, %0" : "=g" (syscall));
-	asm volatile ("mov %%edi, %0" : "=g" (edi));
-	asm volatile ("mov %%esi, %0" : "=g" (esi));
-	asm volatile ("mov %%edx, %0" : "=g" (edx));
 
-	k_ok("Syscall %d called", syscall);
+	asm volatile ("mov %%eax, %0" : "=g" (syscall) :: "eax");
+	asm volatile ("mov %%edi, %0" : "=g" (edi) :: "edi");
+	asm volatile ("mov %%esi, %0" : "=g" (esi) :: "esi");
+	asm volatile ("mov %%edx, %0" : "=g" (edx) :: "edx");
 
-	if (syscall == 1) { // write, todo just here for testing
-		char *buffer = (char *) esi;
-		for (size_t i = 0; i < edx; i++) {
-			terminal_putc(buffer[i]);
-		}
-	}
-
-	// mark the syscall as successful
-	asm volatile ("mov $0, %eax");
+	syscalls_handle(syscall, edi, esi, edx);
 }

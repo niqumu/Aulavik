@@ -1,22 +1,30 @@
+/*====------------- abort.c - stdlib.h abort implementation --------------====*\
+ *
+ * This code is a part of the Aulavik project.
+ * Usage of these works is permitted provided that this instrument is retained
+ * with the works, so that any entity that uses the works is notified of this
+ * instrument. These works are provided without any warranty.
+ *
+\*====--------------------------------------------------------------------====*/
+
 #include <stdio.h>
 #include <stdlib.h>
 
-/*****************************************************************************
- * Function: causes abnormal program termination to occur, unless the signal
- *      SIGABRT is being caught and the signal handler does not return
- *
- * Return: It is impossible for abort() to return to its caller
- ****************************************************************************/
+#ifdef __AULAVIK_LIBK
+  #include <kernel/kernel.h>
+#endif /* __AULAVIK_LIBK */
+
 __attribute__((__noreturn__))
 void abort(void) {
-#ifdef __is_libk
-        // TODO add proper kernel panic
-        printf("kernel: panic: abort()\n");
-        asm volatile("hlt");
+#ifdef __AULAVIK_LIBK
+	panic("Abort");
 #else
         // TODO abnormally terminate the process similar to SIGABRT
         printf("abort()\n");
-#endif
-       while (1) { }
+#endif /* __AULAVIK_LIBK */
+
+	while (1)
+		;
+
       __builtin_unreachable();
 } 

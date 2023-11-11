@@ -9,8 +9,9 @@
 
 #include <kernel/interrupts/idt.h>
 
-#include <kernel/driver/keyboard.h>
+#include <stddef.h>
 
+#include <kernel/driver/keyboard.h>
 #include <kernel/logger.h>
 #include <kernel/kernel.h>
 #include <kernel/terminal.h>
@@ -212,36 +213,36 @@ __attribute__((unused)) void idt_handle_vec21(uint32_t error)
 	exception_depth--;
 }
 
-__attribute__((unused)) void idt_handle_vec22(uint32_t error)
+__attribute__((unused)) void idt_handle_vec22()
 {
 	idt_handle_reserved(22);
 }
 
-__attribute__((unused)) void idt_handle_vec23(uint32_t error)
+__attribute__((unused)) void idt_handle_vec23()
 {
 	idt_handle_reserved(23);
 }
 
 
-__attribute__((unused)) void idt_handle_vec24(uint32_t error)
+__attribute__((unused)) void idt_handle_vec24()
 {
 	idt_handle_reserved(24);
 }
 
 
-__attribute__((unused)) void idt_handle_vec25(uint32_t error)
+__attribute__((unused)) void idt_handle_vec25()
 {
 	idt_handle_reserved(25);
 }
 
 
-__attribute__((unused)) void idt_handle_vec26(uint32_t error)
+__attribute__((unused)) void idt_handle_vec26()
 {
 	idt_handle_reserved(27);
 }
 
 
-__attribute__((unused)) void idt_handle_vec27(uint32_t error)
+__attribute__((unused)) void idt_handle_vec27()
 {
 	idt_handle_reserved(27);
 }
@@ -299,5 +300,22 @@ __attribute__((unused)) void idt_handle_vec81()
  * ----------------------------------- */
 __attribute__((unused)) void idt_handle_vec128()
 {
-	k_ok("Syscall");
+	uint32_t syscall;
+	uint32_t edi, esi, edx;
+	asm volatile ("mov %%eax, %0" : "=g" (syscall));
+	asm volatile ("mov %%edi, %0" : "=g" (edi));
+	asm volatile ("mov %%esi, %0" : "=g" (esi));
+	asm volatile ("mov %%edx, %0" : "=g" (edx));
+
+	k_ok("Syscall %d called", syscall);
+
+	if (syscall == 1) { // write, todo just here for testing
+		char *buffer = (char *) esi;
+		for (size_t i = 0; i < edx; i++) {
+			terminal_putc(buffer[i]);
+		}
+	}
+
+	// mark the syscall as successful
+	asm volatile ("mov $0, %eax");
 }

@@ -15,6 +15,8 @@
 #include <kernel/driver/pci.h>
 #include <kernel/driver/serial.h>
 
+#include <aulavik/syscall.h>
+
 #include <kernel/bin/shell.h>
 #include <kernel/logger.h>
 #include <kernel/interrupts/idt.h> /* idt_init() */
@@ -65,6 +67,9 @@ void kernel_main(void)
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
+
+	char message[] = "hello world!";
+	syscall_write(0, message, sizeof(message));
 
 	shell_main();
 

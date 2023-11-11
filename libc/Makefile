@@ -14,6 +14,7 @@ LIBK_CPPFLAGS:=$(CPPFLAGS) -D__AULAVIK_LIBK
 
 include $(ARCHDIR)/make.config
 
+include aulavik/make.config
 include stdio/make.config
 include stdlib/make.config
 include string/make.config
@@ -25,6 +26,7 @@ LIBK_CPPFLAGS:=$(LIBK_CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
  
 FREEOBJS=\
 $(ARCH_FREEOBJS) \
+$(LIBC_AULAVIK_OBJS) \
 $(LIBC_STDIO_OBJS) \
 $(LIBC_STDLIB_OBJS) \
 $(LIBC_STRING_OBJS) \

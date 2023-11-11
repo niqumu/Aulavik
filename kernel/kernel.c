@@ -60,14 +60,13 @@ void kernel_main(void)
 	ps2_init();
 	keyboard_init();
 	pci_init();
-//	ata_init();
+	ata_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	char message[] = "hello world!\n";
-	syscall_write(0, message, sizeof(message));
+	gdt_jump_ring3();
 
 //	shell_main();
 

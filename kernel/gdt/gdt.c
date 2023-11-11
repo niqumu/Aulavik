@@ -89,17 +89,15 @@ static void create_default_descriptors(void) {
 		(uint32_t) &tss, sizeof(struct tss), 0, access);
 }
 
-// how the actual hell do you do this???
+// how the hell do you do this???
 static void load_tss(void)
 {
 	memset(&tss, 0, sizeof(struct tss));
 
-	// none of these work.
-	// tested in combination with every esp0 attempt
-//	tss.ss0 = GDT_SEGMENT_KERNEL_DATA;
-//	tss.ss0 = gdt[GDT_SEGMENT_KERNEL_DATA];
-//	tss.ss0 = 0x10; /* kernel data offset */
-//	tss.ss0 = (uint32_t) &gdt[GDT_SEGMENT_KERNEL_DATA];
+	tss.ss0 = GDT_SEGMENT_KERNEL_DATA * DESCRIPTOR_SIZE;
+	asm volatile ("mov %%esp, %0" : "=g" (tss.esp0));
+
+	asm volatile ("ltr %0" :: "a" (GDT_SEGMENT_TSS * DESCRIPTOR_SIZE));
 
 	// attempt 1: didn't work.
 //	tss.esp0 = (uint32_t) &kernel_loop;
@@ -116,7 +114,7 @@ static void load_tss(void)
 	// attempt 5: didn't work.
 //	asm volatile ("mov %%ebp, %0" : "=g" (tss.esp0));
 
-	asm volatile ("ltr %0" :: "a" (GDT_SEGMENT_TSS * DESCRIPTOR_SIZE));
+//	asm volatile ("ltr %0" :: "a" (GDT_SEGMENT_TSS * DESCRIPTOR_SIZE));
 }
 
 void ring3_test(void)

@@ -67,9 +67,9 @@ void kernel_main(void)
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	gdt_jump_ring3();
+//	gdt_jump_ring3();
 
-//	shell_main();
+	shell_main();
 
 	while (true)
 		asm("hlt");

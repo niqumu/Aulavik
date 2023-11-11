@@ -8,6 +8,7 @@
 \*====--------------------------------------------------------------------====*/
 
 #include <aulavik/syscall.h>
+#include <stdio.h>
 
 ssize_t syscall(void)
 {
@@ -23,6 +24,8 @@ ssize_t syscall(void)
  */
 ssize_t syscall_write(unsigned int fd, const void *buf, size_t count)
 {
+//	printf("2: \"%s\"\n", buf);
+
 	ASM("mov %0, %%eax" :: "a" (SYSCALL_WRITE));
 	ASM("mov %0, %%edi" :: "g" (fd));
 	ASM("mov %0, %%esi" :: "g" (buf));

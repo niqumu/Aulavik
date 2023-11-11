@@ -14,10 +14,13 @@
 #include <aulavik/syscall.h>
 
 #include <kernel/terminal.h>
+#include <stdio.h>
 #include "kernel/logger.h"
 
 void syscalls_write(uint32_t edi, uint32_t esi, uint32_t edx)
 {
+//	printf("4: \"%s\"\n", (char*) esi);
+
 	char *buffer = (char *) esi;
 	for (size_t i = 0; i < edx - 1; i++) {
 		terminal_putc(buffer[i]);
@@ -29,6 +32,8 @@ void syscalls_write(uint32_t edi, uint32_t esi, uint32_t edx)
 
 void syscalls_handle(uint32_t eax, uint32_t edi, uint32_t esi, uint32_t edx)
 {
+//	printf("3: \"%s\"\n", (char*) esi);
+
 	switch (eax) {
 	case SYSCALL_WRITE:
 		syscalls_write(edi, esi, edx);

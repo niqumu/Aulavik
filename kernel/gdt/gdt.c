@@ -15,6 +15,7 @@
 
 #include <kernel/logger.h>
 #include <kernel/gdt/tss.h>
+#include "kernel/bin/shell.h"
 
 /* gdt itself */
 uint64_t gdt[GDT_MAX_ENTRIES];
@@ -103,11 +104,12 @@ static void load_tss(void)
 
 void ring3_test(void)
 {
-//	char string[] = "hello from ring 3, from a syscall!";
-	char string[] = "hello!";
+//	char string[] = "a very long string that is sure to have issues! i "
+//	                "can't think of a single reason why this would work "
+//	                "here and not in ring 3...\n";
+//	char string[] = "this is a very long string that likes to crash!";
+	char string[] = "ring 3 syscall!";
 	syscall_write(0, &string, sizeof(string));
-
-//	printf("hello from ring 3, from plain printf!");
 
 	asm volatile ("1: jmp 1b");
 }

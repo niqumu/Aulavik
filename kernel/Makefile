@@ -12,6 +12,8 @@ LDFLAGS:=$(LDFLAGS)
 NASMFLAGS:=$(NASMFLAGS) -felf32
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
 
+include $(ARCHDIR)/make.config
+
 include bin/make.config
 include driver/Makefile
 include file/make.config
@@ -20,8 +22,8 @@ include graphics/make.config
 include interrupts/make.config
 include memory/make.config
 include syscalls/make.config
-include $(ARCHDIR)/make.config
- 
+include task/make.config
+
 CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
 CPPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
 LDFLAGS:=$(LDFLAGS) $(KERNEL_ARCH_LDFLAGS)
@@ -38,6 +40,7 @@ $(KERNEL_GRAPHICS_OBJS) \
 $(KERNEL_INTERRUPT_OBJS) \
 $(KERNEL_MEMORY_OBJS) \
 $(KERNEL_SYSCALLS_OBJS) \
+$(KERNEL_TASK_OBJS) \
 kernel.o \
 logger.o \
 watchdog.o \

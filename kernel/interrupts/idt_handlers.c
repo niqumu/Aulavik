@@ -18,6 +18,7 @@
 #include <stddef.h>
 #include "kernel/logger.h"
 #include "../../libc/include/stdio.h"
+#include "kernel/task/multitasking.h"
 
 /* -----------------------------------
  *  Exceptions
@@ -284,9 +285,29 @@ __attribute__((unused)) void idt_handle_vec31(uint32_t error)
 /* clock */
 __attribute__((unused)) void idt_handle_vec80()
 {
+	struct cpu_state old_state;
+	asm volatile ("mov %%esp, %0" : "=g" (old_state.esp));
+	asm volatile ("mov %%eax, %0" : "=g" (old_state.eax) :: "eax");
+	asm volatile ("mov %%ebx, %0" : "=g" (old_state.ebx) :: "ebx");
+	asm volatile ("mov %%ecx, %0" : "=g" (old_state.ecx) :: "ecx");
+	asm volatile ("mov %%edx, %0" : "=g" (old_state.edx) :: "edx");
+	asm volatile ("mov %%esi, %0" : "=g" (old_state.esi) :: "esi");
+	asm volatile ("mov %%edi, %0" : "=g" (old_state.edi) :: "edi");
+//	asm volatile ("mov %%ebp, %0" : "=g" (old_state.ebp) :: "ebp");
+
 	terminal_tick();
 	ata_tick();
 	port_pic_eoi();
+	
+	struct cpu_state new_state = multitasking_switch_next(old_state);
+	asm volatile ("mov %0, %%eax" :: "g" (new_state.eax) : "eax");
+	asm volatile ("mov %0, %%ebx" :: "g" (new_state.ebx) : "ebx");
+	asm volatile ("mov %0, %%ecx" :: "g" (new_state.ecx) : "ecx");
+	asm volatile ("mov %0, %%edx" :: "g" (new_state.edx) : "edx");
+	asm volatile ("mov %0, %%esi" :: "g" (new_state.esi) : "esi");
+	asm volatile ("mov %0, %%edi" :: "g" (new_state.edi) : "edi");
+//	asm volatile ("mov %0, %%ebp" :: "g" (new_state.ebp) : "ebp");
+	asm volatile ("mov %0, %%esp" :: "g" (new_state.esp));
 }
 
 /* keyboard */

@@ -24,6 +24,7 @@
 #include <kernel/memory/paging.h>
 #include <kernel/terminal.h>
 #include "../libc/include/aulavik/syscall.h"
+#include "kernel/interrupts/pic.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;

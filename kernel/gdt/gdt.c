@@ -9,6 +9,7 @@
 
 #include <kernel/gdt/gdt.h>
 
+#include <aulavik/syscall.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -43,7 +44,7 @@ uint64_t gdt_create_descriptor(uint32_t base, uint32_t limit,
 	uint64_t dest;
 	dest  = limit & 0x0000ffff;
 	dest |= (((uint64_t) limit) & 0xff0000) << 32;
-	dest |= (base & 0x00ffffff) << 16;
+	dest |= (((uint64_t) base) & 0x00ffffff) << 16;
 	dest |= (((uint64_t) base) & 0xff000000) << 32;
 	dest |= ((uint64_t) access) << 40;
 	dest |= ((uint64_t) flags) << 52;
@@ -98,37 +99,22 @@ static void load_tss(void)
 	asm volatile ("mov %%esp, %0" : "=g" (tss.esp0));
 
 	asm volatile ("ltr %0" :: "a" (GDT_SEGMENT_TSS * DESCRIPTOR_SIZE));
-
-	// attempt 1: didn't work.
-//	tss.esp0 = (uint32_t) &kernel_loop;
-
-	// attempt 2: didn't work.
-//	asm volatile ("mov %%esp, %0" : "=g" (tss.esp0));
-
-	// attempt 3: didn't work.
-//	tss.esp0 = stack_top;
-
-	// attempt 4: didn't work.
-//	tss.esp0 = stack_bottom;
-
-	// attempt 5: didn't work.
-//	asm volatile ("mov %%ebp, %0" : "=g" (tss.esp0));
-
-//	asm volatile ("ltr %0" :: "a" (GDT_SEGMENT_TSS * DESCRIPTOR_SIZE));
 }
 
 void ring3_test(void)
 {
-//	k_print("Hello from ring 3!"); // :(
-	printf("Hello from ring 3!");
-//
+//	char string[] = "hello from ring 3, from a syscall!";
+	char string[] = "hello!";
+	syscall_write(0, &string, sizeof(string));
+
+//	printf("hello from ring 3, from plain printf!");
+
 	asm volatile ("1: jmp 1b");
 }
 
 void gdt_init(void)
 {
 	create_default_descriptors();
-
 	load_gdt((GDT_MAX_ENTRIES * DESCRIPTOR_SIZE) - 1, (uint32_t) &gdt[0]);
 	reload_registers();
 	load_tss();

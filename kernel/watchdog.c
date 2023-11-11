@@ -64,7 +64,7 @@ done_stack_trace:
 	k_print("  esp: %x\t\tstack pointer", esp);
 	k_print("  ebp: %x\t\tstack base pointer", ebp);
 
-	if (abrt)
+//	if (abrt)
 		abort();
 }
 

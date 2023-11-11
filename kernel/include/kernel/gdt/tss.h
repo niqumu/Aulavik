@@ -42,6 +42,7 @@ struct tss {
 	uint32_t ldt;
 	uint16_t trap;
 	uint16_t iomap_base;
+	uint32_t ssp;
 } __attribute__((packed));
 
 #endif /* KERNEL_TSS_H */

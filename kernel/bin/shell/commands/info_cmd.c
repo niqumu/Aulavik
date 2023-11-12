@@ -1,4 +1,4 @@
-/*====------------------- FILENAME - SHORT DESCRIPTION -------------------====*\
+/*====------------------- info_cmd.c - Information tool ------------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that this instrument is retained
@@ -9,14 +9,15 @@
 
 #include "info_cmd.h"
 
+#include <cpuid.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <kernel/driver/ata.h>
+#include <kernel/driver/fat32.h>
 #include <kernel/driver/pci.h>
 #include <kernel/bin/shell.h>
-#include <cpuid.h>
 
 struct shell_command info_command;
 
@@ -80,24 +81,29 @@ bool execute_info_command(char *cmd)
 {
 	if (!cmd[4]) {
 		printf("Invalid usage: supply an option\n");
-		printf("Valid options: \"ata\", \"cpu\", \"pci\"\n");
+		printf("Valid options: \"ata\", \"fat\", "
+		       "\"cpu\", \"pci\"\n");
 		return false;
 	}
 
 	switch (cmd[5]) {
-		case 'a':
-			ata_dump_info();
-			return true;
-		case 'c':
-			cpuid();
-			return true;
-		case 'p':
-			pci_list_devices();
-			return true;
-		default:
-			printf("Unrecognized option: \"%s\"\n", &cmd[5]);
-			printf("Valid options: \"ata\", \"cpu\", \"pci\"\n");
-			return false;
+	case 'a':
+		ata_dump_info();
+		return true;
+	case 'c':
+		cpuid();
+		return true;
+	case 'f':
+		fat32_dump_info();
+		return true;
+	case 'p':
+		pci_list_devices();
+		return true;
+	default:
+		printf("Unrecognized option: \"%s\"\n", &cmd[5]);
+		printf("Valid options: \"ata\", \"fat\", "
+		       "\"cpu\", \"pci\"\n");
+		return false;
 	}
 
 	return true;

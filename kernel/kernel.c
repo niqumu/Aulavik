@@ -10,6 +10,7 @@
 #include <kernel/kernel.h>
 
 #include <kernel/driver/ata.h>
+#include <kernel/driver/fat32.h>
 #include <kernel/driver/keyboard.h>
 #include <kernel/driver/ps2.h>
 #include <kernel/driver/pci.h>
@@ -24,7 +25,6 @@
 #include <kernel/memory/paging.h>
 #include <kernel/terminal.h>
 #include "kernel/task/multitasking.h"
-#include "kernel/file/fat32.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;

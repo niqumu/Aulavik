@@ -9,15 +9,12 @@
 
 #include <kernel/driver/ata.h>
 #include "kernel/gdt/gdt.h"
-#include "kernel/logger.h"
-#include "kernel/driver/ports.h"
 
-static uint8_t ata_access(uint8_t dir, uint8_t drive_ind, uint64_t lba_address,
-		   uint8_t sector_count, uint8_t *buffer)
+static uint8_t ata_access(uint8_t dir, struct ata_device drive,
+	uint64_t lba_address, uint8_t sector_count, uint8_t *buffer)
 {
-	struct ata_device drive = ata_get_devices()[drive_ind];
 	uint16_t cylinder;
-	uint8_t head, sector, error;
+	uint8_t head, sector;
 
 	/*
 	 * todo: SOME ata drives might have sector sizes other than 512-bytes,
@@ -161,32 +158,52 @@ static uint8_t ata_access(uint8_t dir, uint8_t drive_ind, uint64_t lba_address,
 	return ATA_ACCESS_OK;
 }
 
-uint8_t ata_read_sectors(uint8_t drive_index, uint64_t lba_address,
-			 uint8_t sector_count, uint8_t *buffer)
+/**
+ * Read a number of segments, no greater than 255, from an ATA disk, starting
+ * at a specifed segment, into a buffer.
+ *
+ * @param drive The drive to read from
+ * @param lba_address The Logical Block Addressing scheme address of the sector
+ *      to begin reading data from
+ * @param sector_count The number of sectors to read
+ * @param buffer The buffer to write data into
+ * @return ATA_ACCESS_OK, or an error raised by the ATA controller
+ */
+uint8_t ata_read_sectors(struct ata_device drive, uint64_t lba_address,
+                         uint8_t sector_count, uint8_t *buffer)
 {
-	struct ata_device drive = ata_get_devices()[drive_index];
-
 	/* verify target drive */
-	if (drive_index > ATA_MAX_DRIVES - 1 || !drive.present)
+	if (!drive.present)
 		return ATA_ACCESS_ERROR_NOSUCHDEVICE;
 
 	/* verify input */
 	if (drive.type == ATA_TYPE_ATA &&
-		lba_address + sector_count > drive.sectors) {
+	    lba_address + sector_count > drive.sectors) {
 		return ATA_ACCESS_ERROR_OUTOFRANGE;
 	}
+
 	/* read */
-	return ata_access(ATA_DIRECTION_READ, drive_index,
+	return ata_access(ATA_DIRECTION_READ, drive,
 	                  lba_address, sector_count, buffer);
 }
 
-uint8_t ata_write_sectors(uint8_t drive_index, uint64_t lba_address,
+/**
+ * Write a number of segments, no greater than 255, to an ATA disk, starting
+ * at a specifed segment, from a buffer.
+ *
+ * @param drive The drive to write to
+ * @param lba_address The Logical Block Addressing scheme address of the sector
+ *      to begin writing data to
+ * @param sector_count The number of sectors to write to
+ * @param buffer The buffer to read from
+ * @return ATA_ACCESS_OK, or an error raised by the ATA controller
+ */
+uint8_t ata_write_sectors(struct ata_device drive, uint64_t lba_address,
                           uint8_t sector_count, uint8_t *buffer)
 {
-	struct ata_device drive = ata_get_devices()[drive_index];
 
 	/* verify target drive */
-	if (drive_index > ATA_MAX_DRIVES - 1 || !drive.present) {
+	if (!drive.present) {
 
 		/* optical drives can't be written to like this */
 		if (drive.type == ATA_TYPE_ATAPI)
@@ -202,6 +219,6 @@ uint8_t ata_write_sectors(uint8_t drive_index, uint64_t lba_address,
 	}
 
 	/* write */
-	return ata_access(ATA_DIRECTION_WRITE, drive_index,
+	return ata_access(ATA_DIRECTION_WRITE, drive,
 	                  lba_address, sector_count, buffer);
 }

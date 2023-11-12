@@ -171,12 +171,37 @@ struct ata_device {
 	char name[40];
 };
 
-/* implemented in ata_access.c */
-uint8_t ata_read_sectors(uint8_t drive_index, uint64_t lba_address,
+/**
+ * Read a number of segments, no greater than 255, from an ATA disk, starting
+ * at a specifed segment, into a buffer.
+ *
+ * Function implemented in ata_access.c
+ *
+ * @param drive The drive to read from
+ * @param lba_address The Logical Block Addressing scheme address of the sector
+ *      to begin reading data from
+ * @param sector_count The number of sectors to read
+ * @param buffer The buffer to write data into
+ * @return ATA_ACCESS_OK, or an error raised by the ATA controller
+ */
+uint8_t ata_read_sectors(struct ata_device drive, uint64_t lba_address,
                          uint8_t sector_count, uint8_t *buffer);
 
-uint8_t ata_write_sectors(uint8_t drive_index, uint64_t lba_address,
-                          uint8_t sector_count, uint8_t *buffer);
+/**
+ * Write a number of segments, no greater than 255, to an ATA disk, starting
+ * at a specifed segment, from a buffer.
+ *
+ * Function implemented in ata_access.c
+ *
+ * @param drive The drive to write to
+ * @param lba_address The Logical Block Addressing scheme address of the sector
+ *      to begin writing data to
+ * @param sector_count The number of sectors to write to
+ * @param buffer The buffer to read data from
+ * @return ATA_ACCESS_OK, or an error raised by the ATA controller
+ */
+uint8_t ata_write_sectors(struct ata_device drive, uint64_t lba_address,
+                         uint8_t sector_count, uint8_t *buffer);
 
 /* implemented in ata.c */
 void ata_wait_until_ready(uint8_t channel);

@@ -8,9 +8,12 @@
 \*====--------------------------------------------------------------------====*/
 
 #include <kernel/driver/ata.h>
+#include "kernel/gdt/gdt.h"
+#include "kernel/logger.h"
+#include "kernel/driver/ports.h"
 
 static uint8_t ata_access(uint8_t dir, uint8_t drive_ind, uint64_t lba_address,
-		   uint8_t sector_count, uint8_t selector, void *buffer)
+		   uint8_t sector_count, uint8_t *buffer)
 {
 	struct ata_device drive = ata_get_devices()[drive_ind];
 	uint16_t cylinder;
@@ -20,22 +23,25 @@ static uint8_t ata_access(uint8_t dir, uint8_t drive_ind, uint64_t lba_address,
 	 * todo: SOME ata drives might have sector sizes other than 512-bytes,
 	 *   we need to check rather than blindly assuming the standard
 	 */
-	uint16_t sector_wsize = 256;
+	uint16_t sector_word_size = 256;
 
-	if (!(drive.capabilities & ATA_CAPABILITIES_LBA)) {
+	/*
+	 * todo: investigate why the QEMU drive indicates not supporting
+	 *   LBA, when it does in actuality.
+	 */
+	/*if (!(drive.capabilities & ATA_CAPABILITIES_LBA)) {
 		drive.address_mode = ATA_ADDRESSING_CHS;
 
-		// todo i have no idea where these come from and why it works
 		sector = (lba_address % 63) + 1;
 		cylinder = (lba_address + 1 - sector) / (16 * 63);
 		head = (lba_address + 1 - sector) % (16 * 63) / 63;
-	} else if (lba_address > ATA_LBA28_MAX) {
-		drive.address_mode = ATA_ADDRESSING_LBA48;
+	} else*/
 
+	if (lba_address > ATA_LBA28_MAX) {
+		drive.address_mode = ATA_ADDRESSING_LBA48;
 		head = 0;
 	} else {
 		drive.address_mode = ATA_ADDRESSING_LBA28;
-
 		head = (lba_address & 0xf000000) >> 24;
 	}
 
@@ -93,6 +99,7 @@ static uint8_t ata_access(uint8_t dir, uint8_t drive_ind, uint64_t lba_address,
 			command = ATA_COMMAND_WRITE_PIO;
 		}
 	}
+	ata_write_byte(drive.channel, ATA_REGISTER_COMMAND, command);
 
 	uint16_t port = (drive.channel == ATA_CHANNEL_SECONDARY) ?
 		ata_get_controller().secondary_port :
@@ -104,20 +111,22 @@ static uint8_t ata_access(uint8_t dir, uint8_t drive_ind, uint64_t lba_address,
 		for (int i = 0; i < sector_count; i++) {
 
 			/* check for an error */
-			if ((error = ata_read_byte(drive.channel,
-						   ATA_REGISTER_ERROR))) {
-				return error;
-			}
+//			if ((error = ata_read_byte(drive.channel,
+//						   ATA_REGISTER_ERROR))) {
+//				return error;
+//			}
+
+			ata_wait_until_ready(drive.channel);
 
 			asm("pushw %es");
-			asm("mov %%ax, %%es" :: "a" (selector));
+			asm("mov %%ax, %%es" :: "a" (GDT_SEGMENT_KERNEL_DATA));
 
 			/* receive data */
-			asm("rep insw" :: "c" (sector_wsize),
-				"d" (port), "D" (buffer));
+			asm("rep insw" :: "c" (sector_word_size),
+			"d" (port), "D" (buffer));
 
 			asm("popw %es");
-			buffer += (sector_wsize * 2);
+			buffer += (sector_word_size * 2);
 		}
 
 	} else { /* write */
@@ -127,14 +136,14 @@ static uint8_t ata_access(uint8_t dir, uint8_t drive_ind, uint64_t lba_address,
 			ata_wait_until_ready(drive.channel);
 
 			asm("pushw %ds");
-			asm("mov %%ax, %%ds" :: "a" (selector));
+			asm("mov %%ax, %%ds" :: "a" (GDT_SEGMENT_KERNEL_DATA));
 
 			/* send data */
-			asm("rep outsw" :: "c" (sector_wsize),
+			asm("rep outsw" :: "c" (sector_word_size),
 				"d" (port), "S" (buffer));
 
 			asm("popw %ds");
-			buffer += (sector_wsize * 2);
+			buffer += (sector_word_size * 2);
 		}
 
 		if (drive.address_mode == ATA_ADDRESSING_LBA48) {
@@ -153,7 +162,7 @@ static uint8_t ata_access(uint8_t dir, uint8_t drive_ind, uint64_t lba_address,
 }
 
 uint8_t ata_read_sectors(uint8_t drive_index, uint64_t lba_address,
-			 uint8_t sector_count, uint8_t selector, void *buffer)
+			 uint8_t sector_count, uint8_t *buffer)
 {
 	struct ata_device drive = ata_get_devices()[drive_index];
 
@@ -166,17 +175,13 @@ uint8_t ata_read_sectors(uint8_t drive_index, uint64_t lba_address,
 		lba_address + sector_count > drive.sectors) {
 		return ATA_ACCESS_ERROR_OUTOFRANGE;
 	}
-
 	/* read */
-	if (ata_access(ATA_DIRECTION_READ, drive_index,
-		       lba_address, sector_count, selector, buffer))
-		return ATA_ACCESS_ERROR_INTERNAL;
-
-	return ATA_ACCESS_OK;
+	return ata_access(ATA_DIRECTION_READ, drive_index,
+	                  lba_address, sector_count, buffer);
 }
 
 uint8_t ata_write_sectors(uint8_t drive_index, uint64_t lba_address,
-                          uint8_t sector_count, uint8_t selector, void *buffer)
+                          uint8_t sector_count, uint8_t *buffer)
 {
 	struct ata_device drive = ata_get_devices()[drive_index];
 
@@ -197,9 +202,6 @@ uint8_t ata_write_sectors(uint8_t drive_index, uint64_t lba_address,
 	}
 
 	/* write */
-	if (ata_access(ATA_DIRECTION_WRITE, drive_index,
-	               lba_address, sector_count, selector, buffer))
-		return ATA_ACCESS_ERROR_INTERNAL;
-
-	return ATA_ACCESS_OK;
+	return ata_access(ATA_DIRECTION_WRITE, drive_index,
+	                  lba_address, sector_count, buffer);
 }

@@ -23,9 +23,8 @@
 #include <kernel/memory/heap.h>
 #include <kernel/memory/paging.h>
 #include <kernel/terminal.h>
-#include "../libc/include/aulavik/syscall.h"
-#include "kernel/interrupts/pic.h"
 #include "kernel/task/multitasking.h"
+#include "kernel/file/fat32.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -63,13 +62,16 @@ void kernel_main(void)
 	keyboard_init();
 	pci_init();
 	ata_init();
-	multitasking_init();
+	fat32_init();
+//	multitasking_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-//	gdt_jump_ring3();
+//	char data[8192];
+//	k_print("Status: %d", ata_read_sectors(1, 0, 16, data));
+//	k_print("Data: \"%s\"", data);
 
 	shell_main();
 

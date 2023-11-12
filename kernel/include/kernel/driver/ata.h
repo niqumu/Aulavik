@@ -173,10 +173,10 @@ struct ata_device {
 
 /* implemented in ata_access.c */
 uint8_t ata_read_sectors(uint8_t drive_index, uint64_t lba_address,
-                         uint8_t sector_count, uint8_t selector, void *buffer);
+                         uint8_t sector_count, uint8_t *buffer);
 
 uint8_t ata_write_sectors(uint8_t drive_index, uint64_t lba_address,
-                          uint8_t sector_count, uint8_t selector, void *buffer);
+                          uint8_t sector_count, uint8_t *buffer);
 
 /* implemented in ata.c */
 void ata_wait_until_ready(uint8_t channel);

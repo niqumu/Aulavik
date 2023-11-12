@@ -7,9 +7,17 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef _DRIVER_FAT32_H
-#define _DRIVER_FAT32_H
+#ifndef FILE_FAT32_H
+#define FILE_FAT32_H
 
-void fat_init(void);
+#include <kernel/driver/ata.h>
 
-#endif /* _DRIVER_FAT32_H */
+struct fat32_drive {
+	struct ata_device device;
+
+	char oem_name[8];
+};
+
+void fat32_init(void);
+
+#endif /* FILE_FAT32_H */

@@ -1,5 +1,6 @@
 # File types
 *.iso
+*.img
 
 # Build
 build/*

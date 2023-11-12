@@ -1,9 +1,12 @@
 /*====------------------- fat32.h - FAT32 driver header ------------------====*\
  *
  * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * Usage of these works is permitted provided that the relevant copyright
+ * notice and permission notice shall be included in all copies or substantial
+ * portions of this software and all documentation files.
+ *
+ * Refer to LICENSE for more information. These works are provided with
+ * absolutely no warranty.
  *
 \*====--------------------------------------------------------------------====*/
 
@@ -17,13 +20,36 @@
 #define FAT_CLUSTER_FREE                0x0
 #define FAT_CLUSTER_BAD                 0x0ffffff7
 
-#define FAT_ATTRIBUTE_READ_ONLY         0x01
-#define FAT_ATTRIBUTE_HIDDEN            0x02
-#define FAT_ATTRIBUTE_SYSTEM            0x04
-#define FAT_ATTRIBUTE_VOLUME_ID         0x08
-#define FAT_ATTRIBUTE_DIRECTORY         0x10
-#define FAT_ATTRIBUTE_ARCHIVE           0x20
-#define FAT_ATTRIBUTE_LONG_FILENAME     (0x01 | 0x02 | 0x04 | 0x08)
+#define FAT_ATTRIBUTE_READ_ONLY         0b00000001
+#define FAT_ATTRIBUTE_HIDDEN            0b00000010
+#define FAT_ATTRIBUTE_SYSTEM            0b00000100
+#define FAT_ATTRIBUTE_VOLUME_ID         0b00001000
+#define FAT_ATTRIBUTE_DIRECTORY         0b00010000
+#define FAT_ATTRIBUTE_ARCHIVE           0b00100000
+#define FAT_ATTRIBUTE_DEVICE            0b01000000
+
+#define FAT_ACCESS_OWNER_ATTRIB         0b0000000000000001
+#define FAT_ACCESS_OWNER_EXECUTE        0b0000000000000010
+#define FAT_ACCESS_OWNER_WRITE          0b0000000000000100
+#define FAT_ACCESS_OWNER_READ           0b0000000000001000
+#define FAT_ACCESS_GROUP_ATTRIB         0b0000000000010000
+#define FAT_ACCESS_GROUP_EXECUTE        0b0000000000100000
+#define FAT_ACCESS_GROUP_WRITE          0b0000000001000000
+#define FAT_ACCESS_GROUP_READ           0b0000000010000000
+#define FAT_ACCESS_WORLD_ATTRIB         0b0000000100000000
+#define FAT_ACCESS_WORLD_EXECUTE        0b0000001000000000
+#define FAT_ACCESS_WORLD_WRITE          0b0000010000000000
+#define FAT_ACCESS_WORLD_READ           0b0000100000000000
+
+/* struct representation of a 32-byte entry in a directory table. a directory
+ * entry can be either a file or another subdirectory. */
+struct fat32_directory_entry {
+	char short_name[9];
+	char extension[4];
+	uint8_t attributes;
+	uint16_t access;
+	uint32_t size;
+};
 
 struct fat32_drive {
 	bool present;
@@ -44,8 +70,6 @@ struct fat32_drive {
 	uint8_t fats;
 	uint16_t root_entries;
 	uint32_t root_cluster;
-
-	/* extended boot record (sector 1) information */
 };
 
 void fat32_dump_info(void);

@@ -1,9 +1,12 @@
 /*====----------------------- fat32.c - FAT32 driver ---------------------====*\
  *
  * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * Usage of these works is permitted provided that the relevant copyright
+ * notice and permission notice shall be included in all copies or substantial
+ * portions of this software and all documentation files.
+ *
+ * Refer to LICENSE for more information. These works are provided with
+ * absolutely no warranty.
  *
 \*====--------------------------------------------------------------------====*/
 
@@ -13,12 +16,32 @@
 
 struct fat32_drive drive;
 
-/* the value that is used to indicate the end of a cluster chain */
+/* the value used in a FAT to indicate the end of a cluster chain */
 uint32_t cluster_eoc;
 
 struct fat32_drive* fat32_get_drive(void)
 {
 	return &drive;
+}
+
+// buffer must be at least (drive.sector_size * drive.sectors_per_cluster) big
+void fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
+{
+	/* starting sector of the fat data region */
+	/* all clusters are aligned to sectors, which makes this
+	 * process magnitudes easier */
+	uint32_t data_region_start = (drive.reserved_sectors +
+              (drive.fats * drive.sectors_per_fat));
+
+	/* how many sectors into the data region the cluster starts at */
+	/* clusters start at 2, hence the subtraction */
+	uint32_t data_region_offset = (cluster - 2) * drive.sectors_per_cluster;
+
+	/* final sector of the cluster */
+	uint32_t sector = data_region_start + data_region_offset;
+
+	ata_read_sectors(drive.device, sector,
+			 drive.sectors_per_cluster, buffer);
 }
 
 uint32_t fat32_get_table_entry(uint8_t table, uint32_t cluster)
@@ -47,6 +70,10 @@ void fat32_init(void)
 	/* the value that is being used to indicate the end of a cluster 
 	 * chain (end of chain) is stored in cluster one of the table */
 	cluster_eoc = fat32_get_table_entry(0, 1);
+
+	uint8_t root_directory[512];
+	fat32_read_cluster(drive.root_cluster, root_directory);
+	k_print("\"%s\"", root_directory);
 
 	k_ok("Loaded FAT32 driver, drive label: \"%s\"", drive.label);
 }

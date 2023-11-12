@@ -12,7 +12,7 @@
 #include <kernel/driver/ports.h>
 #include <kernel/logger.h>
 
-struct ata_device ata_devices[4];
+struct ata_device ata_devices[ATA_MAX_DRIVES];
 uint8_t drives = 0;
 
 struct ata_controller ata_controller;
@@ -42,6 +42,12 @@ void ata_wait(void)
 	waiting = true;
 
 	while (waiting)
+		;
+}
+
+void ata_wait_until_ready(uint8_t channel)
+{
+	while (ata_read_byte(channel, ATA_REGISTER_STATUS) & ATA_STATUS_BUSY)
 		;
 }
 
@@ -263,10 +269,10 @@ void ata_init(void) {
 
 			/* get size */
 			if (ata_devices[index].command_sets & (1 << 26))
-				ata_devices[index].size = *((uint64_t *)
+				ata_devices[index].sectors = *((uint64_t *)
 					(ata_buffer + ATA_IDENTIFY_MAX_LBA_EXT));
 			else
-				ata_devices[index].size = *((uint64_t *)
+				ata_devices[index].sectors = *((uint64_t *)
 					(ata_buffer + ATA_IDENTIFY_MAX_LBA));
 
 			/* get name */

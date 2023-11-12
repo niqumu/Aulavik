@@ -13,7 +13,7 @@
  * 1: vacuous2 by hal
  * 2: mashup colors by user 77
  */
-#define THEME 2
+#define THEME 1
 
 struct color background = {
 #if (THEME == 1)

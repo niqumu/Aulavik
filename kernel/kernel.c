@@ -25,6 +25,7 @@
 #include <kernel/terminal.h>
 #include "../libc/include/aulavik/syscall.h"
 #include "kernel/interrupts/pic.h"
+#include "kernel/task/multitasking.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -62,6 +63,7 @@ void kernel_main(void)
 	keyboard_init();
 	pci_init();
 	ata_init();
+	multitasking_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,

@@ -9,7 +9,7 @@
 
 #include <kernel/task/multitasking.h>
 
-#include <stdbool.h>
+#include <kernel/logger.h>
 
 struct process processes[127];
 struct process *current_process;
@@ -32,5 +32,11 @@ struct cpu_state multitasking_switch_next(struct cpu_state old_state)
 
 void multitasking_init(void)
 {
+	processes[0].status = ACTIVE;
+	processes[0].name = "Aulavik";
+	processes[0].pid = 0;
+	process_count++;
+	current_process = &processes[0];
 
+	k_ok("Started scheduler");
 }

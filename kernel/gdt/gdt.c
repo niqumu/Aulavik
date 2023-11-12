@@ -23,6 +23,8 @@ uint64_t gdt[GDT_MAX_ENTRIES];
 /* tss */
 struct tss tss = {0};
 
+uint32_t isr_stack[128];
+
 uint64_t* gdt_get_descriptor(uint8_t index)
 {
 	if (index > GDT_MAX_ENTRIES) {
@@ -97,7 +99,7 @@ static void load_tss(void)
 	memset(&tss, 0, sizeof(struct tss));
 
 	tss.ss0 = GDT_SEGMENT_KERNEL_DATA * DESCRIPTOR_SIZE;
-	asm volatile ("mov %%esp, %0" : "=g" (tss.esp0));
+	tss.esp0 = (uint32_t) &isr_stack[0];
 
 	asm volatile ("ltr %0" :: "a" (GDT_SEGMENT_TSS * DESCRIPTOR_SIZE));
 }

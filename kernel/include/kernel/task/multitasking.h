@@ -14,4 +14,6 @@
 
 struct cpu_state multitasking_switch_next(struct cpu_state old_state);
 
+void multitasking_init(void);
+
 #endif /* KERNEL_MULTITASKING_H */

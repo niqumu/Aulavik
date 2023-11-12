@@ -34,9 +34,9 @@ bool execute_fetch_command(char *cmd)
 	       COLOR_LOGO "\\ \\ \\______ \\ \\______  /\n"
 	       COLOR_LOGO " \\ \\ \\  / /\\ \\ \\  / / /\n"
 	       COLOR_LOGO "  \\ \\ \\/ / /\\ \\ \\/ / /       \e[;40m   \e[;41m   \e[;42m   "
-			  "\e[;43m   \e[;44m   \e[;45m   \e[;46m   \e[;47m" COLOR_RESET "\n"
+			  "\e[;43m   \e[;44m   \e[;45m   \e[;46m   \e[;47m   " COLOR_RESET "\n"
 	       COLOR_LOGO "   \\ \\/ / /__\\_\\/ / /        \e[;100m   \e[;101m   \e[;102m   "
-			  "\e[;103m   \e[;104m   \e[;105m   \e[;106m   \e[;107m" COLOR_RESET "\n"
+			  "\e[;103m   \e[;104m   \e[;105m   \e[;106m   \e[;107m   " COLOR_RESET "\n"
 	       COLOR_LOGO "    \\  / /______\\/ /\n"
 	       COLOR_LOGO "     \\/___________/\n", "Aulavik", mb_info->boot_loader_name,
 	       graphics_get_context()->width, graphics_get_context()->height,

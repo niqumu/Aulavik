@@ -44,10 +44,16 @@ void ata_dump_info(void)
 
 		if (!device.present) {
 			k_print(" \e[90m|\e[37m %d: (not detected)\e[97m", i);
+			k_print(" \e[90m|\e[97m");
 			continue;
 		}
 
-		k_print(" \e[90m|\e[97m %d: \"%s\": %d bytes", i,
-			device.name, device.size);
+		k_print(" \e[90m|\e[97m %d: \"%s\": %d sectors", i,
+			device.name, device.sectors);
+		k_print(" \e[90m|\e[97m    Type: %s",
+			device.type ? "ATAPI" : "ATA");
+		k_print(" \e[90m|\e[97m    Channel: %d, drive: %s",
+		        device.channel, device.drive ? "slave" : "master");
+		k_print(" \e[90m|\e[97m");
 	}
 }

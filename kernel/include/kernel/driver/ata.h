@@ -115,8 +115,16 @@
 #define ATA_IDENTIFY_COMMAND_SETS       164
 #define ATA_IDENTIFY_MAX_LBA_EXT        200
 
-#define ATA_READ        0
-#define ATA_WRITE       1
+#define ATA_DIRECTION_READ      0
+#define ATA_DIRECTION_WRITE     1
+
+#define ATA_ACCESS_OK                   0
+#define ATA_ACCESS_ERROR_NOSUCHDEVICE   1   /* provided drive doesn't exist */
+#define ATA_ACCESS_ERROR_OUTOFRANGE     2   /* provided region is too big */
+#define ATA_ACCESS_ERROR_INTERNAL       3   /* drive itself raised an error */
+#define ATA_ACCESS_ERROR_PROTECTED      4   /* drive is read/write protected */
+
+#define ATA_MAX_DRIVES          4
 
 struct ata_controller {
 	struct pci_function function;
@@ -160,13 +168,26 @@ struct ata_device {
 	uint32_t command_sets;
 	uint32_t sectors;
 
-	uint64_t size;
 	char name[40];
 };
+
+/* implemented in ata_access.c */
+uint8_t ata_read_sectors(uint8_t drive_index, uint64_t lba_address,
+                         uint8_t sector_count, uint8_t selector, void *buffer);
+
+uint8_t ata_write_sectors(uint8_t drive_index, uint64_t lba_address,
+                          uint8_t sector_count, uint8_t selector, void *buffer);
+
+/* implemented in ata.c */
+void ata_wait_until_ready(uint8_t channel);
 
 struct ata_device* ata_get_devices(void);
 
 struct ata_controller ata_get_controller(void);
+
+uint8_t ata_read_byte(uint8_t channel, uint8_t registr);
+
+void ata_write_byte(uint8_t channel, uint8_t registr, uint8_t data);
 
 void ata_tick(void);
 

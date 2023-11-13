@@ -9,16 +9,27 @@
 
 #include <kernel/bin/shell.h>
 
+#include <stdio.h>
 #include <string.h>
 
+#include <kernel/driver/fat32.h>
 #include <kernel/terminal.h>
 #include "commands/info_cmd.h"
 #include "commands/fetch_cmd.h"
 #include "commands/clear_cmd.h"
+#include "commands/directory_commands.h"
+#include "kernel/logger.h"
 
 struct shell_command commands[16];
 
+struct fat32_directory *current_directory;
+
 bool alive = true;
+
+struct fat32_directory* get_current_directory(void)
+{
+	return current_directory;
+}
 
 void shell_process_command(char *cmd)
 {
@@ -47,12 +58,17 @@ void shell_process_command(char *cmd)
 
 void shell_main(void)
 {
+	current_directory = fat32_get_root();
+
 	commands[0] = *info_init();
 	commands[1] = *fetch_init();
 	commands[2] = *clear_init();
+	commands[3] = *cd_init();
+	commands[4] = *ls_init();
+	commands[5] = *cat_init();
 
 	while (alive) {
-		terminal_puts("\n\e[90m$ \e[97m");
+		printf("\n\e[92m%s\e[90m$ \e[97m", current_directory->name);
 
 		char *input = terminal_get_input();
 		shell_process_command(input);

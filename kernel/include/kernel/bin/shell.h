@@ -12,12 +12,17 @@
 
 #include <stdbool.h>
 
+#define SHELL_TOKEN_BUFFERSIZE  64
+#define SHELL_TOKEN_DELIMITER   " \t\r\n\a"
+
 typedef bool (*execute_command)(char *cmd);
 
 struct shell_command {
 	char *name;
 	execute_command command;
 };
+
+struct fat32_directory* get_current_directory(void);
 
 extern struct shell_command commands[16];
 

@@ -61,6 +61,7 @@ struct fat32_directory_entry {
 
 struct fat32_directory {
 	char name[9];
+	char path[128];
 
 	struct fat32_directory_entry *entries;
 	uint32_t entry_count;
@@ -88,11 +89,55 @@ struct fat32_drive {
 	uint32_t root_cluster;
 };
 
+char* fat32_time_dump(char *buffer, struct fat32_time time);
+
+char* fat32_date_dump(char *buffer, struct fat32_date date);
+
 void fat32_directrory_dump(struct fat32_directory directory);
 
 void fat32_dump_info(void);
 
+struct fat32_directory* fat32_get_root(void);
+
 struct fat32_drive* fat32_get_drive(void);
+
+/**
+ * Read the value stored in the FAT for the given cluster. This value will
+ * be the cluster number of the next cluster in the chain, or the value stored
+ * in cluster_eoc if the chain is finished.
+ *
+ * Function implemented in fat32.c
+ *
+ * @param cluster The cluster to look up in the FAT
+ * @return The value stored in the FAT, aka the next cluster in the chain, or
+ *      the value stored in cluster_eoc if the chain is finished.
+ */
+uint32_t fat32_get_table_entry(uint32_t cluster);
+
+/**
+ * Read a directory into a buffer of directory entry structs, given the
+ * starting cluster of the directory table
+ *
+ * Function implemented in fat32.c
+ *
+ * @param start_cluster The first cluster of the directory table
+ * @param dest A buffer of directory entries to be populated
+ * @param count A pointer to the number of directory entries read
+ */
+void fat32_read_directory(uint32_t start_cluster,
+                          struct fat32_directory_entry* dest, uint32_t *count);
+
+/**
+ * Read a file into a buffer, given the starting cluster of the file. For
+ * directory tables, the fat32_read_directory function should be used instead.
+ *
+ * Function implemented in fat32.c
+ *
+ * @param start_cluster The first cluster of the file
+ * @param dest A sufficiently large buffer to be read into
+ * @param count A pointer to the number of bytes read
+ */
+void fat32_read_file(uint32_t start_cluster, uint8_t* dest, uint32_t *size);
 
 /**
  * Iterate over ATA devices, searching for a FAT32 formatted drive. If one is

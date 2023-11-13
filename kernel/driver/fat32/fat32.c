@@ -18,16 +18,22 @@
 #include <stdlib.h>
 
 struct fat32_drive drive;
+struct fat32_directory root_directory = {0};
 
 /* the value used in a FAT to indicate the end of a cluster chain */
 uint32_t cluster_eoc;
+
+struct fat32_directory* fat32_get_root(void)
+{
+	return &root_directory;
+}
 
 struct fat32_drive* fat32_get_drive(void)
 {
 	return &drive;
 }
 
-struct fat32_date fat32_parse_date(uint16_t datebytes)
+static struct fat32_date fat32_parse_date(uint16_t datebytes)
 {
 	struct fat32_date date;
 	date.day = (datebytes & 0b11111);
@@ -36,7 +42,7 @@ struct fat32_date fat32_parse_date(uint16_t datebytes)
 	return date;
 }
 
-struct fat32_time fat32_parse_time(uint16_t timebytes)
+static struct fat32_time fat32_parse_time(uint16_t timebytes)
 {
 	struct fat32_time time;
 	time.seconds = (timebytes & 0b11111) * 2;
@@ -46,7 +52,7 @@ struct fat32_time fat32_parse_time(uint16_t timebytes)
 }
 
 // buffer must be at least (drive.cluster_size) big
-void fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
+static void fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
 {
 	/* starting sector of the fat data region */
 	/* all clusters are aligned to sectors, which makes this
@@ -65,7 +71,7 @@ void fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
 	                 drive.sectors_per_cluster, buffer);
 }
 
-uint8_t fat32_parse_directory_cluster(const uint8_t *cluster,
+static uint8_t fat32_parse_directory_cluster(const uint8_t *cluster,
 				   struct fat32_directory_entry* dest,
 				   uint32_t *count)
 {
@@ -250,29 +256,12 @@ void fat32_init(void)
 	 * chain (end of chain) is stored in cluster one of the table */
 	cluster_eoc = fat32_get_table_entry(0);
 
-
-
-
-
-	struct fat32_directory root_directory = {0};
+	/* read the root directory into memory */
 	root_directory.entries = malloc(sizeof(struct fat32_directory_entry) * 128);
+	root_directory.name[0] = '/';
+	root_directory.name[1] = '\0';
 	fat32_read_directory(drive.root_cluster, root_directory.entries,
 			     &root_directory.entry_count);
-	fat32_directrory_dump(root_directory);
-
-	k_print("\n");
-
-	struct fat32_directory sub_directory = {0};
-	sub_directory.entries = malloc(sizeof(struct fat32_directory_entry) * 128);
-	fat32_read_directory(root_directory.entries[0].first_cluster,
-			     sub_directory.entries,&sub_directory.entry_count);
-	fat32_directrory_dump(sub_directory);
-
-	free(root_directory.entries);
-	free(sub_directory.entries);
-
-
-
 
 	k_ok("Loaded FAT32 driver, drive label: \"%s\"", drive.label);
 }

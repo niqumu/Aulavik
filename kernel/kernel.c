@@ -70,7 +70,9 @@ void kernel_main(void)
 		mb_info->mem_upper);
 
 
-	shell_main();
+
+
+//	shell_main();
 
 	while (true)
 		asm("hlt");

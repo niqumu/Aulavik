@@ -1,4 +1,4 @@
-/*====------------------- FILENAME - SHORT DESCRIPTION -------------------====*\
+/*====---------------- vfs_fat.h - FAT VFS implementation ----------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that the relevant copyright 
@@ -10,13 +10,17 @@
  * 
 \*====--------------------------------------------------------------------====*/
 
-#ifndef SHELL_DIRECTORY_COMMANDS_H
-#define SHELL_DIRECTORY_COMMANDS_H
+#ifndef FILE_VFS_FAT_H
+#define FILE_VFS_FAT_H
 
-struct shell_command* cat_init(void);
+#include <stdbool.h>
+#include <stdint.h>
 
-struct shell_command* cd_init(void);
+struct fat_file_descriptor {
+	bool present;
+	char name[13];
+	uint32_t first_cluster;
+	uint32_t size;
+};
 
-struct shell_command* ls_init(void);
-
-#endif /* SHELL_DIRECTORY_COMMANDS_H */
+#endif /* FILE_VFS_FAT_H */

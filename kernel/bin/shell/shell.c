@@ -17,7 +17,6 @@
 #include "commands/info_cmd.h"
 #include "commands/fetch_cmd.h"
 #include "commands/clear_cmd.h"
-#include "commands/directory_commands.h"
 #include "kernel/logger.h"
 
 struct shell_command commands[16];
@@ -63,9 +62,6 @@ void shell_main(void)
 	commands[0] = *info_init();
 	commands[1] = *fetch_init();
 	commands[2] = *clear_init();
-	commands[3] = *cd_init();
-	commands[4] = *ls_init();
-	commands[5] = *cat_init();
 
 	while (alive) {
 		printf("\n\e[92m%s\e[90m$ \e[97m", current_directory->name);

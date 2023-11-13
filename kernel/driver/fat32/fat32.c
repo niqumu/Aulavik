@@ -12,10 +12,10 @@
 
 #include <kernel/driver/fat32.h>
 
+#include <stdlib.h>
 #include <string.h>
 
 #include <kernel/logger.h>
-#include <stdlib.h>
 
 struct fat32_drive drive;
 struct fat32_directory root_directory = {0};
@@ -195,6 +195,14 @@ uint32_t fat32_get_table_entry(uint32_t cluster)
 void fat32_read_directory(uint32_t start_cluster,
                           struct fat32_directory_entry* dest, uint32_t *count)
 {
+	/* there seems to be a bug where first level subdirectories of root
+	 * have their ".." (parent directory link) point to cluster 0, rather
+	 * than the correct root cluster. this is a temporary fix.
+	 *
+	 * todo: further investigate this bug */
+	if (start_cluster == 0)
+		start_cluster = drive.root_cluster;
+
 	uint32_t cluster = start_cluster;
 	uint8_t buffer[drive.cluster_size];
 	*count = 0;
@@ -210,7 +218,7 @@ void fat32_read_directory(uint32_t start_cluster,
 		/* get the next cluster in the chain from the FAT */
 		cluster = fat32_get_table_entry(cluster);
 
-		if (cluster == cluster_eoc)
+		if (cluster >= cluster_eoc)
 			return; /* FAT says we've reached the end */
 	}
 }
@@ -231,16 +239,16 @@ void fat32_read_file(uint32_t start_cluster, uint8_t* dest, uint32_t *size)
 
 	while (true) { /* keep reading clusters until the end */
 		memset(buffer, 0, sizeof(buffer));
-		fat32_read_cluster(cluster, buffer);
 
 		/* actually read this cluster of the file */
-		fat32_read_cluster(cluster, dest);
+		fat32_read_cluster(cluster, buffer);
+		memmove(&dest[*size], buffer, drive.cluster_size);
 		(*size) += drive.cluster_size;
 
 		/* get the next cluster in the chain from the FAT */
 		cluster = fat32_get_table_entry(cluster);
 
-		if (cluster == cluster_eoc)
+		if (cluster >= cluster_eoc)
 			return; /* FAT says we've reached the end */
 	}
 }

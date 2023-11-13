@@ -28,7 +28,7 @@ char* fat32_time_dump(char *buffer, struct fat32_time time)
 
 char* fat32_date_dump(char *buffer, struct fat32_date date)
 {
-	sprintf(buffer, "%d/%d/%d", date.day, date.month, date.year + 1980);
+	sprintf(buffer, "%d/%d/%d", date.month, date.day, date.year + 1980);
 	return buffer;
 }
 

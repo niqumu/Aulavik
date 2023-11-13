@@ -106,8 +106,46 @@ bool execute_cd_command(char *cmd)
 	return false;
 }
 
+bool execute_cat_command(char *cmd)
+{
+	if (strlen(cmd) <= 4) {
+		printf("\e[91mNo file provided\e[0m\n");
+		return false;
+	}
+
+	size_t cmd_len = strlen(cmd);
+	char *arg = malloc(cmd_len);
+	memcpy(arg, &cmd[4], cmd_len - 4);
+
+	for (uint32_t i = 0; i < get_current_directory()->entry_count; i++) {
+
+		struct fat32_directory_entry entry =
+			get_current_directory()->entries[i];
+
+		if (entry.attributes & FAT_ATTRIBUTE_DIRECTORY)
+			continue; /* we only care about files */
+
+		if (strcmp(entry.display_name, arg) == 0) {
+			uint8_t buffer[1024];
+			uint32_t *bytes;
+			fat32_read_file(entry.first_cluster, buffer, bytes);
+
+			printf("%s\n", buffer);
+
+//			free(arg);
+			return true;
+		}
+	}
+
+	printf("\e[91mNo such file \"%s\"\e[0m\n", arg);
+	return false;
+//	free(arg);
+}
+
 struct shell_command* cat_init(void)
 {
+	cat_command.name = "cat";
+	cat_command.command = &execute_cat_command;
 	return &cat_command;
 }
 

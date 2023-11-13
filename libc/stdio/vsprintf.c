@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <string.h>
+#include "../../kernel/include/kernel/driver/serial.h"
 
 static bool print(char *dest, const char *src, size_t length)
 {
@@ -43,8 +44,11 @@ char* convert(uint64_t number, int base, int min_digits)
 		number /= base;
 	} while (number);
 
-	if (digits < min_digits)
-		ptr -= (min_digits - digits);
+	while (digits < min_digits) {
+		ptr--;
+		*ptr = '0';
+		digits++;
+	}
 
 	return ptr;
 }
@@ -82,6 +86,12 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 		const char *format_begun_at = format++;
 		size_t len;
 
+		if (*format >= '0' && *format <= '9') {
+			min_digits *= 10;
+			min_digits += (*format) - '0';
+			format++;
+		}
+
 		switch (*format) {
 			case 'c':
 				format++;
@@ -102,6 +112,7 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 				const int num = va_arg(parameters, int);
 				// TODO proper abs();
 				char *d_str = convert(num * ((num > 0) - (num < 0)), 10, min_digits);
+				min_digits = 0;
 				len = strlen(d_str);
 
 				if (maxleft < len) {
@@ -141,6 +152,7 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 				format++;
 				const uint64_t num_hex_64 = va_arg(parameters, uint64_t);
 				char *x_str_64 = convert(num_hex_64, 16, min_digits);
+				min_digits = 0;
 				len = strlen(x_str_64);
 
 				if (maxleft < len) {
@@ -160,6 +172,7 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 				format++;
 				const uint32_t num_hex = va_arg(parameters, uint32_t);
 				char *x_str = convert(num_hex, 16, min_digits);
+				min_digits = 0;
 				len = strlen(x_str);
 
 				if (maxleft < len) {
@@ -176,15 +189,6 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 				written += len + 2;
 				break;
 			default:
-				if (*format >= '0' && *format <= '9') {
-					format++;
-					min_digits *= 10;
-					min_digits += *format - '0';
-
-					written++;
-					break;
-				}
-
 				format = format_begun_at;
 				len = strlen(format);
 

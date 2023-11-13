@@ -9,9 +9,50 @@
 
 #include <kernel/driver/fat32.h>
 
+#include <stdio.h>
+#include <string.h>
+
 #include <kernel/logger.h>
 
 #define BAR     " \e[90m|\e[97m "
+
+char* fat32_time_dump(char *buffer, struct fat32_time time)
+{
+	sprintf(buffer, "%2d:%2d:%2d %s", time.hours % 12, time.minutes,
+		time.seconds, time.hours > 12 ? "PM" : "AM");
+	return buffer;
+}
+
+char* fat32_date_dump(char *buffer, struct fat32_date date)
+{
+	sprintf(buffer, "%d/%d/%d", date.day, date.month, date.year + 1980);
+	return buffer;
+}
+
+void fat32_direntry_dump(struct fat32_directory_entry entry)
+{
+	k_print("\"%s\", type: %s, size: %d bytes", entry.display_name,
+	        entry.attributes & FAT_ATTRIBUTE_DIRECTORY ? "directory" : "file",
+	        entry.size);
+	k_print(BAR "First cluster: %d", entry.first_cluster);
+
+	char time_buffer[32] = {0}, date_buffer[32] = {0};
+
+	k_print(BAR "Created at %s on %s", fat32_time_dump(time_buffer,
+                entry.creation_time), fat32_date_dump(date_buffer,
+                entry.creation_date));
+        memset(time_buffer, 0, 32);
+	memset(date_buffer, 0, 32);
+
+	k_print(BAR "Modified at %s on %s", fat32_time_dump(time_buffer,
+                entry.modify_time), fat32_date_dump(date_buffer,
+		entry.modify_date));
+	memset(time_buffer, 0, 32);
+	memset(date_buffer, 0, 32);
+
+	k_print(BAR "Accessed on %s", fat32_date_dump(date_buffer,
+	        entry.access_date));
+}
 
 void fat32_dump_info(void)
 {

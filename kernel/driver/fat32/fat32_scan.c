@@ -1,9 +1,12 @@
 /*====--------------- fat32_scan.c - FAT32 drive scanning ----------------====*\
  *
  * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * Usage of these works is permitted provided that the relevant copyright
+ * notice and permission notice shall be included in all copies or substantial
+ * portions of this software and all documentation files.
+ *
+ * Refer to LICENSE for more information. These works are provided with
+ * absolutely no warranty.
  *
  * This file contains functions for detecting FAT32 formatted hard drives, as
  * well as reading and parsing their basic metadata. Functions related to the
@@ -114,13 +117,13 @@ bool fat32_scan_drives(void)
 		ata_read_sectors(candidate, 0, 1, boot_record);
 
 		/* fat drives should start with JUMP (some addr) NOP */
-//		if (boot_record[0] != 0xeb || boot_record[2] != 0x90)
-//			continue;
+		if (boot_record[0] != 0xeb || boot_record[2] != 0x90)
+			continue;
 
 		/* fat32 drives should contain a signature of either 0x28
 		 * or 0x29 at byte 0x42 of the boot record */
-//		if (boot_record[0x42] != 0x28 && boot_record[0x42] != 0x29)
-//			continue;
+		if (boot_record[0x42] != 0x28 && boot_record[0x42] != 0x29)
+			continue;
 
 		fat32_get_drive()->device = candidate;
 		fat32_get_drive()->present = true;

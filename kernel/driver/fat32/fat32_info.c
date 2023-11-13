@@ -29,7 +29,7 @@ char* fat32_date_dump(char *buffer, struct fat32_date date)
 	return buffer;
 }
 
-void fat32_direntry_dump(struct fat32_directory_entry entry)
+void fat32_dir_entry_dump(struct fat32_directory_entry entry)
 {
 	k_print("\"%s\", type: %s, size: %d bytes", entry.display_name,
 	        entry.attributes & FAT_ATTRIBUTE_DIRECTORY ? "directory" : "file",
@@ -52,6 +52,19 @@ void fat32_direntry_dump(struct fat32_directory_entry entry)
 
 	k_print(BAR "Accessed on %s", fat32_date_dump(date_buffer,
 	        entry.access_date));
+
+	k_print("");
+}
+
+void fat32_directrory_dump(struct fat32_directory directory)
+{
+	k_print("Dump of directory \"%s\"", directory.name);
+	k_print("Directory has %d entries\n", directory.entry_count);
+
+	for (uint32_t i = 0; i < directory.entry_count; i++) {
+		struct fat32_directory_entry entry = directory.entries[i];
+		fat32_dir_entry_dump(entry);
+	}
 }
 
 void fat32_dump_info(void)

@@ -62,16 +62,13 @@ void kernel_main(void)
 	keyboard_init();
 	pci_init();
 	ata_init();
-	fat32_init();
 //	multitasking_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-//	char data[8192];
-//	k_print("Status: %d", ata_read_sectors(1, 0, 16, data));
-//	k_print("Data: \"%s\"", data);
+	fat32_init();
 
 	shell_main();
 

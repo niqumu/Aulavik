@@ -59,6 +59,13 @@ struct fat32_directory_entry {
 	uint32_t first_cluster;  /* this file/dirs first cluster */
 };
 
+struct fat32_directory {
+	char name[9];
+
+	struct fat32_directory_entry *entries;
+	uint32_t entry_count;
+};
+
 struct fat32_drive {
 	bool present;
 	struct ata_device device;
@@ -74,13 +81,14 @@ struct fat32_drive {
 	uint16_t sector_size;
 	uint16_t sectors_per_track;
 	uint8_t sectors_per_cluster;
+	uint16_t cluster_size;
 
 	uint8_t fats;
 	uint16_t root_entries;
 	uint32_t root_cluster;
 };
 
-void fat32_direntry_dump(struct fat32_directory_entry entry);
+void fat32_directrory_dump(struct fat32_directory directory);
 
 void fat32_dump_info(void);
 

@@ -44,6 +44,8 @@ static void fat32_read_drive(void)
 
 	drive->sectors_per_cluster = boot_record[0x0d];
 
+	drive->cluster_size = drive->sector_size * drive->sectors_per_cluster;
+
 	drive->reserved_sectors = boot_record[0x0e];
 	drive->reserved_sectors |= ((uint16_t) boot_record[0x0f]) << 8;
 

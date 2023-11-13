@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include <kernel/logger.h>
+#include <stdlib.h>
 
 struct fat32_drive drive;
 
@@ -44,18 +45,45 @@ struct fat32_time fat32_parse_time(uint16_t timebytes)
 	return time;
 }
 
-void fat32_parse_dirtable(const uint8_t *buffer)
+// buffer must be at least (drive.cluster_size) big
+void fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
 {
-	for (int i = 0; true; i++) {
+	/* starting sector of the fat data region */
+	/* all clusters are aligned to sectors, which makes this
+	 * process magnitudes easier */
+	uint32_t data_region_start = (drive.reserved_sectors +
+	                              (drive.fats * drive.sectors_per_fat));
+
+	/* how many sectors into the data region the cluster starts at */
+	/* clusters start at 2, hence the subtraction */
+	uint32_t data_region_offset = (cluster - 2) * drive.sectors_per_cluster;
+
+	/* final sector of the cluster */
+	uint32_t sector = data_region_start + data_region_offset;
+
+	ata_read_sectors(drive.device, sector,
+	                 drive.sectors_per_cluster, buffer);
+}
+
+uint8_t fat32_parse_directory_cluster(const uint8_t *cluster,
+				   struct fat32_directory_entry* dest,
+				   uint32_t *count)
+{
+	/* a directory entry is 32 bytes, therefore a single cluster of
+	 * a directory table can store up to (cluster size / 32) entries */
+	for (int i = 0; i < drive.cluster_size / 32; i++) {
 		uint16_t base = 32 * i;
 		struct fat32_directory_entry entry;
 
-		if (!buffer[base])
-			return; /* there are no more entries */
+		if (!cluster[base])
+			return 0; /* there are no more entries */
+
+		if (cluster[base] == 0xe5)
+			continue; /* unused entry */
 
 		/* read and clean the file name */
-		memcpy(entry.name, &buffer[base + 0x00], 8);
-		for (int a = 7; a > 0; a--) {
+		memcpy(entry.name, &cluster[base + 0x00], 8);
+		for (int a = 7; a >= 0; a--) {
 			if (entry.name[a] != ' ') {
 				entry.name[a + 1] = '\0';
 				break;
@@ -63,7 +91,7 @@ void fat32_parse_dirtable(const uint8_t *buffer)
 		}
 
 		/* read and clean the file extension */
-		memcpy(entry.extension, &buffer[base + 0x08], 3);
+		memcpy(entry.extension, &cluster[base + 0x08], 3);
 		for (int a = 2; a >= 0; a--) {
 			if (entry.extension[a] != ' ') {
 				entry.extension[a + 1] = '\0';
@@ -85,64 +113,57 @@ void fat32_parse_dirtable(const uint8_t *buffer)
 			entry.display_name[namelen + extlen + 1] = '\0';
 		}
 
-		entry.attributes = buffer[base + 0x0b];
+		entry.attributes = cluster[base + 0x0b];
 
-		uint16_t creation_time = buffer[base + 0x0e];
-		creation_time |= ((uint16_t) buffer[base + 0x0f]) << 8;
+		uint16_t creation_time = cluster[base + 0x0e];
+		creation_time |= ((uint16_t) cluster[base + 0x0f]) << 8;
 		entry.creation_time = fat32_parse_time(creation_time);
 
-		uint16_t creation_date = buffer[base + 0x10];
-		creation_date |= ((uint16_t) buffer[base + 0x11]) << 8;
+		uint16_t creation_date = cluster[base + 0x10];
+		creation_date |= ((uint16_t) cluster[base + 0x11]) << 8;
 		entry.creation_date = fat32_parse_date(creation_date);
 
-		uint16_t access_date = buffer[base + 0x12];
-		access_date |= ((uint16_t) buffer[base + 0x13]) << 8;
+		uint16_t access_date = cluster[base + 0x12];
+		access_date |= ((uint16_t) cluster[base + 0x13]) << 8;
 		entry.access_date = fat32_parse_date(access_date);
 
-		uint16_t modify_time = buffer[base + 0x16];
-		modify_time |= ((uint16_t) buffer[base + 0x17]) << 8;
+		uint16_t modify_time = cluster[base + 0x16];
+		modify_time |= ((uint16_t) cluster[base + 0x17]) << 8;
 		entry.modify_time = fat32_parse_time(modify_time);
 
-		uint16_t modify_date = buffer[base + 0x18];
-		modify_date |= ((uint16_t) buffer[base + 0x19]) << 8;
+		uint16_t modify_date = cluster[base + 0x18];
+		modify_date |= ((uint16_t) cluster[base + 0x19]) << 8;
 		entry.modify_date = fat32_parse_date(modify_date);
 
-		entry.first_cluster = buffer[base + 0x1a];
-		entry.first_cluster |= ((uint32_t) buffer[base + 0x1b]) << 8;
-		entry.first_cluster |= ((uint32_t) buffer[base + 0x14]) << 16;
-		entry.first_cluster |= ((uint32_t) buffer[base + 0x15]) << 24;
+		entry.first_cluster = cluster[base + 0x1a];
+		entry.first_cluster |= ((uint32_t) cluster[base + 0x1b]) << 8;
+		entry.first_cluster |= ((uint32_t) cluster[base + 0x14]) << 16;
+		entry.first_cluster |= ((uint32_t) cluster[base + 0x15]) << 24;
 
-		entry.size = buffer[base + 0x1c];
-		entry.size |= ((uint16_t) buffer[base + 0x1d]) << 8;
+		entry.size = cluster[base + 0x1c];
+		entry.size |= ((uint16_t) cluster[base + 0x1d]) << 8;
 
-		k_print("");
-		fat32_direntry_dump(entry);
-		k_print("");
+		dest[*count] = entry;
+		(*count)++;
 	}
+
+	return 1; /* there are still more entries! */
 }
 
-// buffer must be at least (drive.sector_size * drive.sectors_per_cluster) big
-void fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
+/**
+ * Read the value stored in the FAT for the given cluster. This value will
+ * be the cluster number of the next cluster in the chain, or the value stored
+ * in cluster_eoc if the chain is finished.
+ *
+ * @param cluster The cluster to look up in the FAT
+ * @return The value stored in the FAT, aka the next cluster in the chain, or
+ *      the value stored in cluster_eoc if the chain is finished.
+ */
+uint32_t fat32_get_table_entry(uint32_t cluster)
 {
-	/* starting sector of the fat data region */
-	/* all clusters are aligned to sectors, which makes this
-	 * process magnitudes easier */
-	uint32_t data_region_start = (drive.reserved_sectors +
-              (drive.fats * drive.sectors_per_fat));
+	uint8_t table = 1; /* todo figure out when (if ever) to use table 2 */
 
-	/* how many sectors into the data region the cluster starts at */
-	/* clusters start at 2, hence the subtraction */
-	uint32_t data_region_offset = (cluster - 2) * drive.sectors_per_cluster;
-
-	/* final sector of the cluster */
-	uint32_t sector = data_region_start + data_region_offset;
-
-	ata_read_sectors(drive.device, sector,
-			 drive.sectors_per_cluster, buffer);
-}
-
-uint32_t fat32_get_table_entry(uint8_t table, uint32_t cluster)
-{
+	/* base location of the table, always aligned to a sector */
 	uint16_t base_sector = drive.reserved_sectors +
 	                       (drive.sectors_per_fat * table);
 	uint32_t sector = (cluster * 4) / drive.sector_size;
@@ -157,6 +178,67 @@ uint32_t fat32_get_table_entry(uint8_t table, uint32_t cluster)
 	return entry & 0x0fffffff;
 }
 
+/**
+ * Read a directory into a buffer of directory entry structs, given the
+ * starting cluster of the directory table
+ *
+ * @param start_cluster The first cluster of the directory table
+ * @param dest A buffer of directory entries to be populated
+ * @param count A pointer to the number of directory entries read
+ */
+void fat32_read_directory(uint32_t start_cluster,
+                          struct fat32_directory_entry* dest, uint32_t *count)
+{
+	uint32_t cluster = start_cluster;
+	uint8_t buffer[drive.cluster_size];
+	*count = 0;
+
+	while (true) { /* keep reading clusters until the end */
+		memset(buffer, 0, sizeof(buffer));
+		fat32_read_cluster(cluster, buffer);
+
+		/* actually read this cluster of the directory table */
+		if (!fat32_parse_directory_cluster(buffer, dest, count))
+			return; /* directory table says we reached the end */
+
+		/* get the next cluster in the chain from the FAT */
+		cluster = fat32_get_table_entry(cluster);
+
+		if (cluster == cluster_eoc)
+			return; /* FAT says we've reached the end */
+	}
+}
+
+/**
+ * Read a file into a buffer, given the starting cluster of the file. For
+ * directory tables, the fat32_read_directory function should be used instead.
+ *
+ * @param start_cluster The first cluster of the file
+ * @param dest A sufficiently large buffer to be read into
+ * @param count A pointer to the number of bytes read
+ */
+void fat32_read_file(uint32_t start_cluster, uint8_t* dest, uint32_t *size)
+{
+	uint32_t cluster = start_cluster;
+	uint8_t buffer[drive.cluster_size];
+	*size = 0;
+
+	while (true) { /* keep reading clusters until the end */
+		memset(buffer, 0, sizeof(buffer));
+		fat32_read_cluster(cluster, buffer);
+
+		/* actually read this cluster of the file */
+		fat32_read_cluster(cluster, dest);
+		(*size) += drive.cluster_size;
+
+		/* get the next cluster in the chain from the FAT */
+		cluster = fat32_get_table_entry(cluster);
+
+		if (cluster == cluster_eoc)
+			return; /* FAT says we've reached the end */
+	}
+}
+
 void fat32_init(void)
 {
 	if (!fat32_scan_drives()) {
@@ -166,12 +248,31 @@ void fat32_init(void)
 
 	/* the value that is being used to indicate the end of a cluster 
 	 * chain (end of chain) is stored in cluster one of the table */
-	cluster_eoc = fat32_get_table_entry(0, 1);
+	cluster_eoc = fat32_get_table_entry(0);
 
-	uint8_t root_directory[512];
-	fat32_read_cluster(drive.root_cluster, root_directory);
 
-	fat32_parse_dirtable(root_directory);
+
+
+
+	struct fat32_directory root_directory = {0};
+	root_directory.entries = malloc(sizeof(struct fat32_directory_entry) * 128);
+	fat32_read_directory(drive.root_cluster, root_directory.entries,
+			     &root_directory.entry_count);
+	fat32_directrory_dump(root_directory);
+
+	k_print("\n");
+
+	struct fat32_directory sub_directory = {0};
+	sub_directory.entries = malloc(sizeof(struct fat32_directory_entry) * 128);
+	fat32_read_directory(root_directory.entries[0].first_cluster,
+			     sub_directory.entries,&sub_directory.entry_count);
+	fat32_directrory_dump(sub_directory);
+
+	free(root_directory.entries);
+	free(sub_directory.entries);
+
+
+
 
 	k_ok("Loaded FAT32 driver, drive label: \"%s\"", drive.label);
 }

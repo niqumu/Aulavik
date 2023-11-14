@@ -20,7 +20,9 @@ include file/make.config
 include gdt/make.config
 include graphics/make.config
 include interrupts/make.config
+include loader/make.config
 include memory/make.config
+include rainier/make.config
 include syscalls/make.config
 include task/make.config
 
@@ -38,7 +40,9 @@ $(KERNEL_FILE_OBJS) \
 $(KERNEL_GDT_OBJS) \
 $(KERNEL_GRAPHICS_OBJS) \
 $(KERNEL_INTERRUPT_OBJS) \
+$(KERNEL_LOADER_OBJS) \
 $(KERNEL_MEMORY_OBJS) \
+$(KERNEL_RAINIER_OBJS) \
 $(KERNEL_SYSCALLS_OBJS) \
 $(KERNEL_TASK_OBJS) \
 kernel.o \

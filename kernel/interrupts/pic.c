@@ -46,4 +46,7 @@ void pic_init(void)
 	/* enable 8086 mode */
 	port_outb(PORT_PIC_MASTER_DATA, 0x01);
 	port_outb(PORT_PIC_SLAVE_DATA, 0x01);
+
+	/* enable the clock, no reason to ever have it off */
+	pic_set_mask(0, false);
 }

@@ -15,7 +15,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <types.h>
+#include <sys/types.h>
 
 #include <kernel/driver/ata.h>
 

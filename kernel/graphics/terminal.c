@@ -23,6 +23,8 @@ volatile char input[512];
 uint16_t input_index;
 volatile bool enter_pressed, dirty = false;
 
+bool terminal_initialized = false;
+
 void terminal_render_cursor(bool state)
 {
 	struct color color = state ? color_7 : background;
@@ -32,6 +34,9 @@ void terminal_render_cursor(bool state)
 
 void terminal_tick(void)
 {
+	if (!terminal_initialized)
+		return;
+
 	switch (terminal_state.ticks) {
 	case 7:
 		if (!terminal_state.cursor_type_ticks)
@@ -154,6 +159,9 @@ static void terminal_parse_escape(char c)
 
 void terminal_putc(char c)
 {
+	if (!terminal_initialized)
+		return;
+
 	/* remove the cursor */
 	terminal_render_cursor(false);
 
@@ -224,12 +232,18 @@ void terminal_putc(char c)
 
 void terminal_puts(char *str)
 {
+	if (!terminal_initialized)
+		return;
+
 	for (int i = 0; str[i]; i++)
 		terminal_putc(str[i]);
 }
 
 void terminal_clear(void)
 {
+	if (!terminal_initialized)
+		return;
+
 	terminal_state.x = TERMINAL_PADDING;
 	terminal_state.y = TERMINAL_PADDING;
 	graphics_rect(0, 0, render_context->width,
@@ -245,6 +259,5 @@ void terminal_init(struct render_context *context)
 	terminal_state.foreground = color_15;
 	terminal_state.background = background;
 
-	/* enable the clock for the cursor */
-	pic_set_mask(0, false);
+	terminal_initialized = true;
 }

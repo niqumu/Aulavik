@@ -16,17 +16,17 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <types.h>
+#include <sys/types.h>
 
 #include <kernel/driver/fat32.h>
 #include <kernel/file/vfs.h>
 
-struct fat_file_descriptor open_files[VFS_MAX_OPEN_FILES];
+struct fat_file_descriptor fat_open_files[VFS_MAX_OPEN_FILES];
 
 int fat_next_free_id(void)
 {
 	for (int i = 0; i < VFS_MAX_OPEN_FILES; i++) {
-		if (!open_files[i].present)
+		if (!fat_open_files[i].present)
 			return i;
 	}
 
@@ -89,10 +89,10 @@ loop_start:
 			}
 
 			/* if we should be at the end; the file itself */
-			open_files[id].present = true;
-			open_files[id].size = entry.size;
-			open_files[id].first_cluster = entry.first_cluster;
-			memcpy(open_files[id].name, entry.display_name,
+			fat_open_files[id].present = true;
+			fat_open_files[id].size = entry.size;
+			fat_open_files[id].first_cluster = entry.first_cluster;
+			memcpy(fat_open_files[id].name, entry.display_name,
 			       strlen(entry.display_name));
 
 			free(path_cpy);

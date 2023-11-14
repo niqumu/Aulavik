@@ -25,6 +25,7 @@
 #include <kernel/memory/paging.h>
 #include <kernel/terminal.h>
 #include "kernel/task/multitasking.h"
+#include "kernel/rainier/rainier.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -53,7 +54,7 @@ __attribute__((unused, __noreturn__))
 void kernel_main(void)
 {
 	graphics_init();
-	terminal_init(graphics_get_context());
+//	terminal_init(graphics_get_context());
 	gdt_init();
 	idt_init();
 	k_ok("Loading drivers...");
@@ -69,9 +70,7 @@ void kernel_main(void)
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-
-
-
+	rainier_main();
 //	shell_main();
 
 	while (true)

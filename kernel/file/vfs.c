@@ -189,7 +189,7 @@ ssize_t vfs_read(int descriptor, void *buffer, size_t size)
 	if (!file.present || !mountpoint.present)
 		return -1; /* the file isn't open, or its mountpoint is bad */
 
-	int read = mountpoint.operations.read(descriptor, buffer, size);
+	ssize_t read = mountpoint.operations.read(descriptor, buffer, size);
 
 	if (file.buffer_read_pos + size < file.file_size) {
 		file.buffer_read_pos += size;

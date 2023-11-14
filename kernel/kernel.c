@@ -55,7 +55,7 @@ __attribute__((unused, __noreturn__))
 void kernel_main(void)
 {
 	graphics_init();
-	terminal_init(graphics_get_context());
+	terminal_init(graphics_get_global_rctx());
 	gdt_init();
 	idt_init();
 	k_ok("Loading drivers...");

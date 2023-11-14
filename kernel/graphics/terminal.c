@@ -28,8 +28,8 @@ bool terminal_alive = false;
 void terminal_render_cursor(bool state)
 {
 	struct color color = state ? color_7 : background;
-	graphics_rect(terminal_state.x + 1, terminal_state.y + 1,
-	              font_width,font_height, color);
+	graphics_rect(*graphics_get_global_rctx(), terminal_state.x + 1,
+		      terminal_state.y + 1,font_width,font_height, color);
 }
 
 void terminal_tick(void)
@@ -191,12 +191,12 @@ void terminal_putc(char c)
 		break;
 	default:
 		/* character background color */
-		graphics_rect(terminal_state.x, terminal_state.y - 1,
-		              font_width + 2,font_height + 3,
-			      terminal_state.background);
+		graphics_rect(*graphics_get_global_rctx(), terminal_state.x,
+			      terminal_state.y - 1, font_width + 2,
+			      font_height + 3, terminal_state.background);
 
-		fr_render_char(terminal_state.x, terminal_state.y,
-			       c, terminal_state.foreground);
+		fr_render_char(*graphics_get_global_rctx(), terminal_state.x,
+			       terminal_state.y, c, terminal_state.foreground);
 		terminal_state.x += font_width + FR_KERNING;
 	}
 
@@ -221,8 +221,10 @@ void terminal_putc(char c)
 				(render_context->pitch * overscan)];
 		}
 
-		graphics_rect(0, render_context->height - overscan,
-			      render_context->width, overscan, background);
+		graphics_rect(*graphics_get_global_rctx(), 0,
+			      render_context->height - overscan,
+			      render_context->width, overscan,
+			      background);
 	}
 
 	/* redraw cursor at the new position */
@@ -246,7 +248,7 @@ void terminal_clear(void)
 
 	terminal_state.x = TERMINAL_PADDING;
 	terminal_state.y = TERMINAL_PADDING;
-	graphics_rect(0, 0, render_context->width,
+	graphics_rect(*graphics_get_global_rctx(), 0, 0, render_context->width,
 		      render_context->height, background);
 }
 

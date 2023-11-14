@@ -39,7 +39,7 @@ bool execute_fetch_command(char *cmd)
 			  "\e[;103m   \e[;104m   \e[;105m   \e[;106m   \e[;107m   " COLOR_RESET "\n"
 	       COLOR_LOGO "    \\  / /______\\/ /\n"
 	       COLOR_LOGO "     \\/___________/\n", "Aulavik", mb_info->boot_loader_name,
-	       graphics_get_context()->width, graphics_get_context()->height,
+	       graphics_get_global_rctx()->width, graphics_get_global_rctx()->height,
 	       mb_info->mem_upper / 1024);
 
 //	printf("\n");

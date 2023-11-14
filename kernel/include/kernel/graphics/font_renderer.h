@@ -17,8 +17,10 @@
 #define FR_LINE_SPACING 3
 #define FR_KERNING      2
 
-void fr_render_char(uint32_t x, uint32_t y, char c, struct color color);
+void fr_render_char(struct render_context ctx, uint32_t x, uint32_t y, char c,
+                    struct color color);
 
-void fr_render_string(uint32_t x, uint32_t y, const char *str, struct color c);
+void fr_render_string(struct render_context ctx, uint32_t x, uint32_t y,
+	              const char *str, struct color c);
 
 #endif /* GRAPHICS_FONT_RENDERER_H */

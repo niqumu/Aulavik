@@ -11,7 +11,8 @@
 
 #include <kernel/graphics/font.h>
 
-void fr_render_char(uint32_t x, uint32_t y, char c, struct color color)
+void fr_render_char(struct render_context ctx, uint32_t x, uint32_t y, char c,
+	            struct color color)
 {
 	if (c < 33) /* no visible ascii characters exist below this */
 		return;
@@ -34,7 +35,7 @@ void fr_render_char(uint32_t x, uint32_t y, char c, struct color color)
 			uint8_t bit = byte & (1 << j);
 
 			if (bit)
-				graphics_plot_pixel(draw_x, draw_y, color);
+				graphics_plot_pixel(ctx, draw_x, draw_y, color);
 
 			if (--draw_x <= x) {
 				draw_x = x + font_width;
@@ -44,10 +45,11 @@ void fr_render_char(uint32_t x, uint32_t y, char c, struct color color)
 	}
 }
 
-void fr_render_string(uint32_t x, uint32_t y, const char *str, struct color c)
+void fr_render_string(struct render_context ctx, uint32_t x, uint32_t y,
+                      const char *str, struct color c)
 {
 	for (int i = 0; str[i]; i++) {
-		fr_render_char(x, y, str[i], c);
+		fr_render_char(ctx, x, y, str[i], c);
 		x += font_width + FR_KERNING;
 	}
 }

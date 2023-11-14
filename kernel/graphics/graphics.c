@@ -14,11 +14,11 @@
 
 #include <kernel/kernel.h>
 
-struct render_context context;
+struct render_context global_rctx;
 
-struct render_context* graphics_get_context(void)
+struct render_context* graphics_get_global_rctx(void)
 {
-	return &context;
+	return &global_rctx;
 }
 
 struct color graphics_color_rgb(uint8_t r, uint8_t g, uint8_t b)
@@ -39,18 +39,48 @@ struct color graphics_color(uint32_t rgb)
 	return color;
 }
 
+void graphics_bake_contexts(struct render_context src, int src_x, int src_y,
+                            int dest_x, int dest_y, int width, int height,
+                            struct render_context dest)
+{
+	uint8_t *dest_pixel = dest.framebuffer + (dest_y * dest.pitch +
+	                                     dest_x * dest.pixel_width);
+	uint8_t *src_pixel = src.framebuffer + (src_y * src.pitch +
+	                                         src_x * src.pixel_width);
+	uint8_t *dest_base_pixel = dest_pixel;
+	uint8_t *src_base_pixel = src_pixel;
+
+	for (int row = 0; row < height; row++) {
+		for (int column = 0; column < width; column++) {
+			dest_pixel[0] = src_pixel[0];
+			dest_pixel[1] = src_pixel[1];
+			dest_pixel[2] = src_pixel[2];
+
+			src_pixel += src.pixel_width;
+			dest_pixel += dest.pixel_width;
+		}
+
+		src_pixel = src_base_pixel;
+		src_pixel += (row + 1) * src.pitch;
+		dest_pixel = dest_base_pixel;
+		dest_pixel += (row + 1) * dest.pitch;
+	}
+}
+
 /**
  * Draw a pixel at the specified location, in the specified color. For bulk
  * rendering, such as drawing a rectangle or other polygon, the specialized
  * functions are, by design, far faster.
+ * @param ctx The render context to draw to
  * @param x Pixel x coordinate
  * @param y Pixel y coordinate
  * @param color Pixel color
  */
-void graphics_plot_pixel(uint32_t x, uint32_t y, struct color color)
+void graphics_plot_pixel(struct render_context ctx, uint32_t x, uint32_t y,
+			 struct color color)
 {
-	uint8_t *pixel = context.framebuffer + (y * context.pitch +
-		x * context.pixel_width);
+	uint8_t *pixel = ctx.framebuffer + (y * ctx.pitch +
+		x * ctx.pixel_width);
 
 	pixel[0] = color.b;
 	pixel[1] = color.g;
@@ -60,17 +90,18 @@ void graphics_plot_pixel(uint32_t x, uint32_t y, struct color color)
 /**
  * Draw a rectangle of the specified dimensions at the specified location,
  * in the specified color.
+ * @param ctx The render context to draw to
  * @param x Top-left corner x coordinate
  * @param y Top-left corner y coordinate
  * @param width Rectangle width
  * @param height Rectangle height
  * @param color Rectangle color
  */
-void graphics_rect(uint32_t x, uint32_t y, uint32_t width,
-                   uint32_t height, struct color color)
+void graphics_rect(struct render_context ctx, uint32_t x, uint32_t y,
+		   uint32_t width, uint32_t height, struct color color)
 {
-	uint8_t *pixel = context.framebuffer + (y * context.pitch +
-	                                  x * context.pixel_width);
+	uint8_t *pixel = ctx.framebuffer + (y * ctx.pitch +
+	                                  x * ctx.pixel_width);
 	uint8_t *base_pixel = pixel;
 
 	for (uint32_t row = 0; row < height; row++) {
@@ -79,20 +110,19 @@ void graphics_rect(uint32_t x, uint32_t y, uint32_t width,
 			pixel[1] = color.g;
 			pixel[2] = color.r;
 
-			pixel += context.pixel_width;
+			pixel += ctx.pixel_width;
 		}
 
 		pixel = base_pixel;
-		pixel += (row + 1) * context.pitch;
+		pixel += (row + 1) * ctx.pitch;
 	}
 }
 
-void graphics_vgradient(uint32_t x, uint32_t y, uint32_t width,
-                        uint32_t height, struct color color_top,
+void graphics_vgradient(struct render_context ctx, uint32_t x, uint32_t y,
+			uint32_t width, uint32_t height, struct color color_top,
 			struct color color_bottom)
 {
-	uint8_t *pixel = context.framebuffer + (y * context.pitch +
-	                                        x * context.pixel_width);
+	uint8_t *pixel = ctx.framebuffer + (y * ctx.pitch + x * ctx.pixel_width);
 	uint8_t *base_pixel = pixel;
 
 	int delta_r = color_bottom.r - color_top.r;
@@ -111,24 +141,21 @@ void graphics_vgradient(uint32_t x, uint32_t y, uint32_t width,
 			pixel[0] = b;
 			pixel[1] = g;
 			pixel[2] = r;
-			pixel += context.pixel_width;
+			pixel += ctx.pixel_width;
 		}
 
 		pixel = base_pixel;
-		pixel += (row + 1) * context.pitch;
+		pixel += (row + 1) * ctx.pitch;
 	}
 }
 
 void graphics_init(void)
 {
-	context.framebuffer = (uint8_t *) mb_info->framebuffer_addr;
-	context.width = mb_info->framebuffer_width;
-	context.height = mb_info->framebuffer_height;
-	context.bpp = mb_info->framebuffer_bpp;
-	context.pixel_width = context.bpp / 8;
-	context.pitch = mb_info->framebuffer_pitch;
-	context.framebuffer_size = (context.height * context.pitch) +
-		(context.width * context.pixel_width);
-
-
+	global_rctx.framebuffer = (uint8_t *) mb_info->framebuffer_addr;
+	global_rctx.width = mb_info->framebuffer_width;
+	global_rctx.height = mb_info->framebuffer_height;
+	global_rctx.pixel_width = mb_info->framebuffer_bpp / 8;
+	global_rctx.pitch = mb_info->framebuffer_pitch;
+	global_rctx.framebuffer_size = (global_rctx.height * global_rctx.pitch) +
+	                                (global_rctx.width * global_rctx.pixel_width);
 }

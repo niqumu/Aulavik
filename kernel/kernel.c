@@ -12,6 +12,7 @@
 #include <kernel/driver/ata.h>
 #include <kernel/driver/fat32.h>
 #include <kernel/driver/keyboard.h>
+#include <kernel/driver/mouse.h>
 #include <kernel/driver/ps2.h>
 #include <kernel/driver/pci.h>
 #include <kernel/driver/serial.h>
@@ -54,21 +55,25 @@ __attribute__((unused, __noreturn__))
 void kernel_main(void)
 {
 	graphics_init();
-//	terminal_init(graphics_get_context());
+	terminal_init(graphics_get_context());
 	gdt_init();
 	idt_init();
 	k_ok("Loading drivers...");
 	serial_init(BAUD_38400);
 	ps2_init();
 	keyboard_init();
+	mouse_init();
 	pci_init();
 	ata_init();
 	fat32_init();
-//	multitasking_init();
+	multitasking_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
+
+	k_print("Entering Rainier...");
+	terminal_exit();
 
 	rainier_main();
 //	shell_main();

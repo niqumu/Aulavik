@@ -54,6 +54,8 @@ void terminal_tick(void);
 
 void terminal_clear(void);
 
+void terminal_exit(void);
+
 void terminal_init(struct render_context *context);
 
 /* converts an ANSI color code to a terminal color */

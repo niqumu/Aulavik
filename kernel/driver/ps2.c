@@ -33,6 +33,7 @@ void ps2_init(void)
 //	}
 
 	port_outb(PORT_PS2_WRITE_CMD, PS2_CMD_ENABLE_FIRST_PORT);
+	port_outb(PORT_PS2_WRITE_CMD, PS2_CMD_ENABLE_SECOND_PORT);
 
 //	port_outb(PORT_PS2_WRITE_CMD, PS2_DEV_COMMAND_ECHO);
 //
@@ -47,7 +48,8 @@ void ps2_init(void)
 	port_outb(PORT_PS2_WRITE_CMD, PS2_CMD_READ_BYTE_0);
 	uint8_t config = port_inb(PORT_PS2_RW_DATA);
 	port_outb(PORT_PS2_WRITE_CMD, PS2_CMD_WRITE_BYTE_0);
-	port_outb(PORT_PS2_WRITE_CMD, config | PS2_CONFIG_FIRST_INT_ENABLE);
+	port_outb(PORT_PS2_WRITE_CMD, config |
+		PS2_CONFIG_FIRST_INT_ENABLE | PS2_CONFIG_SECOND_INT_ENABLE);
 
 	k_ok("Loaded PS/2 driver");
 }

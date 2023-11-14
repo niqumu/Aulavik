@@ -47,6 +47,12 @@ void pic_init(void)
 	port_outb(PORT_PIC_MASTER_DATA, 0x01);
 	port_outb(PORT_PIC_SLAVE_DATA, 0x01);
 
+	port_outb(PORT_PIC_MASTER_DATA, pic_mask & 0xff);
+	port_outb(PORT_PIC_SLAVE_DATA, pic_mask >> 8);
+
 	/* enable the clock, no reason to ever have it off */
 	pic_set_mask(0, false);
+
+	/* enable the second pic to raise irqs to the first */
+	pic_set_mask(2, false);
 }

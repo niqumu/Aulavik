@@ -23,7 +23,7 @@ volatile char input[512];
 uint16_t input_index;
 volatile bool enter_pressed, dirty = false;
 
-bool terminal_initialized = false;
+bool terminal_alive = false;
 
 void terminal_render_cursor(bool state)
 {
@@ -34,7 +34,7 @@ void terminal_render_cursor(bool state)
 
 void terminal_tick(void)
 {
-	if (!terminal_initialized)
+	if (!terminal_alive)
 		return;
 
 	switch (terminal_state.ticks) {
@@ -159,7 +159,7 @@ static void terminal_parse_escape(char c)
 
 void terminal_putc(char c)
 {
-	if (!terminal_initialized)
+	if (!terminal_alive)
 		return;
 
 	/* remove the cursor */
@@ -232,7 +232,7 @@ void terminal_putc(char c)
 
 void terminal_puts(char *str)
 {
-	if (!terminal_initialized)
+	if (!terminal_alive)
 		return;
 
 	for (int i = 0; str[i]; i++)
@@ -241,13 +241,18 @@ void terminal_puts(char *str)
 
 void terminal_clear(void)
 {
-	if (!terminal_initialized)
+	if (!terminal_alive)
 		return;
 
 	terminal_state.x = TERMINAL_PADDING;
 	terminal_state.y = TERMINAL_PADDING;
 	graphics_rect(0, 0, render_context->width,
 		      render_context->height, background);
+}
+
+void terminal_exit(void)
+{
+	terminal_alive = false;
 }
 
 void terminal_init(struct render_context *context)
@@ -259,5 +264,5 @@ void terminal_init(struct render_context *context)
 	terminal_state.foreground = color_15;
 	terminal_state.background = background;
 
-	terminal_initialized = true;
+	terminal_alive = true;
 }

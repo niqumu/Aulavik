@@ -278,6 +278,20 @@ except_isr_stubs:
 
 extern idt_handle_vec80
 extern idt_handle_vec81
+extern idt_handle_vec82
+extern idt_handle_vec83
+extern idt_handle_vec84
+extern idt_handle_vec85
+extern idt_handle_vec86
+extern idt_handle_vec87
+extern idt_handle_vec88
+extern idt_handle_vec89
+extern idt_handle_vec90
+extern idt_handle_vec91
+extern idt_handle_vec92
+extern idt_handle_vec93
+extern idt_handle_vec94
+extern idt_handle_vec95
 
 isr_stub_80:
 	pushad
@@ -291,11 +305,109 @@ isr_stub_81:
 	call idt_handle_vec81
         popad
 	iret
+isr_stub_82:
+        pushad
+        cld
+        call idt_handle_vec82
+        popad
+        iret
+isr_stub_83:
+        pushad
+        cld
+        call idt_handle_vec83
+        popad
+        iret
+isr_stub_84:
+        pushad
+        cld
+        call idt_handle_vec84
+        popad
+        iret
+isr_stub_85:
+        pushad
+        cld
+        call idt_handle_vec85
+        popad
+        iret
+isr_stub_86:
+        pushad
+        cld
+        call idt_handle_vec86
+        popad
+        iret
+isr_stub_87:
+        pushad
+        cld
+        call idt_handle_vec87
+        popad
+        iret
+isr_stub_88:
+        pushad
+        cld
+        call idt_handle_vec88
+        popad
+        iret
+isr_stub_89:
+        pushad
+        cld
+        call idt_handle_vec89
+        popad
+        iret
+isr_stub_90:
+        pushad
+        cld
+        call idt_handle_vec90
+        popad
+        iret
+isr_stub_91:
+        pushad
+        cld
+        call idt_handle_vec91
+        popad
+        iret
+isr_stub_92:
+        pushad
+        cld
+        call idt_handle_vec92
+        popad
+        iret
+isr_stub_93:
+        pushad
+        cld
+        call idt_handle_vec93
+        popad
+        iret
+isr_stub_94:
+        pushad
+        cld
+        call idt_handle_vec94
+        popad
+        iret
+isr_stub_95:
+        pushad
+        cld
+        call idt_handle_vec95
+        popad
+        iret
 
 global irq_isr_stubs
 irq_isr_stubs:
 	dd isr_stub_80
         dd isr_stub_81
+        dd isr_stub_82
+        dd isr_stub_83
+        dd isr_stub_84
+        dd isr_stub_85
+        dd isr_stub_86
+        dd isr_stub_87
+        dd isr_stub_88
+        dd isr_stub_89
+        dd isr_stub_90
+        dd isr_stub_91
+        dd isr_stub_92
+        dd isr_stub_93
+        dd isr_stub_94
+        dd isr_stub_95
 
 ; ---------------------------------------------------
 ;  Syscall

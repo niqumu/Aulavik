@@ -95,6 +95,20 @@ __attribute__((unused)) void idt_handle_vec31(uint32_t error);
 
 __attribute__((unused)) void idt_handle_vec80();
 __attribute__((unused)) void idt_handle_vec81();
+__attribute__((unused)) void idt_handle_vec82();
+__attribute__((unused)) void idt_handle_vec83();
+__attribute__((unused)) void idt_handle_vec84();
+__attribute__((unused)) void idt_handle_vec85();
+__attribute__((unused)) void idt_handle_vec86();
+__attribute__((unused)) void idt_handle_vec87();
+__attribute__((unused)) void idt_handle_vec88();
+__attribute__((unused)) void idt_handle_vec89();
+__attribute__((unused)) void idt_handle_vec90();
+__attribute__((unused)) void idt_handle_vec91();
+__attribute__((unused)) void idt_handle_vec92();
+__attribute__((unused)) void idt_handle_vec93();
+__attribute__((unused)) void idt_handle_vec94();
+__attribute__((unused)) void idt_handle_vec95();
 
 
 /* -----------------------------------------

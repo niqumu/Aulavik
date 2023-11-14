@@ -11,14 +11,13 @@
 
 #include <kernel/driver/ata.h>
 #include <kernel/driver/keyboard.h>
+#include <kernel/driver/mouse.h>
 #include <kernel/driver/ports.h>
 #include <kernel/kernel.h>
 #include <kernel/syscalls/syscalls.h>
 #include <kernel/terminal.h>
-#include <stddef.h>
+#include <kernel/task/multitasking.h>
 #include "kernel/logger.h"
-#include "../../libc/include/stdio.h"
-#include "kernel/task/multitasking.h"
 
 /* -----------------------------------
  *  Exceptions
@@ -297,6 +296,7 @@ __attribute__((unused)) void idt_handle_vec80()
 
 	terminal_tick();
 	ata_tick();
+	mouse_tick();
 	port_pic_eoi();
 	
 	struct cpu_state new_state = multitasking_switch_next(old_state);
@@ -314,6 +314,64 @@ __attribute__((unused)) void idt_handle_vec80()
 __attribute__((unused)) void idt_handle_vec81()
 {
 	keyboard_handle_press();
+}
+
+__attribute__((unused)) void idt_handle_vec82()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec83()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec84()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec85()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec86()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec87()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec88()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec89()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec90()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec91()
+{
+}
+
+/* mouse */
+__attribute__((unused)) void idt_handle_vec92()
+{
+	mouse_handle_interrupt();
+}
+
+__attribute__((unused)) void idt_handle_vec93()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec94()
+{
+}
+
+__attribute__((unused)) void idt_handle_vec95()
+{
 }
 
 

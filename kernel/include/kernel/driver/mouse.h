@@ -1,4 +1,4 @@
-/*====---------------- rainier.h - Rainier window manager ----------------====*\
+/*====------------------- mouse.h - PS/2 mouse driver --------------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that the relevant copyright 
@@ -10,13 +10,24 @@
  * 
 \*====--------------------------------------------------------------------====*/
 
-#ifndef RAINIER_H
-#define RAINIER_H
+#ifndef DRIVER_MOUSE_H
+#define DRIVER_MOUSE_H
 
-#include <kernel/driver/mouse.h>
+#include <stdbool.h>
 
-void rainier_process_mouse(struct mouse_packet packet);
+struct mouse_packet {
+	int delta_x;
+	int delta_y;
 
-void rainier_main();
+	bool left_state;
+	bool middle_state;
+	bool right_state;
+};
 
-#endif /* RAINIER_H */
+void mouse_handle_interrupt(void);
+
+void mouse_tick(void);
+
+void mouse_init(void);
+
+#endif /* DRIVER_MOUSE_H */

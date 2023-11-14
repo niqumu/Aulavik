@@ -41,7 +41,7 @@ void idt_init(void)
 	}
 
 	/* irqs */
-	for (uint8_t vector = 0; vector < 2; vector++) {
+	for (uint8_t vector = 0; vector < 16; vector++) {
 		idt[vector + PIC_OFFSET] = idt_create_descriptor((uintptr_t) irq_isr_stubs[vector],
 		        FLAG_PRESENT | FLAG_PRIVILEGE_0 | FLAG_GATE_TYPE_INT);
 	}

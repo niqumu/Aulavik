@@ -60,6 +60,9 @@ void graphics_bake_contexts(struct render_context src, int src_x, int src_y,
 			    int dest_x, int dest_y, int width, int height,
 			    struct render_context dest);
 
+void graphics_paint(struct render_context src, int src_x, int src_y,
+		    int dest_x, int dest_y, int width, int height);
+
 /**
  * Draw a pixel at the specified location, in the specified color. For bulk
  * rendering, such as drawing a rectangle or other polygon, the specialized

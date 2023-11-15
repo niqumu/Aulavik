@@ -17,6 +17,7 @@
 #include <kernel/syscalls/syscalls.h>
 #include <kernel/terminal.h>
 #include <kernel/task/multitasking.h>
+#include <kernel/rainier/rainier.h>
 #include "kernel/logger.h"
 
 /* -----------------------------------
@@ -297,6 +298,7 @@ __attribute__((unused)) void idt_handle_vec80()
 	terminal_tick();
 	ata_tick();
 	mouse_tick();
+	rainier_tick();
 	port_pic_eoi();
 	
 	struct cpu_state new_state = multitasking_switch_next(old_state);

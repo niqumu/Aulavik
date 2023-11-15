@@ -48,6 +48,7 @@ void rainier_tick()
 		fps = frames;
 		ticks = 0;
 		frames = 0;
+//		k_debug("Rendered %d frames last second", fps);
 	}
 }
 
@@ -84,9 +85,13 @@ void rainier_render()
 	/* background */
 	graphics_bake_contexts(background_rctx, 0,
 			       0, 0, 0,
-			       (long) background_rctx.width,
-			       (long) background_rctx.height,
+			       background_rctx.width,
+			       background_rctx.height,
 			       double_buffer);
+
+//	graphics_rect(double_buffer, 0, 0, 100, 50, background);
+//	graphics_rect(double_buffer, 200, 200, 400, 250, color_1);
+
 
 	/* window */
 	graphics_bake_contexts(window_rctx, 0, 0, window.x,
@@ -119,8 +124,8 @@ void rainier_render()
 
 void rainier_process_mouse(struct mouse_packet packet)
 {
-	mouse_x += packet.delta_x / 2;
-	mouse_y += packet.delta_y / 2;
+	mouse_x += packet.delta_x;
+	mouse_y += packet.delta_y;
 
 	if (packet.left_state) {
 		if (selected_window_area == NONE) {
@@ -177,6 +182,7 @@ void rainier_main()
 	window_rctx.height = window.height;
 
 	window_render(window);
+	k_print("Welcome to Rainier!");
 
 	while (true)
 		rainier_render();

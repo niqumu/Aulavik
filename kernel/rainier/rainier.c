@@ -33,8 +33,8 @@ int last_cursor_x = 500, last_cursor_y = 500;
 
 struct window windows[32];
 
-struct window *selected_window = NULL;
-uint8_t selected_window_area = WINDOW_AREA_NONE;
+struct window *last_click_window = NULL;
+uint8_t last_click_area = WINDOW_AREA_NONE;
 
 /* fps */
 int fps = 0;
@@ -62,8 +62,8 @@ void rainier_render()
 	cursor_x = mouse_x;
 	cursor_y = mouse_y;
 
-	if (selected_window != NULL)
-		window_handle_drag(selected_window, selected_window_area,
+	if (last_click_window != NULL)
+		window_handle_drag(last_click_window, last_click_area,
 				   cursor_x - last_cursor_x,
 				   cursor_y - last_cursor_y);
 
@@ -74,15 +74,23 @@ void rainier_render()
 			       background_rctx.height,
 			       double_buffer);
 
-//	graphics_rect(double_buffer, 0, 0, 100, 50, background);
-//	graphics_rect(double_buffer, 200, 200, 400, 250, color_1);
-
-
 	/* windows */
+	int minimized_count = 0;
 	for (int i = 31; i >= 0; i--) {
 		if (!windows[i].present)
 			continue;
 
+		if (windows[i].minimized) {
+			graphics_bake_contexts(windows[i].r_ctx, 0, 0, 30 + minimized_count * 280,
+			                       double_buffer.height - 65, 250,
+			                       35, double_buffer);
+			windows[i].last_tray_x = 30 + minimized_count * 280;
+			windows[i].last_tray_y = double_buffer.height - 65;
+			minimized_count++;
+			continue;
+		}
+
+		/* draw the window normally */
 		graphics_bake_contexts(windows[i].r_ctx, 0, 0, windows[i].x,
 		                       windows[i].y, windows[i].width,
 		                       windows[i].height, double_buffer);
@@ -123,25 +131,44 @@ void rainier_process_mouse(struct mouse_packet packet)
 
 	if (packet.left_state) {
 
-//		/* it's not a left click even if already clicking */
-//		if (selected_window_area != WINDOW_AREA_NONE)
-//			return;
+		/* it's not a left click event if already clicking */
+		if (last_click_area != WINDOW_AREA_NONE)
+			return;
 
+		/* iterate over all windows */
 		for (int i = 0; i < 32; i++) {
-			if (selected_window_area == WINDOW_AREA_NONE) {
-				selected_window_area = window_locate_click(mouse_x,
-			                                mouse_y, windows[i]);
-				if (selected_window_area != WINDOW_AREA_NONE) {
-					window_bring_to_front(&windows[i]);
-					selected_window = &windows[0];
-					break;
+			last_click_area = window_locate_click(mouse_x,
+                                      mouse_y, windows[i]);
+
+			if (last_click_area == WINDOW_AREA_MINIMIZE) {
+				k_debug("Minimize");
+				window_minimize(&windows[i]);
+				window_bring_to_front(window_find_front());
+				last_click_window = NULL;
+				return;
+			}
+
+			if (last_click_area != WINDOW_AREA_NONE) {
+
+				if (windows[i].minimized) {
+					window_restore(&windows[i]);
 				}
+
+				window_bring_to_front(&windows[i]);
+				last_click_window = &windows[0];
+				return;
 			}
 		}
 
+		/* the click was not on any window */
+		last_click_area = WINDOW_AREA_NONE;
+		last_click_window = NULL;
+		window_find_front()->focused = false;
+		window_redraw(*window_find_front());
+
 	} else {
-		selected_window_area = WINDOW_AREA_NONE;
-		selected_window = NULL;
+		last_click_area = WINDOW_AREA_NONE;
+		last_click_window = NULL;
 	}
 }
 
@@ -176,6 +203,7 @@ void rainier_main()
 
 	struct window window1;
 	window1.present = true;
+	window1.minimized = false;
 	window1.x = 300;
 	window1.y = 250;
 	window1.width = 500;
@@ -187,22 +215,24 @@ void rainier_main()
 	window1.r_ctx.width = window1.width;
 	window1.r_ctx.height = window1.height;
 	windows[0] = window1;
-	window_render(window1);
+	window_redraw(window1);
 
 	struct window window2;
 	window2.present = true;
+	window2.minimized = false;
 	window2.x = 400;
 	window2.y = 300;
 	window2.width = 600;
 	window2.height = 550;
-	window2.name = "Daniel";
+	window2.name = "Rainier";
 	window2.r_ctx = background_rctx;
 	window2.r_ctx.framebuffer = malloc(background_rctx.framebuffer_size);
 	window2.r_ctx.framebuffer_size = background_rctx.framebuffer_size;
 	window2.r_ctx.width = window2.width;
 	window2.r_ctx.height = window2.height;
+	window2.focused = false;
 	windows[1] = window2;
-	window_render(window2);
+	window_redraw(window2);
 
 	while (true)
 		rainier_render();

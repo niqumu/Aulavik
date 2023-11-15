@@ -27,15 +27,22 @@
 #define WINDOW_AREA_RIGHT       0b00001000
 #define WINDOW_AREA_TITLEBAR    0b00010000
 #define WINDOW_AREA_CONTENT     0b00100000
+#define WINDOW_AREA_MINIMIZE    0b01000000
+#define WINDOW_AREA_CLOSE       0b10000000
 
 struct window {
 	bool present;
 	char *name;
 	int x, y;
+	int last_tray_y, last_tray_x;
 	uint16_t width, height;
+	bool focused;
+	bool minimized;
 
 	struct render_context r_ctx;
 };
+
+struct window* window_find_front(void);
 
 void window_bring_to_front(struct window *window);
 
@@ -44,8 +51,10 @@ void window_handle_drag(struct window *window, uint8_t flags,
 
 uint8_t window_locate_click(int x, int y, struct window window);
 
-void window_create(struct render_context *ctx);
+void window_restore(struct window *window);
 
-void window_render(struct window window);
+void window_minimize(struct window *window);
+
+void window_redraw(struct window window);
 
 #endif /* RAINIER_WINDOW_H */

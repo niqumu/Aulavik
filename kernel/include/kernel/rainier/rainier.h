@@ -15,6 +15,8 @@
 
 #include <kernel/driver/mouse.h>
 
+struct window* rainier_get_windows(void);
+
 void rainier_tick();
 
 void rainier_process_mouse(struct mouse_packet packet);

@@ -31,14 +31,19 @@ int mouse_x = 500, mouse_y = 500;
 int cursor_x = 500, cursor_y = 500;
 int last_cursor_x = 500, last_cursor_y = 500;
 
-struct window window;
+struct window windows[32];
 
 struct window *selected_window = NULL;
-enum window_area selected_window_area = NONE;
+uint8_t selected_window_area = WINDOW_AREA_NONE;
 
 /* fps */
 int fps = 0;
 int frames = 0, ticks = 0;
+
+struct window* rainier_get_windows(void)
+{
+	return windows;
+}
 
 void rainier_tick()
 {
@@ -57,30 +62,10 @@ void rainier_render()
 	cursor_x = mouse_x;
 	cursor_y = mouse_y;
 
-	switch (selected_window_area) {
-	case TITLEBAR:
-		selected_window->x += cursor_x - last_cursor_x;
-		selected_window->y += cursor_y - last_cursor_y;
-		break;
-	case RIGHT:
-		selected_window->width += cursor_x - last_cursor_x;
-		window_render(window);
-		break;
-	case BOTTOM:
-		selected_window->height += cursor_y - last_cursor_y;
-		window_render(window);
-		break;
-	case LEFT:
-		selected_window->width -= cursor_x - last_cursor_x;
-		selected_window->x += cursor_x - last_cursor_x;
-		window_render(window);
-		break;
-	case TOP:
-		selected_window->height -= cursor_y - last_cursor_y;
-		selected_window->y += cursor_y - last_cursor_y;
-		window_render(window);
-		break;
-	}
+	if (selected_window != NULL)
+		window_handle_drag(selected_window, selected_window_area,
+				   cursor_x - last_cursor_x,
+				   cursor_y - last_cursor_y);
 
 	/* background */
 	graphics_bake_contexts(background_rctx, 0,
@@ -93,18 +78,23 @@ void rainier_render()
 //	graphics_rect(double_buffer, 200, 200, 400, 250, color_1);
 
 
-	/* window */
-	graphics_bake_contexts(window_rctx, 0, 0, window.x,
-			       window.y, window.width, window.height,
-			       double_buffer);
+	/* windows */
+	for (int i = 31; i >= 0; i--) {
+		if (!windows[i].present)
+			continue;
+
+		graphics_bake_contexts(windows[i].r_ctx, 0, 0, windows[i].x,
+		                       windows[i].y, windows[i].width,
+		                       windows[i].height, double_buffer);
+	}
 
 	/* cursor */
-	graphics_bake_contexts(background_rctx, last_cursor_x,
-	                       last_cursor_y, last_cursor_x,
-	                       last_cursor_y, 15, 15,
+	graphics_bake_contexts(background_rctx, last_cursor_x - 7,
+	                       last_cursor_y - 7, last_cursor_x - 7,
+	                       last_cursor_y - 7, 15, 15,
 	                       double_buffer);
-	graphics_bake_contexts(cursor_rctx, 0, 0, cursor_x,
-			       cursor_y, 15, 15,
+	graphics_bake_contexts(cursor_rctx, 0, 0, cursor_x - 7,
+			       cursor_y - 7, 15, 15,
 			       double_buffer);
 
 	/* fps counter */
@@ -125,24 +115,40 @@ void rainier_render()
 void rainier_process_mouse(struct mouse_packet packet)
 {
 	mouse_x += packet.delta_x;
+	mouse_x = mouse_x < 0 ? 0 : (mouse_x > (int) background_rctx.width ?
+		(int) background_rctx.width : mouse_x);
 	mouse_y += packet.delta_y;
+	mouse_y = mouse_y < 0 ? 0 : (mouse_y > (int) background_rctx.height ?
+		(int) background_rctx.height : mouse_y);
 
 	if (packet.left_state) {
-		if (selected_window_area == NONE) {
-			selected_window_area = window_locate_click(mouse_x,
-								   mouse_y, window);
-			if (selected_window_area != NONE)
-				selected_window = &window;
-		}
-	} else {
-		selected_window_area = NONE;
-	}
 
-//	rainier_render();
+//		/* it's not a left click even if already clicking */
+//		if (selected_window_area != WINDOW_AREA_NONE)
+//			return;
+
+		for (int i = 0; i < 32; i++) {
+			if (selected_window_area == WINDOW_AREA_NONE) {
+				selected_window_area = window_locate_click(mouse_x,
+			                                mouse_y, windows[i]);
+				if (selected_window_area != WINDOW_AREA_NONE) {
+					window_bring_to_front(&windows[i]);
+					selected_window = &windows[0];
+					break;
+				}
+			}
+		}
+
+	} else {
+		selected_window_area = WINDOW_AREA_NONE;
+		selected_window = NULL;
+	}
 }
 
 void rainier_main()
 {
+	memset(windows, 0, sizeof(struct window) * 32);
+
 	background_rctx = *graphics_get_global_rctx();
 	background_rctx.framebuffer = malloc(background_rctx.framebuffer_size);
 
@@ -162,27 +168,41 @@ void rainier_main()
 	cursor_rctx.framebuffer_size = 15 * 15;
 	cursor_rctx.width = 15;
 	cursor_rctx.height = 15;
-	graphics_rect(cursor_rctx, 0, 0, 15, 15,
+	graphics_rect(cursor_rctx, 0, 0, 14, 14,
 	              graphics_color(0x000000));
-	graphics_rect(cursor_rctx, 1, 1, 13, 13,
+	graphics_rect(cursor_rctx, 1, 1, 12, 12,
 	              graphics_color(0xffffff));
 
-	rainier_render();
-	window.x = 300;
-	window.y = 250;
-	window.width = 500;
-	window.height = 400;
-	window.name = "Hello, world!";
-	window_create(&window_rctx);
 
-	window_rctx = background_rctx;
-	window_rctx.framebuffer = malloc(background_rctx.framebuffer_size);
-	window_rctx.framebuffer_size = background_rctx.framebuffer_size;
-	window_rctx.width = window.width;
-	window_rctx.height = window.height;
+	struct window window1;
+	window1.present = true;
+	window1.x = 300;
+	window1.y = 250;
+	window1.width = 500;
+	window1.height = 400;
+	window1.name = "Hello, world!";
+	window1.r_ctx = background_rctx;
+	window1.r_ctx.framebuffer = malloc(background_rctx.framebuffer_size);
+	window1.r_ctx.framebuffer_size = background_rctx.framebuffer_size;
+	window1.r_ctx.width = window1.width;
+	window1.r_ctx.height = window1.height;
+	windows[0] = window1;
+	window_render(window1);
 
-	window_render(window);
-	k_print("Welcome to Rainier!");
+	struct window window2;
+	window2.present = true;
+	window2.x = 400;
+	window2.y = 300;
+	window2.width = 600;
+	window2.height = 550;
+	window2.name = "Daniel";
+	window2.r_ctx = background_rctx;
+	window2.r_ctx.framebuffer = malloc(background_rctx.framebuffer_size);
+	window2.r_ctx.framebuffer_size = background_rctx.framebuffer_size;
+	window2.r_ctx.width = window2.width;
+	window2.r_ctx.height = window2.height;
+	windows[1] = window2;
+	window_render(window2);
 
 	while (true)
 		rainier_render();

@@ -50,20 +50,37 @@ void graphics_bake_contexts(struct render_context src, int src_x, int src_y,
 	uint8_t *dest_base_pixel = dest_pixel;
 	uint8_t *src_base_pixel = src_pixel;
 
+	bool culling_needed = dest_x < 0 || dest_y < 0 ||
+	        dest_x + width > (int) dest.width ||
+		dest_y + height > (int) dest.height;
+
 	for (int row = 0; row < height; row++) {
 		for (int column = 0; column < width; column++) {
+
+			if (culling_needed && dest_x + column >= (int) dest.width)
+				goto end_row;
+
+			if (culling_needed && (dest_x + column < 0 ||
+					dest_y + row < 0))
+				goto end_column;
+
 			dest_pixel[0] = src_pixel[0];
 			dest_pixel[1] = src_pixel[1];
 			dest_pixel[2] = src_pixel[2];
 
+end_column:
 			src_pixel += src.pixel_width;
 			dest_pixel += dest.pixel_width;
 		}
 
+end_row:
 		src_pixel = src_base_pixel;
 		src_pixel += (row + 1) * src.pitch;
 		dest_pixel = dest_base_pixel;
 		dest_pixel += (row + 1) * dest.pitch;
+
+		if (culling_needed && dest_y + row >= (int) dest.height)
+			return;
 	}
 }
 
@@ -103,6 +120,7 @@ void graphics_rect(struct render_context ctx, uint32_t x, uint32_t y,
 	uint8_t *pixel = ctx.framebuffer + (y * ctx.pitch +
 	                                  x * ctx.pixel_width);
 	uint8_t *base_pixel = pixel;
+	bool culling_needed = x + width > ctx.width || y + height > ctx.height;
 
 	for (uint32_t row = 0; row < height; row++) {
 		for (uint32_t column = 0; column < width; column++) {
@@ -111,10 +129,17 @@ void graphics_rect(struct render_context ctx, uint32_t x, uint32_t y,
 			pixel[2] = color.r;
 
 			pixel += ctx.pixel_width;
+
+			if (culling_needed && x + column >= ctx.width)
+				goto end_row;
 		}
 
+end_row:
 		pixel = base_pixel;
 		pixel += (row + 1) * ctx.pitch;
+
+		if (culling_needed && y + row >= ctx.height)
+			return;
 	}
 }
 

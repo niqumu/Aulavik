@@ -21,6 +21,8 @@ struct rainier_window* rainier_get_windows(void);
 
 struct rainier_window* rainier_get_focused_window(void);
 
+struct render_context* rainier_get_background_ctx(void);
+
 void rainier_set_focused_window(struct rainier_window *window);
 
 void rainier_tick();

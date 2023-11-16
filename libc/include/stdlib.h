@@ -24,6 +24,8 @@ extern "C" {
 __attribute__((__noreturn__))
 void abort(void);
 
+void* calloc(size_t size);
+
 void* malloc(size_t size);
 
 void free(void *ptr);

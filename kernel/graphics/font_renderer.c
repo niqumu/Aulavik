@@ -53,3 +53,13 @@ void fr_render_string(struct render_context ctx, uint32_t x, uint32_t y,
 		x += font_width + FR_KERNING;
 	}
 }
+
+void fr_render_string_bg(struct render_context ctx, uint32_t x, uint32_t y,
+                         const char *str, struct color fg, struct color bg)
+{
+	for (int i = 0; str[i]; i++) {
+		graphics_rect(&ctx, x, y, font_width + FR_KERNING, font_height, bg);
+		fr_render_char(ctx, x, y, str[i], fg);
+		x += font_width + FR_KERNING;
+	}
+}

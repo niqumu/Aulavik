@@ -23,7 +23,7 @@ void ShowWindow(WindowHandle window);
 
 void HideWindow(WindowHandle window);
 
-void SetWindowSize(WindowHandle window, int width, int height);
+void SetWindowSize(WindowHandle window, int w, int h, int *dw, int *dh);
 
 void SetWindowPosition(WindowHandle handle, int x, int y);
 

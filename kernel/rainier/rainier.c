@@ -51,6 +51,11 @@ struct rainier_window* rainier_get_focused_window(void)
 	return focused_window;
 }
 
+struct render_context* rainier_get_background_ctx(void)
+{
+	return &background_rctx;
+}
+
 void rainier_set_focused_window(struct rainier_window *window)
 {
 	struct rainier_window *old = focused_window;
@@ -238,19 +243,9 @@ void rainier_main()
 	graphics_draw_mcr(&cursor_rctx, cursor2, 0, 0);
 
 
-	struct rainier_window window1;
-	window1.present = true;
-	window1.minimized = false;
+	struct rainier_window window1 = window_create("Hello, world!", 500, 400);
 	window1.x = 300;
 	window1.y = 250;
-	window1.name = "Hello, world!";
-	window1.ctx = background_rctx;
-	window1.ctx.framebuffer = malloc(background_rctx.framebuffer_size);
-	window1.ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window1.client_ctx = background_rctx;
-	window1.client_ctx.framebuffer = malloc(background_rctx.framebuffer_size);
-	window1.client_ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window_resize(&window1, 500, 400, NULL, NULL);
 	graphics_hgradient(&window1.client_ctx, 0, 0,
 	                   window1.client_ctx.width, window1.client_ctx.height,
 	                   graphics_color_rgb(255, 255, 0),
@@ -258,19 +253,9 @@ void rainier_main()
 	windows[0] = window1;
 	window_redraw(&windows[0]);
 
-	struct rainier_window window2;
-	window2.present = true;
-	window2.minimized = false;
+	struct rainier_window window2 = window_create("Rainier", 600, 550);
 	window2.x = 400;
 	window2.y = 300;
-	window2.name = "Rainier";
-	window2.ctx = background_rctx;
-	window2.ctx.framebuffer = malloc(background_rctx.framebuffer_size);
-	window2.ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window2.client_ctx = background_rctx;
-	window2.client_ctx.framebuffer = malloc(background_rctx.framebuffer_size);
-	window2.client_ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window_resize(&window2, 600, 550, NULL, NULL);
 	graphics_vgradient(&window2.client_ctx, 0, 0,
 			   window2.client_ctx.width, window2.client_ctx.height,
 	                   graphics_color_rgb(255, 0, 0),

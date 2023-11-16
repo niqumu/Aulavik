@@ -261,6 +261,9 @@ void terminal_init(struct render_context *context)
 {
 	render_context = context;
 
+	graphics_rect(context, 0, 0, context->width,
+		      context->height, background);
+
 	terminal_state.x = TERMINAL_PADDING;
 	terminal_state.y = TERMINAL_PADDING;
 	terminal_state.foreground = color_15;

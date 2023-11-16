@@ -24,10 +24,10 @@ extern "C" {
 int memcmp(const void*, const void*, size_t);
 void* memcpy(void* __restrict dest, const void* __restrict src, size_t size);
 void* memmove(void*, const void*, size_t);
-void* memset(void*, int, size_t);
+void* memset(void* dest, int value, size_t n);
 char* strcat(char*, const char*);
 int strcmp(const char *str1, const char *str2);
-size_t strlen(const char*);
+size_t strlen(const char* str);
 
 #ifdef __cplusplus
 }

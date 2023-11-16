@@ -74,7 +74,7 @@ void* memcpy(void* restrict dest, const void* restrict src, size_t n)
 
 		/*
 		 * simple/slow copy between the two pointers until they are
-		 * aligned to the long size.
+		 * aligned to the long size, allowing for faster copying.
 		 *
 		 * throughout this implementation, n is decremented to be used
 		 * to represent the amount of remaining bytes

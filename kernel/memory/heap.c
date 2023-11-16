@@ -1,9 +1,12 @@
 /*====---------------- heap.h - Basic heap implementation ----------------====*\
  *
  * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * Usage of these works is permitted provided that the relevant copyright
+ * notice and permission notice shall be included in all copies or substantial
+ * portions of this software and all documentation files.
+ *
+ * Refer to LICENSE for more information. These works are provided with
+ * absolutely no warranty.
  *
 \*====--------------------------------------------------------------------====*/
 
@@ -133,6 +136,8 @@ void* heap_alloc(size_t size)
 			panic("Out of memory");
 		}
 	}
+
+	return NULL;
 }
 
 void heap_free(void *ptr)

@@ -1,4 +1,4 @@
-/*====------------ malloc.c - stdlib.h malloc implementation -------------====*\
+/*====------------ calloc.c - stdlib.h calloc implementation -------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that the relevant copyright
@@ -12,24 +12,21 @@
 
 #include <stdlib.h>
 
-#ifdef __AULAVIK_LIBK
-#include <kernel/memory/heap.h>
-#endif /* __AULAVIK_LIBK */
+#include <string.h>
 
 /**
  * Allocates size bytes of memory and returns a pointer to the start of the
- * allocated region. The memory is not initialized. If allocation failed for
- * any reason, NULL will be returned instead of a pointer. The pointer should
- * be passed to the free() function once it is no longer needed.
+ * allocated region. The memory is initialized with all zeros. If allocation
+ * failed for any reason, NULL will be returned instead of a pointer. The
+ * pointer should be passed to the free() function once it is no longer needed.
  *
  * @param size The amount of bytes to allocate
  * @return A pointer to the start of the allocated block, or NULL
  */
-void* malloc(size_t size)
+void* calloc(size_t size)
 {
-#ifdef __AULAVIK_LIBK
-	return heap_alloc(size);
-#else
-	return NULL; // TODO
-#endif /* __AULAVIK_LIBK */
+	void* ptr = malloc(size);
+
+	if (ptr != NULL)
+		memset(ptr, 0, size);
 }

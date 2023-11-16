@@ -14,6 +14,7 @@
 #define GRAPHICS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 struct color {
 	uint8_t r;
@@ -30,6 +31,7 @@ struct render_context {
 
 	uint32_t pixel_width;           // byte size of a pixel
 	uint32_t pitch;                 // byte size of a row
+	bool blending;
 };
 
 extern struct color background;
@@ -49,6 +51,8 @@ extern struct color color_12;
 extern struct color color_13;
 extern struct color color_14;
 extern struct color color_15;
+extern uint8_t cursor1[78];
+extern uint8_t cursor2[78];
 
 struct render_context* graphics_get_global_rctx(void);
 
@@ -56,11 +60,11 @@ struct color graphics_color_rgb(uint8_t r, uint8_t g, uint8_t b);
 
 struct color graphics_color(uint32_t rgb);
 
-void graphics_bake_contexts(struct render_context src, int src_x, int src_y,
-			    int dest_x, int dest_y, int width, int height,
-			    struct render_context dest);
+void graphics_bake_contexts(struct render_context *src, int src_x, int src_y,
+                            int dest_x, int dest_y, uint32_t width,
+                            uint32_t height, struct render_context *dest);
 
-void graphics_paint(struct render_context src, int src_x, int src_y,
+void graphics_paint(struct render_context *src, int src_x, int src_y,
 		    int dest_x, int dest_y, int width, int height);
 
 /**
@@ -72,7 +76,7 @@ void graphics_paint(struct render_context src, int src_x, int src_y,
  * @param y Pixel y coordinate
  * @param color Pixel color
  */
-void graphics_plot_pixel(struct render_context ctx, uint32_t x,
+void graphics_plot_pixel(struct render_context *ctx, uint32_t x,
 	uint32_t y, struct color color);
 
 /**
@@ -85,14 +89,21 @@ void graphics_plot_pixel(struct render_context ctx, uint32_t x,
  * @param height Rectangle height
  * @param color Rectangle color
  */
-void graphics_rect(struct render_context ctx, uint32_t x, uint32_t y,
+void graphics_rect(struct render_context *ctx, uint32_t x, uint32_t y,
 	uint32_t width, uint32_t height, struct color color);
 
-void graphics_vgradient(struct render_context ctx, uint32_t x, uint32_t y,
+void graphics_outline(struct render_context *ctx, uint32_t x, uint32_t y,
+                      uint32_t width, uint32_t height, uint8_t thickness,
+		      struct color color);
+
+void graphics_draw_mcr(struct render_context *ctx, const uint8_t *buffer,
+                       uint32_t x, uint32_t y);
+
+void graphics_vgradient(struct render_context *ctx, uint32_t x, uint32_t y,
 	uint32_t width, uint32_t height, struct color color_top,
 	struct color color_bottom);
 
-void graphics_hgradient(struct render_context ctx, uint32_t x, uint32_t y,
+void graphics_hgradient(struct render_context *ctx, uint32_t x, uint32_t y,
                         uint32_t width, uint32_t height, struct color color_left,
                         struct color color_right);
 

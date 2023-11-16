@@ -130,7 +130,7 @@ void* heap_alloc(size_t size)
 		/* find the next, or stop if we reached the end of memory */
 		if (!(block = memman_next_block(block))) {
 			k_error("Failed to allocate %d bytes!", size_needed);
-			return 0;
+			panic("Out of memory");
 		}
 	}
 }

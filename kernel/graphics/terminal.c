@@ -28,7 +28,7 @@ bool terminal_alive = false;
 void terminal_render_cursor(bool state)
 {
 	struct color color = state ? color_7 : background;
-	graphics_rect(*graphics_get_global_rctx(), terminal_state.x + 1,
+	graphics_rect(graphics_get_global_rctx(), terminal_state.x + 1,
 		      terminal_state.y + 1,font_width,font_height, color);
 }
 
@@ -191,7 +191,7 @@ void terminal_putc(char c)
 		break;
 	default:
 		/* character background color */
-		graphics_rect(*graphics_get_global_rctx(), terminal_state.x,
+		graphics_rect(graphics_get_global_rctx(), terminal_state.x,
 			      terminal_state.y - 1, font_width + 2,
 			      font_height + 3, terminal_state.background);
 
@@ -221,7 +221,7 @@ void terminal_putc(char c)
 				(render_context->pitch * overscan)];
 		}
 
-		graphics_rect(*graphics_get_global_rctx(), 0,
+		graphics_rect(graphics_get_global_rctx(), 0,
 			      render_context->height - overscan,
 			      render_context->width, overscan,
 			      background);
@@ -248,7 +248,7 @@ void terminal_clear(void)
 
 	terminal_state.x = TERMINAL_PADDING;
 	terminal_state.y = TERMINAL_PADDING;
-	graphics_rect(*graphics_get_global_rctx(), 0, 0, render_context->width,
+	graphics_rect(graphics_get_global_rctx(), 0, 0, render_context->width,
 		      render_context->height, background);
 }
 

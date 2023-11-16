@@ -39,29 +39,33 @@ struct color graphics_color(uint32_t rgb)
 	return color;
 }
 
-void graphics_bake_contexts(struct render_context src, int src_x, int src_y,
-                            int dest_x, int dest_y, int width, int height,
-                            struct render_context dest)
+void graphics_bake_contexts(struct render_context *src, int src_x, int src_y,
+                            int dest_x, int dest_y, uint32_t width,
+			    uint32_t height, struct render_context *dest)
 {
-	uint8_t *dest_pixel = dest.framebuffer + (dest_y * dest.pitch +
-	                                     dest_x * dest.pixel_width);
-	uint8_t *src_pixel = src.framebuffer + (src_y * src.pitch +
-	                                         src_x * src.pixel_width);
+	uint8_t *dest_pixel = dest->framebuffer + (dest_y * dest->pitch +
+	                                     dest_x * dest->pixel_width);
+	uint8_t *src_pixel = src->framebuffer + (src_y * src->pitch +
+	                                         src_x * src->pixel_width);
 	uint8_t *dest_base_pixel = dest_pixel;
 	uint8_t *src_base_pixel = src_pixel;
 
 	bool culling_needed = dest_x < 0 || dest_y < 0 ||
-	        dest_x + width > (int) dest.width ||
-		dest_y + height > (int) dest.height;
+	        dest_x + width > (uint32_t) dest->width ||
+		dest_y + height > (uint32_t) dest->height;
 
-	for (int row = 0; row < height; row++) {
-		for (int column = 0; column < width; column++) {
+	for (uint32_t row = 0; row < height; row++) {
+		for (uint32_t column = 0; column < width; column++) {
 
-			if (culling_needed && dest_x + column >= (int) dest.width)
+			if (culling_needed && dest_x + column >= (uint32_t) dest->width)
 				goto end_row;
 
 			if (culling_needed && (dest_x + column < 0 ||
 					dest_y + row < 0))
+				goto end_column;
+
+			if (src->blending && !src_pixel[0] &&
+					!src_pixel[1] && !src_pixel[2])
 				goto end_column;
 
 			dest_pixel[0] = src_pixel[0];
@@ -69,17 +73,17 @@ void graphics_bake_contexts(struct render_context src, int src_x, int src_y,
 			dest_pixel[2] = src_pixel[2];
 
 end_column:
-			src_pixel += src.pixel_width;
-			dest_pixel += dest.pixel_width;
+			src_pixel += src->pixel_width;
+			dest_pixel += dest->pixel_width;
 		}
 
 end_row:
 		src_pixel = src_base_pixel;
-		src_pixel += (row + 1) * src.pitch;
+		src_pixel += (row + 1) * src->pitch;
 		dest_pixel = dest_base_pixel;
-		dest_pixel += (row + 1) * dest.pitch;
+		dest_pixel += (row + 1) * dest->pitch;
 
-		if (culling_needed && dest_y + row >= (int) dest.height)
+		if (culling_needed && dest_y + row >= (uint32_t) dest->height)
 			return;
 	}
 }
@@ -93,11 +97,11 @@ end_row:
  * @param y Pixel y coordinate
  * @param color Pixel color
  */
-void graphics_plot_pixel(struct render_context ctx, uint32_t x, uint32_t y,
+void graphics_plot_pixel(struct render_context *ctx, uint32_t x, uint32_t y,
 			 struct color color)
 {
-	uint8_t *pixel = ctx.framebuffer + (y * ctx.pitch +
-		x * ctx.pixel_width);
+	uint8_t *pixel = ctx->framebuffer + (y * ctx->pitch +
+		x * ctx->pixel_width);
 
 	pixel[0] = color.b;
 	pixel[1] = color.g;
@@ -114,13 +118,13 @@ void graphics_plot_pixel(struct render_context ctx, uint32_t x, uint32_t y,
  * @param height Rectangle height
  * @param color Rectangle color
  */
-void graphics_rect(struct render_context ctx, uint32_t x, uint32_t y,
+void graphics_rect(struct render_context *ctx, uint32_t x, uint32_t y,
 		   uint32_t width, uint32_t height, struct color color)
 {
-	uint8_t *pixel = ctx.framebuffer + (y * ctx.pitch +
-	                                  x * ctx.pixel_width);
+	uint8_t *pixel = ctx->framebuffer + (y * ctx->pitch +
+	                                  x * ctx->pixel_width);
 	uint8_t *base_pixel = pixel;
-	bool culling_needed = x + width > ctx.width || y + height > ctx.height;
+	bool culling_needed = x + width > ctx->width || y + height > ctx->height;
 
 	for (uint32_t row = 0; row < height; row++) {
 		for (uint32_t column = 0; column < width; column++) {
@@ -128,26 +132,77 @@ void graphics_rect(struct render_context ctx, uint32_t x, uint32_t y,
 			pixel[1] = color.g;
 			pixel[2] = color.r;
 
-			pixel += ctx.pixel_width;
+			pixel += ctx->pixel_width;
 
-			if (culling_needed && x + column >= ctx.width)
+			if (culling_needed && x + column >= ctx->width)
 				goto end_row;
 		}
 
 end_row:
 		pixel = base_pixel;
-		pixel += (row + 1) * ctx.pitch;
+		pixel += (row + 1) * ctx->pitch;
 
-		if (culling_needed && y + row >= ctx.height)
+		if (culling_needed && y + row >= ctx->height)
 			return;
 	}
 }
 
-void graphics_vgradient(struct render_context ctx, uint32_t x, uint32_t y,
+void graphics_outline(struct render_context *ctx, uint32_t x, uint32_t y,
+                      uint32_t width, uint32_t height, uint8_t thickness,
+                      struct color color)
+{
+	graphics_rect(ctx, x, y, width, thickness, color);
+	graphics_rect(ctx, x, y + height - thickness, width, thickness, color);
+	graphics_rect(ctx, x, y, thickness, height, color);
+	graphics_rect(ctx, x + width - thickness, y, height, thickness, color);
+}
+
+void graphics_draw_mcr(struct render_context *ctx, const uint8_t *buffer,
+                       uint32_t x, uint32_t y)
+{
+	uint32_t width = buffer[0];
+	uint32_t height = buffer[1];
+	struct color primary = {buffer[2], buffer[3], buffer[4]};
+	struct color secondary = {buffer[5], buffer[6], buffer[7]};
+
+	uint32_t bytes = (height * width) / 8;
+
+	bool prim_trans = !primary.r && !primary.g && !primary.b;
+	bool sec_trans = !secondary.r && !secondary.g && !secondary.b;
+
+	/* rendering starts at the top left */
+	uint32_t draw_x = x;
+	uint32_t draw_y = y;
+
+	/* iterate over each byte in the character */
+	for (uint32_t i = 0; i < bytes; i++) {
+
+		uint8_t byte = buffer[i + 8];
+
+		/* iterate over each bit in the byte */
+		for (uint8_t j = 8; j > 0; j--) {
+			bool bit = byte & (1 << (j - 1));
+
+			if (bit && !prim_trans)
+				graphics_plot_pixel(ctx, draw_x, draw_y,primary);
+
+			else if (!bit && !sec_trans)
+				graphics_plot_pixel(ctx, draw_x, draw_y,secondary);
+
+			if (++draw_x >= width) {
+				draw_x = x;
+				draw_y++;
+			}
+		}
+	}
+
+}
+
+void graphics_vgradient(struct render_context *ctx, uint32_t x, uint32_t y,
 			uint32_t width, uint32_t height, struct color color_top,
 			struct color color_bottom)
 {
-	uint8_t *pixel = ctx.framebuffer + (y * ctx.pitch + x * ctx.pixel_width);
+	uint8_t *pixel = ctx->framebuffer + (y * ctx->pitch + x * ctx->pixel_width);
 	uint8_t *base_pixel = pixel;
 
 	int delta_r = color_bottom.r - color_top.r;
@@ -166,19 +221,19 @@ void graphics_vgradient(struct render_context ctx, uint32_t x, uint32_t y,
 			pixel[0] = b;
 			pixel[1] = g;
 			pixel[2] = r;
-			pixel += ctx.pixel_width;
+			pixel += ctx->pixel_width;
 		}
 
 		pixel = base_pixel;
-		pixel += (row + 1) * ctx.pitch;
+		pixel += (row + 1) * ctx->pitch;
 	}
 }
 
-void graphics_hgradient(struct render_context ctx, uint32_t x, uint32_t y,
+void graphics_hgradient(struct render_context *ctx, uint32_t x, uint32_t y,
                         uint32_t width, uint32_t height, struct color color_left,
                         struct color color_right)
 {
-	uint8_t *pixel = ctx.framebuffer + (y * ctx.pitch + x * ctx.pixel_width);
+	uint8_t *pixel = ctx->framebuffer + (y * ctx->pitch + x * ctx->pixel_width);
 	uint8_t *base_pixel = pixel;
 
 	int delta_r = color_left.r - color_right.r;
@@ -197,11 +252,11 @@ void graphics_hgradient(struct render_context ctx, uint32_t x, uint32_t y,
 			pixel[0] = b;
 			pixel[1] = g;
 			pixel[2] = r;
-			pixel += ctx.pitch;
+			pixel += ctx->pitch;
 		}
 
 		pixel = base_pixel;
-		pixel += (column + 1) * ctx.pixel_width;
+		pixel += (column + 1) * ctx->pixel_width;
 	}
 }
 

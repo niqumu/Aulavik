@@ -66,9 +66,9 @@ inline void rainier_render_windows(void)
 			continue;
 
 		if (windows[i].minimized) {
-			graphics_bake_contexts(windows[i].ctx, 0, 0, 30 + minimized_count * 280,
-			                       double_buffer.height - 65, 250,
-			                       35, double_buffer);
+			graphics_bake_contexts(&windows[i].ctx, 0, 0, 30 + minimized_count * 280,
+			                       double_buffer.height - 65, WINDOW_TRAY_WIDTH,
+			                       WINDOW_TRAY_HEIGHT, &double_buffer);
 			windows[i].last_tray_x = 30 + minimized_count * 280;
 			windows[i].last_tray_y = double_buffer.height - 65;
 			minimized_count++;
@@ -76,9 +76,9 @@ inline void rainier_render_windows(void)
 		}
 
 		/* draw the window normally */
-		graphics_bake_contexts(windows[i].ctx, 0, 0, windows[i].x,
+		graphics_bake_contexts(&windows[i].ctx, 0, 0, windows[i].x,
 		                       windows[i].y, windows[i].width,
-		                       windows[i].height, double_buffer);
+		                       windows[i].height, &double_buffer);
 	}
 }
 
@@ -93,23 +93,19 @@ void rainier_render(void)
 				   cursor_y - last_cursor_y);
 
 	/* background */
-	graphics_bake_contexts(background_rctx, 0,
+	graphics_bake_contexts(&background_rctx, 0,
 			       0, 0, 0,
 			       background_rctx.width,
 			       background_rctx.height,
-			       double_buffer);
+			       &double_buffer);
 
 	/* windows */
 	rainier_render_windows();
 
 	/* cursor */
-	graphics_bake_contexts(background_rctx, last_cursor_x - 7,
-	                       last_cursor_y - 7, last_cursor_x - 7,
-	                       last_cursor_y - 7, 15, 15,
-	                       double_buffer);
-	graphics_bake_contexts(cursor_rctx, 0, 0, cursor_x - 7,
-			       cursor_y - 7, 15, 15,
-			       double_buffer);
+	graphics_bake_contexts(&cursor_rctx, 0, 0, cursor_x,
+			       cursor_y, cursor_rctx.width, cursor_rctx.height,
+			       &double_buffer);
 
 	/* fps counter */
 #ifdef RAINIER_DEBUGGING_ELEMENTS
@@ -168,14 +164,13 @@ void rainier_process_mouse(struct mouse_packet packet)
 		}
 
 		/* the click was not on any window */
-		if (last_click_window != NULL && window_find_front() != NULL) {
-			window_find_front()->focused = false;
-			window_redraw(*window_find_front());
-		}
-
 		last_click_area = WINDOW_AREA_NONE;
 		last_click_window = NULL;
 
+		if (window_find_front() != NULL) {
+			window_find_front()->focused = false;
+			window_redraw(*window_find_front());
+		}
 	} else {
 		last_click_area = WINDOW_AREA_NONE;
 		last_click_window = NULL;
@@ -192,7 +187,7 @@ void rainier_main()
 	double_buffer = *graphics_get_global_rctx();
 	double_buffer.framebuffer = malloc(background_rctx.framebuffer_size);
 
-	graphics_vgradient(background_rctx, 0, 0, background_rctx.width,
+	graphics_vgradient(&background_rctx, 0, 0, background_rctx.width,
 	                   background_rctx.height,graphics_color(0x2c5364),
 	                   graphics_color(0x0f2027));
 
@@ -201,14 +196,13 @@ void rainier_main()
 	       background_rctx.framebuffer, background_rctx.framebuffer_size);
 
 	cursor_rctx = background_rctx;
-	cursor_rctx.framebuffer = malloc(15 * 15);
-	cursor_rctx.framebuffer_size = 15 * 15;
-	cursor_rctx.width = 15;
-	cursor_rctx.height = 15;
-	graphics_rect(cursor_rctx, 0, 0, 14, 14,
-	              graphics_color(0x000000));
-	graphics_rect(cursor_rctx, 1, 1, 12, 12,
-	              graphics_color(0xffffff));
+	cursor_rctx.framebuffer = malloc(32 * 32);
+	cursor_rctx.framebuffer_size = 32 * 32;
+	cursor_rctx.width = 20;
+	cursor_rctx.height = 27;
+	cursor_rctx.blending = true;
+	graphics_draw_mcr(&cursor_rctx, cursor1, 0, 0);
+	graphics_draw_mcr(&cursor_rctx, cursor2, 0, 0);
 
 
 	struct rainier_window window1;
@@ -216,20 +210,15 @@ void rainier_main()
 	window1.minimized = false;
 	window1.x = 300;
 	window1.y = 250;
-	window1.width = 500;
-	window1.height = 400;
 	window1.name = "Hello, world!";
 	window1.ctx = background_rctx;
 	window1.ctx.framebuffer = malloc(background_rctx.framebuffer_size);
 	window1.ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window1.ctx.width = window1.width;
-	window1.ctx.height = window1.height;
 	window1.client_ctx = background_rctx;
 	window1.client_ctx.framebuffer = malloc(background_rctx.framebuffer_size);
 	window1.client_ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window1.client_ctx.width = window1.width;
-	window1.client_ctx.height = window1.height;
-	graphics_hgradient(window1.client_ctx, 0, 0,
+	window_resize(&window1, 500, 400);
+	graphics_hgradient(&window1.client_ctx, 0, 0,
 	                   window1.client_ctx.width, window1.client_ctx.height,
 	                   graphics_color_rgb(255, 255, 0),
 	                   graphics_color_rgb(0, 255, 255));
@@ -241,21 +230,16 @@ void rainier_main()
 	window2.minimized = false;
 	window2.x = 400;
 	window2.y = 300;
-	window2.width = 600;
-	window2.height = 550;
 	window2.name = "Rainier";
 	window2.ctx = background_rctx;
 	window2.ctx.framebuffer = malloc(background_rctx.framebuffer_size);
 	window2.ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window2.ctx.width = window2.width;
-	window2.ctx.height = window2.height;
 	window2.focused = false;
 	window2.client_ctx = background_rctx;
 	window2.client_ctx.framebuffer = malloc(background_rctx.framebuffer_size);
 	window2.client_ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window2.client_ctx.width = window2.width;
-	window2.client_ctx.height = window2.height;
-	graphics_vgradient(window2.client_ctx, 0, 0,
+	window_resize(&window2, 600, 550);
+	graphics_vgradient(&window2.client_ctx, 0, 0,
 			   window2.client_ctx.width, window2.client_ctx.height,
 	                   graphics_color_rgb(255, 0, 0),
 			   graphics_color_rgb(0, 0, 255));

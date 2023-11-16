@@ -31,7 +31,7 @@
 #define WINDOW_AREA_CLOSE       0b10000000
 
 #define WINDOW_TRAY_WIDTH       250
-#define WINDOW_TRAY_HEIGHT      50
+#define WINDOW_TRAY_HEIGHT      35
 
 struct rainier_window {
 	bool present;
@@ -58,6 +58,8 @@ uint8_t window_locate_click(int x, int y, struct rainier_window window);
 void window_restore(struct rainier_window *window);
 
 void window_minimize(struct rainier_window *window);
+
+void window_resize(struct rainier_window *window, int w, int h);
 
 void window_redraw(struct rainier_window window);
 

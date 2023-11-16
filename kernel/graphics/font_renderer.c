@@ -35,7 +35,7 @@ void fr_render_char(struct render_context ctx, uint32_t x, uint32_t y, char c,
 			uint8_t bit = byte & (1 << j);
 
 			if (bit)
-				graphics_plot_pixel(ctx, draw_x, draw_y, color);
+				graphics_plot_pixel(&ctx, draw_x, draw_y, color);
 
 			if (--draw_x <= x) {
 				draw_x = x + font_width;

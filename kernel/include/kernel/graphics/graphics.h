@@ -60,6 +60,27 @@ struct color graphics_color_rgb(uint8_t r, uint8_t g, uint8_t b);
 
 struct color graphics_color(uint32_t rgb);
 
+/**
+ * Bakes the contents of the framebuffer of src onto the framebuffer of dest.
+ * The contents are read from the source starting at (src_x, src_y), up to the
+ * provided width and height, and drawn onto the detination framebuffer
+ * starting at (dest_x, dest_y).
+ *
+ * If the source has blending enabled, any pure black pixels in the source
+ * framebuffer will be skipped, retaining the original pixel of the destination
+ * framebuffer.
+ *
+ * @param src The render context to be baked onto the destination framebuffer
+ * @param src_x The x-position on the source framebuffer to begin reading from;
+ *      the x-coordinate of the top-left corner of the region to bake/paste
+ * @param src_y The y-position on the source framebuffer to begin reading from;
+ *      the y-coordinate of the top-left corner of the region to bake/paste
+ * @param dest_x The x-position on the destination framebuffer to paste to
+ * @param dest_y The y-position on the destination framebuffer to paste to
+ * @param width The width of the region to copy
+ * @param height The height of the region to copy
+ * @param dest The render context containing the destination framebuffer
+ */
 void graphics_bake_contexts(struct render_context *src, int src_x, int src_y,
                             int dest_x, int dest_y, uint32_t width,
                             uint32_t height, struct render_context *dest);

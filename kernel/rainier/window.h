@@ -33,13 +33,15 @@
 #define WINDOW_TRAY_WIDTH       250
 #define WINDOW_TRAY_HEIGHT      35
 
+#define WINDOW_MIN_WIDTH        300
+#define WINDOW_MIN_HEIGHT       200
+
 struct rainier_window {
 	bool present;
 	char *name;
 	int x, y;
 	int last_tray_y, last_tray_x;
 	int width, height;
-	bool focused;
 	bool minimized;
 
 	struct render_context ctx;
@@ -59,8 +61,8 @@ void window_restore(struct rainier_window *window);
 
 void window_minimize(struct rainier_window *window);
 
-void window_resize(struct rainier_window *window, int w, int h);
+void window_resize(struct rainier_window *window, int w, int h, int *dw, int *dh);
 
-void window_redraw(struct rainier_window window);
+void window_redraw(struct rainier_window *window);
 
 #endif /* RAINIER_WINDOW_H */

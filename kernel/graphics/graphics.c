@@ -39,14 +39,37 @@ struct color graphics_color(uint32_t rgb)
 	return color;
 }
 
+/**
+ * Bakes the contents of the framebuffer of src onto the framebuffer of dest.
+ * The contents are read from the source starting at (src_x, src_y), up to the
+ * provided width and height, and drawn onto the detination framebuffer
+ * starting at (dest_x, dest_y).
+ *
+ * If the source has blending enabled, any pure black pixels in the source
+ * framebuffer will be skipped, retaining the original pixel of the destination
+ * framebuffer.
+ *
+ * @param src The render context to be baked onto the destination framebuffer
+ * @param src_x The x-position on the source framebuffer to begin reading from;
+ *      the x-coordinate of the top-left corner of the region to bake/paste
+ * @param src_y The y-position on the source framebuffer to begin reading from;
+ *      the y-coordinate of the top-left corner of the region to bake/paste
+ * @param dest_x The x-position of the top-left corner on the destination
+ *      framebuffer to paste to
+ * @param dest_y The y-position of the top-left corner on the destination
+ *      framebuffer to paste to
+ * @param width The width of the region to copy
+ * @param height The height of the region to copy
+ * @param dest The render context containing the destination framebuffer
+ */
 void graphics_bake_contexts(struct render_context *src, int src_x, int src_y,
                             int dest_x, int dest_y, uint32_t width,
 			    uint32_t height, struct render_context *dest)
 {
-	uint8_t *dest_pixel = dest->framebuffer + (dest_y * dest->pitch +
-	                                     dest_x * dest->pixel_width);
-	uint8_t *src_pixel = src->framebuffer + (src_y * src->pitch +
-	                                         src_x * src->pixel_width);
+	register uint8_t *dest_pixel = dest->framebuffer + (dest_y * dest->pitch +
+		dest_x * dest->pixel_width);
+	register uint8_t *src_pixel = src->framebuffer + (src_y * src->pitch +
+		src_x * src->pixel_width);
 	uint8_t *dest_base_pixel = dest_pixel;
 	uint8_t *src_base_pixel = src_pixel;
 
@@ -57,16 +80,28 @@ void graphics_bake_contexts(struct render_context *src, int src_x, int src_y,
 	for (uint32_t row = 0; row < height; row++) {
 		for (uint32_t column = 0; column < width; column++) {
 
-			if (culling_needed && dest_x + column >= (uint32_t) dest->width)
+			/* skip to the next row if we're off the x-axis */
+			if (culling_needed && dest_x + column >=
+					(uint32_t) dest->width) {
 				goto end_row;
+			}
 
+			/* skip to the next column if we're below the y-axis */
 			if (culling_needed && (dest_x + column < 0 ||
-					dest_y + row < 0))
+					dest_y + row < 0)) {
 				goto end_column;
+			}
 
+			/*
+			 * skip drawing the pixel if the source framebuffer has
+			 * blending enabled and this pixel is solid black,
+			 * preserving the original value the destination
+			 * framebuffer has at this coordinate.
+			 */
 			if (src->blending && !src_pixel[0] &&
-					!src_pixel[1] && !src_pixel[2])
+					!src_pixel[1] && !src_pixel[2]) {
 				goto end_column;
+			}
 
 			dest_pixel[0] = src_pixel[0];
 			dest_pixel[1] = src_pixel[1];
@@ -83,6 +118,7 @@ end_row:
 		dest_pixel = dest_base_pixel;
 		dest_pixel += (row + 1) * dest->pitch;
 
+		/* stop drawing if we're off the y-axis */
 		if (culling_needed && dest_y + row >= (uint32_t) dest->height)
 			return;
 	}
@@ -110,7 +146,7 @@ void graphics_plot_pixel(struct render_context *ctx, uint32_t x, uint32_t y,
 
 /**
  * Draw a rectangle of the specified dimensions at the specified location,
- * in the specified color.
+ * in the specified color, onto ctx's framebuffer.
  * @param ctx The render context to draw to
  * @param x Top-left corner x coordinate
  * @param y Top-left corner y coordinate
@@ -119,10 +155,10 @@ void graphics_plot_pixel(struct render_context *ctx, uint32_t x, uint32_t y,
  * @param color Rectangle color
  */
 void graphics_rect(struct render_context *ctx, uint32_t x, uint32_t y,
-		   uint32_t width, uint32_t height, struct color color)
+                   uint32_t width, uint32_t height, struct color color)
 {
-	uint8_t *pixel = ctx->framebuffer + (y * ctx->pitch +
-	                                  x * ctx->pixel_width);
+	register uint8_t *pixel = ctx->framebuffer + (y * ctx->pitch +
+	                                              x * ctx->pixel_width);
 	uint8_t *base_pixel = pixel;
 	bool culling_needed = x + width > ctx->width || y + height > ctx->height;
 
@@ -134,6 +170,7 @@ void graphics_rect(struct render_context *ctx, uint32_t x, uint32_t y,
 
 			pixel += ctx->pixel_width;
 
+			/* skip to the next row if we're off the x-axis */
 			if (culling_needed && x + column >= ctx->width)
 				goto end_row;
 		}
@@ -142,6 +179,7 @@ end_row:
 		pixel = base_pixel;
 		pixel += (row + 1) * ctx->pitch;
 
+		/* stop drawing if we're off the y-axis */
 		if (culling_needed && y + row >= ctx->height)
 			return;
 	}

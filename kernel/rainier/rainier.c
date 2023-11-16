@@ -33,8 +33,9 @@ bool last_left_state; /* todo move this stuff to mouse driver */
 
 struct rainier_window windows[32];
 
-struct rainier_window *last_click_window = NULL;
-uint8_t last_click_area = WINDOW_AREA_NONE;
+struct rainier_window *focused_window = NULL;
+uint8_t last_click_flags = WINDOW_AREA_NONE;
+bool dragging = false;
 
 /* fps */
 int fps = 0;
@@ -43,6 +44,23 @@ int frames = 0, ticks = 0;
 struct rainier_window* rainier_get_windows(void)
 {
 	return windows;
+}
+
+struct rainier_window* rainier_get_focused_window(void)
+{
+	return focused_window;
+}
+
+void rainier_set_focused_window(struct rainier_window *window)
+{
+	struct rainier_window *old = focused_window;
+	focused_window = window;
+
+	if (old != NULL)
+		window_redraw(old);
+
+	if (window != NULL)
+		window_redraw(window);
 }
 
 void rainier_tick()
@@ -66,9 +84,13 @@ inline void rainier_render_windows(void)
 			continue;
 
 		if (windows[i].minimized) {
-			graphics_bake_contexts(&windows[i].ctx, 0, 0, 30 + minimized_count * 280,
-			                       double_buffer.height - 65, WINDOW_TRAY_WIDTH,
-			                       WINDOW_TRAY_HEIGHT, &double_buffer);
+			graphics_bake_contexts(&windows[i].ctx, 0, 0,
+					       30 + minimized_count * 280,
+			                       double_buffer.height - 65,
+			                       WINDOW_TRAY_WIDTH,
+			                       WINDOW_TRAY_HEIGHT,
+			                       &double_buffer);
+
 			windows[i].last_tray_x = 30 + minimized_count * 280;
 			windows[i].last_tray_y = double_buffer.height - 65;
 			minimized_count++;
@@ -87,10 +109,11 @@ void rainier_render(void)
 	cursor_x = mouse_x;
 	cursor_y = mouse_y;
 
-	if (last_click_window != NULL)
-		window_handle_drag(last_click_window, last_click_area,
-				   cursor_x - last_cursor_x,
-				   cursor_y - last_cursor_y);
+	if (dragging) {
+		window_handle_drag(focused_window, last_click_flags,
+		                   cursor_x - last_cursor_x,
+		                   cursor_y - last_cursor_y);
+	}
 
 	/* background */
 	graphics_bake_contexts(&background_rctx, 0,
@@ -136,44 +159,58 @@ void rainier_process_mouse(struct mouse_packet packet)
 	if (packet.left_state) {
 
 		/* it's not a left click event if already clicking */
-		if (last_click_area != WINDOW_AREA_NONE)
+		if (last_left_state)
+			return;
+
+		last_left_state = true;
+
+		if (dragging)
 			return;
 
 		/* iterate over all windows */
 		for (int i = 0; i < 32; i++) {
-			last_click_area = window_locate_click(mouse_x,
-                                      mouse_y, windows[i]);
+			last_click_flags = window_locate_click(mouse_x,
+			                                       mouse_y, windows[i]);
 
-			if (last_click_area == WINDOW_AREA_MINIMIZE) {
+			if (last_click_flags == WINDOW_AREA_MINIMIZE) {
 				window_minimize(&windows[i]);
-				window_bring_to_front(window_find_front());
-				last_click_window = NULL;
 				return;
 			}
 
-			if (last_click_area != WINDOW_AREA_NONE) {
+			if (last_click_flags != WINDOW_AREA_NONE) {
 
 				if (windows[i].minimized) {
 					window_restore(&windows[i]);
+					return;
+				}
+
+				/* only allow resizing if the window was
+				 * already the focused window */
+				if (&windows[i] != focused_window) {
+					if (last_click_flags == WINDOW_AREA_TITLEBAR ||
+					    last_click_flags == WINDOW_AREA_TOP) {
+						last_click_flags = WINDOW_AREA_TITLEBAR;
+						dragging = true;
+					} else {
+						dragging = false;
+					}
+				} else {
+					dragging = true;
 				}
 
 				window_bring_to_front(&windows[i]);
-				last_click_window = &windows[0];
 				return;
 			}
 		}
 
 		/* the click was not on any window */
-		last_click_area = WINDOW_AREA_NONE;
-		last_click_window = NULL;
-
-		if (window_find_front() != NULL) {
-			window_find_front()->focused = false;
-			window_redraw(*window_find_front());
-		}
+		last_click_flags = WINDOW_AREA_NONE;
+		dragging = false;
+		rainier_set_focused_window(NULL);
 	} else {
-		last_click_area = WINDOW_AREA_NONE;
-		last_click_window = NULL;
+		last_click_flags = WINDOW_AREA_NONE;
+		dragging = false;
+		last_left_state = false;
 	}
 }
 
@@ -190,10 +227,6 @@ void rainier_main()
 	graphics_vgradient(&background_rctx, 0, 0, background_rctx.width,
 	                   background_rctx.height,graphics_color(0x2c5364),
 	                   graphics_color(0x0f2027));
-
-	/* render the background to vram once */
-	memcpy(graphics_get_global_rctx()->framebuffer,
-	       background_rctx.framebuffer, background_rctx.framebuffer_size);
 
 	cursor_rctx = background_rctx;
 	cursor_rctx.framebuffer = malloc(32 * 32);
@@ -217,13 +250,13 @@ void rainier_main()
 	window1.client_ctx = background_rctx;
 	window1.client_ctx.framebuffer = malloc(background_rctx.framebuffer_size);
 	window1.client_ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window_resize(&window1, 500, 400);
+	window_resize(&window1, 500, 400, NULL, NULL);
 	graphics_hgradient(&window1.client_ctx, 0, 0,
 	                   window1.client_ctx.width, window1.client_ctx.height,
 	                   graphics_color_rgb(255, 255, 0),
 	                   graphics_color_rgb(0, 255, 255));
 	windows[0] = window1;
-	window_redraw(window1);
+	window_redraw(&windows[0]);
 
 	struct rainier_window window2;
 	window2.present = true;
@@ -234,18 +267,17 @@ void rainier_main()
 	window2.ctx = background_rctx;
 	window2.ctx.framebuffer = malloc(background_rctx.framebuffer_size);
 	window2.ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window2.focused = false;
 	window2.client_ctx = background_rctx;
 	window2.client_ctx.framebuffer = malloc(background_rctx.framebuffer_size);
 	window2.client_ctx.framebuffer_size = background_rctx.framebuffer_size;
-	window_resize(&window2, 600, 550);
+	window_resize(&window2, 600, 550, NULL, NULL);
 	graphics_vgradient(&window2.client_ctx, 0, 0,
 			   window2.client_ctx.width, window2.client_ctx.height,
 	                   graphics_color_rgb(255, 0, 0),
 			   graphics_color_rgb(0, 0, 255));
 
 	windows[1] = window2;
-	window_redraw(window2);
+	window_redraw(&windows[1]);
 
 	while (true)
 		rainier_render();

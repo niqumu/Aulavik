@@ -19,6 +19,10 @@
 
 struct rainier_window* rainier_get_windows(void);
 
+struct rainier_window* rainier_get_focused_window(void);
+
+void rainier_set_focused_window(struct rainier_window *window);
+
 void rainier_tick();
 
 void rainier_process_mouse(struct mouse_packet packet);

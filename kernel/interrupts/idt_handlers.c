@@ -295,10 +295,13 @@ __attribute__((unused)) void idt_handle_vec80()
 	asm volatile ("mov %%edi, %0" : "=g" (old_state.edi) :: "edi");
 //	asm volatile ("mov %%ebp, %0" : "=g" (old_state.ebp) :: "ebp");
 
+#ifdef RAINIER_DEBUGGING_ELEMENTS
+	rainier_tick();
+#endif /* RAINIER_DEBUGGING_ELEMENTS */
+
 	terminal_tick();
 	ata_tick();
 	mouse_tick();
-	rainier_tick();
 	port_pic_eoi();
 	
 	struct cpu_state new_state = multitasking_switch_next(old_state);

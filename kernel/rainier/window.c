@@ -29,7 +29,7 @@ struct color cbg_primary;
 struct color cbg_highlight;
 struct color cbg_shadow;
 
-struct window* window_find_front(void)
+struct rainier_window* window_find_front(void)
 {
 	for (int i = 0; i < 32; i++) {
 		if (rainier_get_windows()[i].present &&
@@ -40,7 +40,18 @@ struct window* window_find_front(void)
 	return NULL;
 }
 
-void window_bring_to_front(struct window *window)
+/**
+ * Brings the provided window to the front of the desktop. Doing so will
+ * remove the window from the window list, shuffle all windows in front
+ * backwards to take its place, and put the window at the front.
+ *
+ * This function automatically gives focus to the window being brought
+ * forward, and takes it away from the window previously in front. Both
+ * windows are redrawn.
+ *
+ * @param window The window to bring to the front
+ */
+void window_bring_to_front(struct rainier_window *window)
 {
 	if (!window->present)
 		return;
@@ -49,7 +60,7 @@ void window_bring_to_front(struct window *window)
 		if (&rainier_get_windows()[i] != window)
 			continue;
 		
-		struct window w_cpy = *window;
+		struct rainier_window w_cpy = *window;
 		rainier_get_windows()[0].focused = false;
 		window_redraw(rainier_get_windows()[0]);
 
@@ -64,8 +75,8 @@ void window_bring_to_front(struct window *window)
 	}
 }
 
-void window_handle_drag(struct window *window, uint8_t flags,
-			int delta_x, int delta_y)
+void window_handle_drag(struct rainier_window *window, uint8_t flags,
+                        int delta_x, int delta_y)
 {
 	if (flags != WINDOW_AREA_NONE &&
 	    flags != WINDOW_AREA_CONTENT) {
@@ -116,15 +127,15 @@ void window_handle_drag(struct window *window, uint8_t flags,
 			}
 		}
 
-		window->r_ctx.height = window->height;
-		window->r_ctx.width = window->width;
+		window->ctx.height = window->height;
+		window->ctx.width = window->width;
 
 		if (dirty)
 			window_redraw(*window);
 	}
 }
 
-uint8_t window_locate_click(int x, int y, struct window window)
+uint8_t window_locate_click(int x, int y, struct rainier_window window)
 {
 	if (window.minimized) {
 		if (x < window.last_tray_x || x > window.last_tray_x + 250 ||
@@ -162,46 +173,52 @@ uint8_t window_locate_click(int x, int y, struct window window)
 	return area;
 }
 
-static void shaded_rect(struct window window, uint32_t x, uint32_t y, uint32_t width,
-			uint32_t height, bool inside)
+static void shaded_rect(struct rainier_window window, uint32_t x, uint32_t y, uint32_t width,
+                        uint32_t height, bool inside)
 {
 	struct color primary = window.focused ? c_primary : cbg_primary;
 	struct color shadow = window.focused ? c_shadow : cbg_shadow;
 	struct color highlight = window.focused ? c_highlight : cbg_highlight;
 
-	graphics_rect(window.r_ctx, x, y, width, height,
+	graphics_rect(window.ctx, x, y, width, height,
 		      inside ? shadow : highlight);
-	graphics_rect(window.r_ctx, x + 1, y + 1, width - 1,
+	graphics_rect(window.ctx, x + 1, y + 1, width - 1,
 		      height - 1, inside ? highlight : shadow);
-	graphics_rect(window.r_ctx, x + 1, y + 1,
+	graphics_rect(window.ctx, x + 1, y + 1,
 		      width - 2, height - 2, primary);
 }
 
-void window_redraw_minimized(struct window window)
+void window_redraw_minimized(struct rainier_window window)
 {
 	struct color primary = window.focused ? c_primary : cbg_primary;
 	struct color shadow = window.focused ? c_shadow : cbg_shadow;
 	struct color highlight = window.focused ? c_highlight : cbg_highlight;
 
 	/* primary window outline */
-	graphics_rect(window.r_ctx, 0, 0, 250, 35, highlight);
-	graphics_rect(window.r_ctx, 2, 2, 250 - 2, 35 - 2, shadow);
-	graphics_rect(window.r_ctx, 2, 2, 250 - 4, 35 - 4, primary);
+	graphics_rect(window.ctx, 0, 0, WINDOW_TRAY_WIDTH,
+	              WINDOW_TRAY_HEIGHT, highlight);
+	graphics_rect(window.ctx, 2, 2, WINDOW_TRAY_WIDTH - 2,
+		      WINDOW_TRAY_HEIGHT - 2, shadow);
+	graphics_rect(window.ctx, 2, 2, WINDOW_TRAY_WIDTH - 4,
+		      WINDOW_TRAY_HEIGHT - 4, primary);
 
 	/* primary window shading */
-	graphics_rect(window.r_ctx, 4, 4, 250 - 8, 35 - 8, highlight);
-	graphics_rect(window.r_ctx, 4, 4, 250 - 9, 35 - 9, shadow);
+	graphics_rect(window.ctx, 4, 4, WINDOW_TRAY_WIDTH - 8,
+		      WINDOW_TRAY_HEIGHT - 8, highlight);
+	graphics_rect(window.ctx, 4, 4, WINDOW_TRAY_WIDTH - 9,
+		      WINDOW_TRAY_HEIGHT - 9, shadow);
 
 	/* title bar */
-	shaded_rect(window, 5, 5, 250 - 10, 25, false);
+	shaded_rect(window, 5, 5, WINDOW_TRAY_WIDTH - 10,
+		    WINDOW_TRAY_HEIGHT - 10, false);
 	
 	/* text */
-	uint16_t string_x = ((250 / 2)) -
+	uint16_t string_x = ((WINDOW_TRAY_WIDTH / 2)) -
 	                    ((strlen(window.name) * (font_width + FR_KERNING)) / 2);
-	fr_render_string(window.r_ctx, string_x, 11, window.name, graphics_color(0xffffff));
+	fr_render_string(window.ctx, string_x, 11, window.name, graphics_color(0xffffff));
 }
 
-void window_redraw(struct window window)
+void window_redraw(struct rainier_window window)
 {
 	if (window.minimized) {
 		window_redraw_minimized(window);
@@ -221,41 +238,54 @@ void window_redraw(struct window window)
 	struct color highlight = window.focused ? c_highlight : cbg_highlight;
 
 	/* primary window outline */
-	graphics_rect(window.r_ctx, 0, 0, window.width, window.height, highlight);
-	graphics_rect(window.r_ctx, 2, 2, window.width - 2, window.height - 2, shadow);
-	graphics_rect(window.r_ctx, 2, 2, window.width - 4, window.height - 4, primary);
+	graphics_rect(window.ctx, 0, 0, window.width, window.height, highlight);
+	graphics_rect(window.ctx, 2, 2, window.width - 2, window.height - 2, shadow);
+	graphics_rect(window.ctx, 2, 2, window.width - 4, window.height - 4, primary);
 
-	/* primary window shading */
-	graphics_rect(window.r_ctx, 4, 4, window.width - 8, window.height - 8, highlight);
-	graphics_rect(window.r_ctx, 4, 4, window.width - 9, window.height - 9, shadow);
+	/* inside shading */
+	graphics_rect(window.ctx, 4, 4, window.width - 8, window.height - 8, highlight);
+	graphics_rect(window.ctx, 4, 4, window.width - 9, window.height - 9, shadow);
 
 	/* title bar */
 	shaded_rect(window, 5, 5, window.width - 10, 25, false);
 
 	/* content sample 0x4c515d */
-	graphics_rect(window.r_ctx, 5, 30, window.width - 10, window.height - 35, graphics_color(0x4c515d));
+//	graphics_rect(window.ctx, 5, 30, window.width - 10, window.height - 35, graphics_color(0x4c515d));
 
 	/* minimize button */
-	graphics_rect(window.r_ctx, window.width - 30, 6, 1, 24, shadow);
-	graphics_rect(window.r_ctx, window.width - 29, 6, 1, 24, highlight);
+	graphics_rect(window.ctx, window.width - 30, 6, 1, 24, shadow);
+	graphics_rect(window.ctx, window.width - 29, 6, 1, 24, highlight);
 	shaded_rect(window, window.width - 20, 14, 5, 5, false);
+
+	/* close button */
+	graphics_rect(window.ctx, 30, 6, 1, 24, shadow);
+	graphics_rect(window.ctx, 29, 6, 1, 24, highlight);
+	shaded_rect(window, 13, 15, 10, 4, false);
 
 	/* text */
 	uint16_t string_x = ((window.width / 2)) -
 		((strlen(window.name) * (font_width + FR_KERNING)) / 2);
-	fr_render_string(window.r_ctx, string_x, 11, window.name, graphics_color(0xffffff));
+	fr_render_string(window.ctx, string_x, 11, window.name, graphics_color(0xffffff));
+
+	/* draw content */
+	graphics_bake_contexts(window.client_ctx, 0, 0, 5, 30,
+	                window.width - 10, window.height - 35, window.ctx);
 }
 
-void window_restore(struct window *window)
+void window_restore(struct rainier_window *window)
 {
 	window->minimized = false;
 	window->focused = true;
+	window->ctx.width = window->width;
+	window->ctx.height = window->height;
 	window_redraw(*window);
 }
 
-void window_minimize(struct window *window)
+void window_minimize(struct rainier_window *window)
 {
 	window->minimized = true;
 	window->focused = false;
+	window->ctx.width = WINDOW_TRAY_WIDTH;
+	window->ctx.height = WINDOW_TRAY_HEIGHT;
 	window_redraw(*window);
 }

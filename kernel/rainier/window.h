@@ -30,31 +30,35 @@
 #define WINDOW_AREA_MINIMIZE    0b01000000
 #define WINDOW_AREA_CLOSE       0b10000000
 
-struct window {
+#define WINDOW_TRAY_WIDTH       250
+#define WINDOW_TRAY_HEIGHT      50
+
+struct rainier_window {
 	bool present;
 	char *name;
 	int x, y;
 	int last_tray_y, last_tray_x;
-	uint16_t width, height;
+	int width, height;
 	bool focused;
 	bool minimized;
 
-	struct render_context r_ctx;
+	struct render_context ctx;
+	struct render_context client_ctx;
 };
 
-struct window* window_find_front(void);
+struct rainier_window* window_find_front(void);
 
-void window_bring_to_front(struct window *window);
+void window_bring_to_front(struct rainier_window *window);
 
-void window_handle_drag(struct window *window, uint8_t flags,
+void window_handle_drag(struct rainier_window *window, uint8_t flags,
                         int delta_x, int delta_y);
 
-uint8_t window_locate_click(int x, int y, struct window window);
+uint8_t window_locate_click(int x, int y, struct rainier_window window);
 
-void window_restore(struct window *window);
+void window_restore(struct rainier_window *window);
 
-void window_minimize(struct window *window);
+void window_minimize(struct rainier_window *window);
 
-void window_redraw(struct window window);
+void window_redraw(struct rainier_window window);
 
 #endif /* RAINIER_WINDOW_H */

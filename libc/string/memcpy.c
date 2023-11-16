@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 
-/* todo https://stackoverflow.com/questions/51494787/optimization-in-memcpy-implementation */
+/* todo apparently rep movsb is faster on x86 */
 void* memcpy(void* restrict dest_ptr, const void* restrict src_ptr, size_t n)
 {
 	unsigned char *pcDst = (unsigned char *) dest_ptr;
@@ -24,13 +24,13 @@ void* memcpy(void* restrict dest_ptr, const void* restrict src_ptr, size_t n)
 			((uintptr_t) src_ptr & (sizeof(long) - 1))
 			== ((uintptr_t) dest_ptr & (sizeof(long) - 1))) {
 
-		while (((uintptr_t)pcSrc & (sizeof(long) - 1)) != 0) {
+		while (((uintptr_t) pcSrc & (sizeof(long) - 1)) != 0) {
 			*pcDst++ = *pcSrc++;
 			n--;
 		}
 
-		long *plDst = (long *)pcDst;
-		long const *plSrc = (long const *)pcSrc;
+		long *plDst = (long *) pcDst;
+		long const *plSrc = (long const *) pcSrc;
 
 		/* manually unroll the loop */
 		while (n >= sizeof(long) * 4) {
@@ -48,13 +48,12 @@ void* memcpy(void* restrict dest_ptr, const void* restrict src_ptr, size_t n)
 			n -= sizeof(long);
 		}
 
-		pcDst = (unsigned char *)plDst;
-		pcSrc = (unsigned char const *)plSrc;
+		pcDst = (unsigned char *) plDst;
+		pcSrc = (unsigned char const *) plSrc;
 	}
 
-	while (n--) {
+	while (n--)
 		*pcDst++ = *pcSrc++;
-	}
 
 	return dest_ptr;
 }

@@ -1,4 +1,4 @@
-/*====---------------- rainier.h - Rainier window manager ----------------====*\
+/*====------------------- FILENAME - SHORT DESCRIPTION -------------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that the relevant copyright 
@@ -10,19 +10,4 @@
  * 
 \*====--------------------------------------------------------------------====*/
 
-#ifndef RAINIER_H
-#define RAINIER_H
-
-#define RAINIER_DEBUGGING_ELEMENTS
-
-#include <kernel/driver/mouse.h>
-
-struct rainier_window* rainier_get_windows(void);
-
-void rainier_tick();
-
-void rainier_process_mouse(struct mouse_packet packet);
-
-void rainier_main();
-
-#endif /* RAINIER_H */
+#include "user.h"

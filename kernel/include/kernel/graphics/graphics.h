@@ -92,6 +92,10 @@ void graphics_vgradient(struct render_context ctx, uint32_t x, uint32_t y,
 	uint32_t width, uint32_t height, struct color color_top,
 	struct color color_bottom);
 
+void graphics_hgradient(struct render_context ctx, uint32_t x, uint32_t y,
+                        uint32_t width, uint32_t height, struct color color_left,
+                        struct color color_right);
+
 void graphics_init(void);
 
 #endif /* GRAPHICS_H */

@@ -174,6 +174,38 @@ void graphics_vgradient(struct render_context ctx, uint32_t x, uint32_t y,
 	}
 }
 
+void graphics_hgradient(struct render_context ctx, uint32_t x, uint32_t y,
+                        uint32_t width, uint32_t height, struct color color_left,
+                        struct color color_right)
+{
+	uint8_t *pixel = ctx.framebuffer + (y * ctx.pitch + x * ctx.pixel_width);
+	uint8_t *base_pixel = pixel;
+
+	int delta_r = color_left.r - color_right.r;
+	int delta_g = color_left.g - color_right.g;
+	int delta_b = color_left.b - color_right.b;
+
+	for (uint32_t column = 0; column < width; column++) {
+
+		/* only calculate the color once per column */
+		double p = ((double) column / (double) width);
+		uint8_t b = (uint8_t) (color_left.b + (delta_b * p));
+		uint8_t g = (uint8_t) (color_left.g + (delta_g * p));
+		uint8_t r = (uint8_t) (color_left.r + (delta_r * p));
+
+		for (uint32_t row = 0; row < height; row++) {
+			pixel[0] = b;
+			pixel[1] = g;
+			pixel[2] = r;
+			pixel += ctx.pitch;
+		}
+
+		pixel = base_pixel;
+		pixel += (column + 1) * ctx.pixel_width;
+	}
+}
+
+
 void graphics_init(void)
 {
 	global_rctx.framebuffer = (uint8_t *) mb_info->framebuffer_addr;

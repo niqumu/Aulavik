@@ -13,6 +13,7 @@
 #include <kernel/graphics/graphics.h>
 
 #include <kernel/kernel.h>
+#include <string.h>
 
 struct render_context global_rctx;
 
@@ -66,6 +67,18 @@ void graphics_bake_contexts(struct render_context *src, int src_x, int src_y,
                             int dest_x, int dest_y, uint32_t width,
 			    uint32_t height, struct render_context *dest)
 {
+	/*
+	 * if we are doing a simple copy of an entire buffer onto another
+	 * identical buffer without moving or clipping, we can do a fast
+	 * copy using memcpy()
+	 */
+	if (src_x == 0 && src_y == 0 && dest_x == 0 && dest_y == 0 &&
+			width == src->width && height == src->height &&
+			width == dest->width && height == dest->height) {
+		memcpy(dest->framebuffer, src->framebuffer, src->framebuffer_size);
+		return;
+	}
+
 	if (dest_x < 0) {
 		width -= (0 - dest_x);
 		src_x += (0 - dest_x);

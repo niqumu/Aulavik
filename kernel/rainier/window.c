@@ -65,11 +65,23 @@ struct rainier_window* window_find_front(void)
  */
 void window_bring_to_front(struct rainier_window *window)
 {
+	/* don't do anything if the window isn't valid */
 	if (window == NULL || window->minimized)
 		return;
 
 	rainier_set_focused_window(window);
 
+	/*
+	 * don't rearrange anything if the window is anchored to the back, or
+	 * if the current front window is anchored to the front
+	 */
+	if ((window->flags & WINDOW_FLAG_ANCHOR_BACK) ||
+	    (rainier_get_top_window()->flags &
+	     WINDOW_FLAG_ANCHOR_TOP)) {
+		return;
+	}
+
+	/* don't do anything if this is already the top window */
 	if (window == rainier_get_top_window())
 		return;
 
@@ -164,13 +176,29 @@ uint8_t window_locate_click(int x, int y, struct rainier_window window)
 
 	uint8_t area = 0;
 
-	if (y < 5) area |= WINDOW_AREA_TOP;
-	if (y > window.height - 10) area |= WINDOW_AREA_BOTTOM;
-	if (x < 10) area |= WINDOW_AREA_LEFT;
-	if (x > window.width - 10) area |= WINDOW_AREA_RIGHT;
+	/* only consider edges if resizing is allowed and a border exists */
+	if (!(window.flags & WINDOW_FLAG_LOCK_SIZE) &&
+			!(window.flags & WINDOW_FLAG_NO_BORDER)) {
+		if (y < 5) area |= WINDOW_AREA_TOP;
+		if (y > window.height - 10) area |= WINDOW_AREA_BOTTOM;
+		if (x < 10) area |= WINDOW_AREA_LEFT;
+		if (x > window.width - 10) area |= WINDOW_AREA_RIGHT;
+	}
 
-	if (area == WINDOW_AREA_NONE)
-		return y < 30 ? WINDOW_AREA_TITLEBAR : WINDOW_AREA_CONTENT;
+	/* if we still haven't found the area */
+	if (area == WINDOW_AREA_NONE) {
+
+		if (x < 0 || y < 0 || x > window.width || y > window.height)
+			return WINDOW_AREA_NONE;
+
+		/* only consider the title bar if it exists */
+		if (!(window.flags & WINDOW_FLAG_NO_TITLE)) {
+			if (y < WINDOW_TITLEBAR_SIZE + WINDOW_BORDER_SIZE)
+				return WINDOW_AREA_TITLEBAR;
+		}
+
+		return WINDOW_AREA_CONTENT;
+	}
 
 	return area;
 }
@@ -231,36 +259,48 @@ static inline void window_redraw_border(struct rainier_window *window)
 	struct color shadow = focused ? c_shadow : cbg_shadow;
 	struct color highlight = focused ? c_highlight : cbg_highlight;
 
-	/* primary window outline */
-	graphics_rect(&window->ctx, 0, 0, window->width, window->height, highlight);
-	graphics_rect(&window->ctx, 2, 2, window->width - 2, window->height - 2, shadow);
-	graphics_rect(&window->ctx, 2, 2, window->width - 4, window->height - 4, primary);
+	int border = 0;
 
-	graphics_plot_pixel(&window->ctx, 1, window->height - 1, shadow);
-	graphics_plot_pixel(&window->ctx, window->width - 1, 1, shadow);
+	/* draw the border, if it's enabled */
+	if (!(window->flags & WINDOW_FLAG_NO_BORDER)) {
 
-	/* inside shading */
-	graphics_rect(&window->ctx, 4, 4, window->width - 8, window->height - 8, highlight);
-	graphics_rect(&window->ctx, 4, 4, window->width - 9, window->height - 9, shadow);
+		border = 5;
 
-	/* title bar */
-	shaded_rect(window, 5, 5, window->width - 10, 25, false);
+		/* primary window outline */
+		graphics_rect(&window->ctx, 0, 0, window->width, window->height, highlight);
+		graphics_rect(&window->ctx, 2, 2, window->width - 2, window->height - 2, shadow);
+		graphics_rect(&window->ctx, 2, 2, window->width - 4, window->height - 4, primary);
 
-	/* minimize button */
-	graphics_rect(&window->ctx, window->width - 30, 6, 1, 24, shadow);
-	graphics_rect(&window->ctx, window->width - 29, 6, 1, 24, highlight);
-	shaded_rect(window, window->width - 20, 14, 5, 5, false);
+		graphics_plot_pixel(&window->ctx, 1, window->height - 1, shadow);
+		graphics_plot_pixel(&window->ctx, window->width - 1, 1, shadow);
 
-	/* close button */
-	graphics_rect(&window->ctx, 29, 6, 1, 24, shadow);
-	graphics_rect(&window->ctx, 30, 6, 1, 24, highlight);
-	shaded_rect(window, 13, 15, 10, 4, false);
+		/* inside shading */
+		graphics_rect(&window->ctx, 4, 4, window->width - 8, window->height - 8, highlight);
+		graphics_rect(&window->ctx, 4, 4, window->width - 9, window->height - 9, shadow);
+	}
 
-	/* text */
-	uint16_t string_w = strlen(window->title) * (font_width + FR_KERNING);
-	uint16_t string_x = (window->width / 2) - (string_w / 2);
-	fr_render_string(window->ctx, string_x, 11,
-	                 window->title, graphics_color(0xffffff));
+	/* draw the title bar, if it's enabled */
+	if (!(window->flags & WINDOW_FLAG_NO_TITLE)) {
+
+		/* title bar */
+		shaded_rect(window, border, border, window->width - border * 2, 25, false);
+
+		/* minimize button */
+		graphics_rect(&window->ctx, window->width - 25 - border, 1 + border, 1, 24, shadow);
+		graphics_rect(&window->ctx, window->width - 24 - border, border, 1, 24, highlight);
+		shaded_rect(window, window->width - 15 - border, 9 + border, 5, 5, false);
+
+		/* close button */
+		graphics_rect(&window->ctx, 24 + border, 1 + border, 1, 24, shadow);
+		graphics_rect(&window->ctx, 25 + border, 1 + border, 1, 24, highlight);
+		shaded_rect(window, 8 + border, 10 + border, 10, 4, false);
+
+		/* text */
+		uint16_t string_w = strlen(window->title) * (font_width + FR_KERNING);
+		uint16_t string_x = (window->width / 2) - (string_w / 2);
+		fr_render_string(window->ctx, string_x, 6 + border,
+		                 window->title, graphics_color(0xffffff));
+	}
 }
 
 /**
@@ -270,7 +310,20 @@ static inline void window_redraw_border(struct rainier_window *window)
  */
 void window_redraw_content(struct rainier_window *window)
 {
-	graphics_bake_contexts(&window->client_ctx, 0, 0, 5, 30,
+	int x = 0, y = 0;
+
+	/* if the title bar is enabled, move the content down */
+	if (!(window->flags & WINDOW_FLAG_NO_TITLE)) {
+		y += WINDOW_TITLEBAR_SIZE;
+	}
+
+	/* if the border is enabled, move the content down and right */
+	if (!(window->flags & WINDOW_FLAG_NO_BORDER)) {
+		x += WINDOW_BORDER_SIZE;
+		y += WINDOW_BORDER_SIZE;
+	}
+
+	graphics_bake_contexts(&window->client_ctx, 0, 0, x, y,
 	                       window->client_ctx.width,
 	                       window->client_ctx.height, &window->ctx);
 }
@@ -375,9 +428,19 @@ void window_resize(struct rainier_window *window, int w, int h, int *dw, int *dh
 	window->ctx.width = window->width;
 	window->ctx.height = window->height;
 
-	window->client_ctx.width = window->width - (WINDOW_BORDER_SIZE * 2);
-	window->client_ctx.height =
-		window->height -(WINDOW_BORDER_SIZE * 2) - WINDOW_TITLEBAR_SIZE;
+	window->client_ctx.width = window->ctx.width;
+	window->client_ctx.height = window->ctx.height;
+
+	/* if the title bar is enabled, shrink the content area */
+	if (!(window->flags & WINDOW_FLAG_NO_TITLE)) {
+		window->client_ctx.height -= WINDOW_TITLEBAR_SIZE;
+	}
+
+	/* if the border is enabled, shrink the client area */
+	if (!(window->flags & WINDOW_FLAG_NO_BORDER)) {
+		window->client_ctx.width -= (WINDOW_BORDER_SIZE * 2);
+		window->client_ctx.height -= (WINDOW_BORDER_SIZE * 2);
+	}
 
 	window_redraw_later(window);
 }
@@ -407,6 +470,18 @@ void window_set_title(struct rainier_window *window, char *title)
 	window_redraw_later(window);
 }
 
+void window_set_flags(struct rainier_window *window, uint8_t flags)
+{
+	window->flags = flags;
+
+	/*
+	 * the resize function updates the framebuffer sizes, which could have
+	 * just changed if the window had its border/title bar toggled
+	 */
+	window_resize(window, window->width, window->height, NULL, NULL);
+}
+
+
 /**
  * Creates and returns a window with the given title and dimensions. Memory
  * is automatically allocated for the title and framebuffers. This function
@@ -432,14 +507,15 @@ struct rainier_window window_create(char *title, int width, int height)
 
 	struct rainier_window window;
 	window.minimized = false;
+	window.flags = 0;
 	window.x = 100;
 	window.y = 100;
 
 	window.handle = 0; /* TODO */
 
-	window.ctx = *rainier_get_background_ctx();
+	window.ctx = *rainier_get_buffer();
 	window.ctx.framebuffer = malloc(window.ctx.framebuffer_size);
-	window.client_ctx = *rainier_get_background_ctx();
+	window.client_ctx = *rainier_get_buffer();
 	window.client_ctx.framebuffer = calloc(window.ctx.framebuffer_size);
 
 	window_resize(&window, width, height, NULL, NULL);

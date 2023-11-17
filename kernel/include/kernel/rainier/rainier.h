@@ -27,7 +27,7 @@ struct rainier_window* rainier_get_back_window(void);
 
 void rainier_set_back_window(struct rainier_window *window);
 
-struct render_context* rainier_get_background_ctx(void);
+struct render_context* rainier_get_buffer(void);
 
 void rainier_set_focused_window(struct rainier_window *window);
 

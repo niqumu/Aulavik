@@ -21,7 +21,6 @@
 #include "window.h"
 #include "kernel/logger.h"
 
-struct render_context background_rctx;
 struct render_context cursor_rctx;
 
 struct render_context double_buffer;
@@ -68,11 +67,6 @@ void rainier_set_back_window(struct rainier_window *window)
 	back_window = window;
 }
 
-struct render_context* rainier_get_background_ctx(void)
-{
-	return &background_rctx;
-}
-
 void rainier_set_focused_window(struct rainier_window *window)
 {
 	if (window == focused_window)
@@ -86,6 +80,11 @@ void rainier_set_focused_window(struct rainier_window *window)
 
 	if (window != NULL)
 		window_redraw_later(window);
+}
+
+struct render_context* rainier_get_buffer(void)
+{
+	return &double_buffer;
 }
 
 void rainier_tick()
@@ -130,7 +129,7 @@ inline void rainier_render_windows(void)
 		}
 
 		if (!window->last_window)
-			return;
+			break;
 		
 		window = window->last_window;
 	}
@@ -144,27 +143,6 @@ void rainier_render_debug(void)
 	sprintf(fps_str, "FPS: %d", fps);
 	fr_render_string(double_buffer, 0, 0, fps_str, color_15);
 	frames++;
-
-	fr_render_string(double_buffer, 0, 20, "Focused:", color_7);
-	fr_render_string(double_buffer, 90, 20, focused_window->title, color_15);
-	fr_render_string(double_buffer, 10, 35, "Last:", color_7);
-	fr_render_string(double_buffer, 70, 35, focused_window->last_window->title, color_15);
-	fr_render_string(double_buffer, 10, 50, "Next:", color_7);
-	fr_render_string(double_buffer, 70, 50, focused_window->next_window->title, color_15);
-
-	fr_render_string(double_buffer, 0, 80, "Top:", color_7);
-	fr_render_string(double_buffer, 50, 80, top_window->title, color_15);
-	fr_render_string(double_buffer, 10, 95, "Last:", color_7);
-	fr_render_string(double_buffer, 70, 95, top_window->last_window->title, color_15);
-	fr_render_string(double_buffer, 10, 110, "Next:", color_7);
-	fr_render_string(double_buffer, 70, 110, top_window->next_window->title, color_15);
-
-	fr_render_string(double_buffer, 0, 140, "Back:", color_7);
-	fr_render_string(double_buffer, 60, 140, back_window->title, color_15);
-	fr_render_string(double_buffer, 10, 155, "Last:", color_7);
-	fr_render_string(double_buffer, 70, 155, back_window->last_window->title, color_15);
-	fr_render_string(double_buffer, 10, 170, "Next:", color_7);
-	fr_render_string(double_buffer, 70, 170, back_window->next_window->title, color_15);
 #endif /* RAINIER_DEBUGGING_ELEMENTS */
 }
 
@@ -179,20 +157,12 @@ void rainier_render(void)
 		                   cursor_y - last_cursor_y);
 	}
 
-	/* background */
-	graphics_bake_contexts(&background_rctx, 0,
-			       0, 0, 0,
-			       background_rctx.width,
-			       background_rctx.height,
-			       &double_buffer);
-
 	/* windows */
 	rainier_render_windows();
 
 	/* cursor */
-	graphics_bake_contexts(&cursor_rctx, 0, 0, cursor_x,
-			       cursor_y, cursor_rctx.width, cursor_rctx.height,
-			       &double_buffer);
+	graphics_bake_contexts(&cursor_rctx, 0, 0, cursor_x, cursor_y,
+		cursor_rctx.width, cursor_rctx.height, &double_buffer);
 
 #ifdef RAINIER_DEBUGGING_ELEMENTS
 	rainier_render_debug();
@@ -209,11 +179,11 @@ void rainier_render(void)
 void rainier_process_mouse(struct mouse_packet packet)
 {
 	mouse_x += packet.delta_x;
-	mouse_x = mouse_x < 0 ? 0 : (mouse_x > (int) background_rctx.width ?
-		(int) background_rctx.width : mouse_x);
+	mouse_x = mouse_x < 0 ? 0 : (mouse_x > (int) double_buffer.width ?
+		(int) double_buffer.width : mouse_x);
 	mouse_y += packet.delta_y;
-	mouse_y = mouse_y < 0 ? 0 : (mouse_y > (int) background_rctx.height ?
-		(int) background_rctx.height : mouse_y);
+	mouse_y = mouse_y < 0 ? 0 : (mouse_y > (int) double_buffer.height ?
+		(int) double_buffer.height : mouse_y);
 
 	if (packet.left_state) {
 
@@ -336,19 +306,26 @@ void rainier_destroy_window(struct rainier_window *window)
 
 void rainier_main()
 {
-	background_rctx = *graphics_get_global_rctx();
-	background_rctx.framebuffer = malloc(background_rctx.framebuffer_size);
-
+	/* set up the main framebuffer */
 	double_buffer = *graphics_get_global_rctx();
-	double_buffer.framebuffer = malloc(background_rctx.framebuffer_size);
+	double_buffer.framebuffer = malloc(double_buffer.framebuffer_size);
 
-	graphics_vgradient(&background_rctx, 0, 0, background_rctx.width,
-	                   background_rctx.height,graphics_color(0x2c5364),
-	                   graphics_color(0x0f2027));
+	/* add the desktop window */
+	struct rainier_window desktop_window = window_create("Desktop",
+		(int) double_buffer.width, (int) double_buffer.height);
+	desktop_window.x = 0;
+	desktop_window.y = 0;
+	window_set_flags(&desktop_window, WINDOW_FLAG_NO_BORDER |
+		WINDOW_FLAG_NO_TITLE | WINDOW_FLAG_ANCHOR_BACK);
+	graphics_vgradient(&desktop_window.client_ctx, 0, 0, double_buffer.width,
+                   double_buffer.height, graphics_color(0x2c5364),
+                   graphics_color(0x0f2027));
+	rainier_add_window(desktop_window);
 
-	cursor_rctx = background_rctx;
-	cursor_rctx.framebuffer = malloc(32 * 32);
-	cursor_rctx.framebuffer_size = 32 * 32;
+	/* set up the cursor context */
+	cursor_rctx = double_buffer;
+	cursor_rctx.framebuffer = malloc(20 * 27 * 3);
+	cursor_rctx.framebuffer_size = 20 * 27 * 3;
 	cursor_rctx.width = 20;
 	cursor_rctx.height = 27;
 	cursor_rctx.blending = true;
@@ -372,10 +349,8 @@ void rainier_main()
 			   window2.client_ctx.width, window2.client_ctx.height,
 	                   graphics_color_rgb(255, 0, 0),
 			   graphics_color_rgb(0, 0, 255));
+	window_set_flags(&window2, WINDOW_FLAG_LOCK_SIZE);
 	rainier_add_window(window2);
-
-	struct rainier_window window3 = window_create("Terminal", 0, 0);
-	rainier_add_window(window3);
 
 	while (true)
 		rainier_render();

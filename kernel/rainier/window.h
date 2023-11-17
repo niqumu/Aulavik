@@ -41,12 +41,19 @@
 
 #define WINDOW_MAX_TITLE_LENGTH 63
 
+#define WINDOW_FLAG_NO_TITLE            0b00000001
+#define WINDOW_FLAG_NO_BORDER           0b00000010
+#define WINDOW_FLAG_LOCK_SIZE           0b00100000
+#define WINDOW_FLAG_ANCHOR_TOP          0b01000000
+#define WINDOW_FLAG_ANCHOR_BACK         0b10000000
+
 struct rainier_window {
 	char *title;
 	int x, y;
 	int last_tray_y, last_tray_x;
 	int width, height;
 	bool minimized;
+	uint8_t flags;
 
 	uint32_t handle;
 	bool awaiting_redraw;
@@ -154,6 +161,8 @@ void window_resize(struct rainier_window *window, int w, int h, int *dw, int *dh
  * @param title The new title the window should display
  */
 void window_set_title(struct rainier_window *window, char *title);
+
+void window_set_flags(struct rainier_window *window, uint8_t flags);
 
 /**
  * Creates and returns a window with the given title and dimensions. Memory

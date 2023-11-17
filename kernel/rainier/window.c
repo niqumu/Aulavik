@@ -38,14 +38,18 @@ int *drag_dw, *drag_dh;
  */
 struct rainier_window* window_find_front(void)
 {
-	for (int i = 0; i < 32; i++) {
-		if (rainier_get_windows()[i].present &&
-		                !rainier_get_windows()[i].minimized) {
-			return &rainier_get_windows()[i];
-		}
-	}
+	struct rainier_window *ptr = rainier_get_top_window();
 
-	return NULL;
+	while (true) {
+
+		if (!ptr->minimized)
+			return ptr;
+
+		if (!ptr->next_window)
+			return NULL;
+
+		ptr = ptr->next_window;
+	}
 }
 
 /**
@@ -61,24 +65,26 @@ struct rainier_window* window_find_front(void)
  */
 void window_bring_to_front(struct rainier_window *window)
 {
-	if (!window->present || window->minimized)
+	if (window == NULL || window->minimized)
 		return;
 
-	for (int i = 0; i < 32; i++) {
-		if (&rainier_get_windows()[i] != window)
-			continue;
-		
-		struct rainier_window w_cpy = *window;
-		rainier_set_focused_window(NULL);
+	rainier_set_focused_window(window);
 
-		for (int j = i - 1; j >= 0; j--) {
-			rainier_get_windows()[j + 1] = rainier_get_windows()[j];
-		}
-		
-		rainier_get_windows()[0] = w_cpy;
-		rainier_set_focused_window(&rainier_get_windows()[0]);
+	if (window == rainier_get_top_window())
 		return;
-	}
+
+	/* fill the gap; attach the window's neighbors */
+	window->next_window->last_window = window->last_window;
+	window->last_window->next_window = window->next_window;
+
+	if (window == rainier_get_back_window())
+		rainier_set_back_window(window->last_window);
+
+	rainier_get_top_window()->last_window = window;
+	window->next_window = rainier_get_top_window();
+	window->last_window = NULL;
+
+	rainier_set_top_window(window);
 }
 
 void window_handle_drag(struct rainier_window *window, uint8_t flags,
@@ -214,6 +220,8 @@ static inline void window_redraw_minimized(struct rainier_window *window)
 	uint16_t string_x = ((WINDOW_TRAY_WIDTH / 2)) -
 	                    ((strlen(window->title) * (font_width + FR_KERNING)) / 2);
 	fr_render_string(window->ctx, string_x, 11, window->title, graphics_color(0xffffff));
+
+	window->awaiting_redraw = false;
 }
 
 static inline void window_redraw_border(struct rainier_window *window)
@@ -268,8 +276,11 @@ void window_redraw_content(struct rainier_window *window)
 }
 
 /**
- * Redraws the provided window, drawing the frame and latest contents of the
- * content framebuffer onto the master framebuffer for the window.
+ * Immediately redraws the provided window, drawing the frame and latest
+ * contents of the content framebuffer onto the master framebuffer for the
+ * window.
+ *
+ * In most use cases, window_redraw_later() can be used instead.
  *
  * This function should only be called when the window has changed in such a
  * way that the frame must be redrawn, i.e. it was minimized/restored, resized,
@@ -280,6 +291,8 @@ void window_redraw_content(struct rainier_window *window)
  */
 void window_redraw(struct rainier_window *window)
 {
+	window->awaiting_redraw = false;
+
 	if (window->minimized) {
 		window_redraw_minimized(window);
 		return;
@@ -287,6 +300,18 @@ void window_redraw(struct rainier_window *window)
 
 	window_redraw_border(window);
 	window_redraw_content(window);
+}
+
+/**
+ * Marks the provided window as needed to be repainted on the next frame. This
+ * is preferrable to immediately redrawing the window, as there may be multiple
+ * operations per frame that require the window to be redrawn, which only needs
+ * to happen one time.
+ * @param window The window to schedule repainting for
+ */
+void window_redraw_later(struct rainier_window *window)
+{
+	window->awaiting_redraw = true;
 }
 
 /**
@@ -313,7 +338,7 @@ void window_minimize(struct rainier_window *window)
 	window->ctx.width = WINDOW_TRAY_WIDTH;
 	window->ctx.height = WINDOW_TRAY_HEIGHT;
 	rainier_set_focused_window(window_find_front());
-	window_redraw_minimized(window);
+	window_redraw_later(window);
 }
 
 /**
@@ -354,7 +379,7 @@ void window_resize(struct rainier_window *window, int w, int h, int *dw, int *dh
 	window->client_ctx.height =
 		window->height -(WINDOW_BORDER_SIZE * 2) - WINDOW_TITLEBAR_SIZE;
 
-	window_redraw(window);
+	window_redraw_later(window);
 }
 
 /**
@@ -379,7 +404,7 @@ void window_set_title(struct rainier_window *window, char *title)
 		window->title[62] = '.';
 	}
 
-	window_redraw(window);
+	window_redraw_later(window);
 }
 
 /**
@@ -391,15 +416,24 @@ void window_set_title(struct rainier_window *window, char *title)
  * the window_destroy function in order to free its memory.
  *
  * @param title The title of the window to create
- * @param width The preferred width of the window
- * @param height The preferred height of the window
+ * @param width The preferred width of the window. If zero is passed, the
+ *      system default window width is used instead.
+ * @param height The preferred height of the window. If zero is passed, the
+ *      system default window height is used instead.
  * @return A new window, ready to use, with the provided values
  */
 struct rainier_window window_create(char *title, int width, int height)
 {
+	if (width == 0)
+		width = WINDOW_DEFAULT_WIDTH;
+
+	if (height == 0)
+		height = WINDOW_DEFAULT_HEIGHT;
+
 	struct rainier_window window;
-	window.present = true;
 	window.minimized = false;
+	window.x = 100;
+	window.y = 100;
 
 	window.handle = 0; /* TODO */
 

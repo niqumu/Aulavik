@@ -66,6 +66,26 @@ void graphics_bake_contexts(struct render_context *src, int src_x, int src_y,
                             int dest_x, int dest_y, uint32_t width,
 			    uint32_t height, struct render_context *dest)
 {
+	if (dest_x < 0) {
+		width -= (0 - dest_x);
+		src_x += (0 - dest_x);
+		dest_x = 0;
+	}
+
+	if (dest_y < 0) {
+		height -= (0 - dest_y);
+		src_y += (0 - dest_y);
+		dest_y = 0;
+	}
+
+	if (dest_x + width > dest->width) {
+		width -= ((dest_x + width) - dest->width);
+	}
+
+	if (dest_y + height > dest->height) {
+		height -= ((dest_y + height) - dest->height);
+	}
+
 	register uint8_t *dest_pixel = dest->framebuffer + (dest_y * dest->pitch +
 		dest_x * dest->pixel_width);
 	register uint8_t *src_pixel = src->framebuffer + (src_y * src->pitch +
@@ -73,24 +93,8 @@ void graphics_bake_contexts(struct render_context *src, int src_x, int src_y,
 	uint8_t *dest_base_pixel = dest_pixel;
 	uint8_t *src_base_pixel = src_pixel;
 
-	bool culling_needed = dest_x < 0 || dest_y < 0 ||
-	        dest_x + width > (uint32_t) dest->width ||
-		dest_y + height > (uint32_t) dest->height;
-
 	for (uint32_t row = 0; row < height; row++) {
 		for (uint32_t column = 0; column < width; column++) {
-
-			/* skip to the next row if we're off the x-axis */
-			if (culling_needed && dest_x + column >=
-					(uint32_t) dest->width) {
-				goto end_row;
-			}
-
-			/* skip to the next column if we're below the y-axis */
-			if (culling_needed && (dest_x + column < 0 ||
-					dest_y + row < 0)) {
-				goto end_column;
-			}
 
 			/*
 			 * skip drawing the pixel if the source framebuffer has
@@ -112,15 +116,10 @@ end_column:
 			dest_pixel += dest->pixel_width;
 		}
 
-end_row:
 		src_pixel = src_base_pixel;
 		src_pixel += (row + 1) * src->pitch;
 		dest_pixel = dest_base_pixel;
 		dest_pixel += (row + 1) * dest->pitch;
-
-		/* stop drawing if we're off the y-axis */
-		if (culling_needed && dest_y + row >= (uint32_t) dest->height)
-			return;
 	}
 }
 

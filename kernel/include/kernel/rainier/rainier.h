@@ -17,9 +17,15 @@
 
 #include <kernel/driver/mouse.h>
 
-struct rainier_window* rainier_get_windows(void);
-
 struct rainier_window* rainier_get_focused_window(void);
+
+struct rainier_window* rainier_get_top_window(void);
+
+void rainier_set_top_window(struct rainier_window *window);
+
+struct rainier_window* rainier_get_back_window(void);
+
+void rainier_set_back_window(struct rainier_window *window);
 
 struct render_context* rainier_get_background_ctx(void);
 

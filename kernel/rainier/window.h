@@ -36,18 +36,22 @@
 
 #define WINDOW_MIN_WIDTH        300
 #define WINDOW_MIN_HEIGHT       200
+#define WINDOW_DEFAULT_WIDTH    700
+#define WINDOW_DEFAULT_HEIGHT   500
 
 #define WINDOW_MAX_TITLE_LENGTH 63
 
 struct rainier_window {
-	bool present;
 	char *title;
 	int x, y;
 	int last_tray_y, last_tray_x;
 	int width, height;
 	bool minimized;
 
-	uint64_t handle;
+	uint32_t handle;
+	bool awaiting_redraw;
+	struct rainier_window *next_window;
+	struct rainier_window *last_window;
 
 	struct render_context ctx;
 	struct render_context client_ctx;
@@ -97,6 +101,15 @@ void window_redraw_content(struct rainier_window *window);
  * @param window The window to redraw
  */
 void window_redraw(struct rainier_window *window);
+
+/**
+ * Marks the provided window as needed to be repainted on the next frame. This
+ * is preferrable to immediately redrawing the window, as there may be multiple
+ * operations per frame that require the window to be redrawn, which only needs
+ * to happen one time.
+ * @param window The window to schedule repainting for
+ */
+void window_redraw_later(struct rainier_window *window);
 
 /**
  * Restores (un-minimizes) the provided window. Doing so will place it on top
@@ -151,8 +164,10 @@ void window_set_title(struct rainier_window *window, char *title);
  * the window_destroy function in order to free its memory.
  *
  * @param title The title of the window to create
- * @param width The preferred width of the window
- * @param height The preferred height of the window
+ * @param width The preferred width of the window. If zero is passed, the
+ *      system default window width is used instead.
+ * @param height The preferred height of the window. If zero is passed, the
+ *      system default window height is used instead.
  * @return A new window, ready to use, with the provided values
  */
 struct rainier_window window_create(char *title, int width, int height);

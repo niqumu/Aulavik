@@ -15,9 +15,11 @@
 
 #include <stdint.h>
 
-typedef uint64_t WindowHandle;
+typedef uint32_t WindowHandle;
 
 WindowHandle CreateWindow(const char *title);
+
+void DestroyWindow(WindowHandle window);
 
 void ShowWindow(WindowHandle window);
 
@@ -25,8 +27,8 @@ void HideWindow(WindowHandle window);
 
 void SetWindowSize(WindowHandle window, int w, int h, int *dw, int *dh);
 
-void SetWindowPosition(WindowHandle handle, int x, int y);
+void SetWindowPosition(WindowHandle window, int x, int y);
 
-void GetWindowSizePos(WindowHandle handle, int *x, int *y, int *w, int *h);
+void GetWindowSizePos(WindowHandle window, int *x, int *y, int *w, int *h);
 
 #endif /* _AULAVIK_USER_H */

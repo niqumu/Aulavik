@@ -20,7 +20,8 @@ int putchar(int i)
 #ifdef __AULAVIK_LIBK
         terminal_putc((char) i);
 #else
-	syscall_write(0, &i, 1);
+	char c = (char) i;
+	syscall_write(0, &c, 1);
 #endif /* __AULAVIK_LIBK */
         return i;
 }

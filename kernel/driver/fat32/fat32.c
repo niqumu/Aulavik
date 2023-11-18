@@ -235,7 +235,8 @@ void fat32_read_directory(uint32_t start_cluster,
  * directory tables, the fat32_read_directory function should be used instead.
  *
  * @param start_cluster The first cluster of the file
- * @param dest A sufficiently large buffer to be read into
+ * @param dest A sufficiently large buffer to be read into. The buffer must
+ *      be as large as the file, rounded up to the drive cluster size.
  * @param count A pointer to the number of bytes read
  */
 void fat32_read_file(uint32_t start_cluster, uint8_t* dest, uint32_t *size)
@@ -265,6 +266,7 @@ void fat32_read_file(uint32_t start_cluster, uint8_t* dest, uint32_t *size)
 		if (cluster >= cluster_eoc)
 			return; /* FAT says we've reached the end */
 	}
+
 }
 
 void fat32_init(void)

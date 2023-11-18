@@ -22,7 +22,7 @@ void syscalls_write(uint32_t edi, uint32_t esi, uint32_t edx)
 //	printf("4: \"%s\"\n", (char*) esi);
 
 	char *buffer = (char *) esi;
-	for (size_t i = 0; i < edx - 1; i++) {
+	for (size_t i = 0; i < edx; i++) {
 		terminal_putc(buffer[i]);
 	}
 

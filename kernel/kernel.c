@@ -25,8 +25,11 @@
 #include <kernel/memory/heap.h>
 #include <kernel/memory/paging.h>
 #include <kernel/terminal.h>
+#include <string.h>
+#include <stdlib.h>
 #include "kernel/task/multitasking.h"
 #include "kernel/rainier/rainier.h"
+#include "kernel/loader/loader.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -47,7 +50,7 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 		panic("Bootloader didn't give a memory map!");
 	}
 
-//	paging_init();
+//	paging_init(); // work in progress, crashes instantly still
 	heap_init();
 }
 
@@ -62,7 +65,7 @@ void kernel_main(void)
 	serial_init(BAUD_38400);
 	ps2_init();
 	keyboard_init();
-	mouse_init();
+//	mouse_init();
 	pci_init();
 	ata_init();
 	fat32_init();
@@ -72,10 +75,23 @@ void kernel_main(void)
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
 		mb_info->mem_upper);
 
-	k_print("Entering Rainier...");
-	terminal_exit();
+//	k_print("Entering Rainier...");
+//	terminal_exit();
+//	rainier_main();
+	terminal_clear();
 
-	rainier_main();
+	k_debug("Searching for executable in root directory");
+
+	for (uint32_t i = 0; i < fat32_get_root()->entry_count; i++) {
+
+		struct fat32_directory_entry entry =fat32_get_root()->entries[i];
+
+		if (strcmp(entry.extension, "elf") == 0) {
+			k_ok("Found executable: %s", entry.display_name);
+			loader_load(entry);
+		}
+	}
+
 //	shell_main();
 
 	while (true)

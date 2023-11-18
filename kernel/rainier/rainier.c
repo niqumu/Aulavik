@@ -349,7 +349,6 @@ void rainier_main()
 			   window2.client_ctx.width, window2.client_ctx.height,
 	                   graphics_color_rgb(255, 0, 0),
 			   graphics_color_rgb(0, 0, 255));
-	window_set_flags(&window2, WINDOW_FLAG_LOCK_SIZE);
 	rainier_add_window(window2);
 
 	while (true)

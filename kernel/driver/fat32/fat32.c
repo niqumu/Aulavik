@@ -205,14 +205,21 @@ void fat32_read_directory(uint32_t start_cluster,
 
 	uint32_t cluster = start_cluster;
 	uint8_t buffer[drive.cluster_size];
-	*count = 0;
+	uint32_t *offset;
+
+	if (count != NULL) {
+		*count = 0;
+		offset = count;
+	} else {
+		*offset = 0;
+	}
 
 	while (true) { /* keep reading clusters until the end */
 		memset(buffer, 0, sizeof(buffer));
 		fat32_read_cluster(cluster, buffer);
 
 		/* actually read this cluster of the directory table */
-		if (!fat32_parse_directory_cluster(buffer, dest, count))
+		if (!fat32_parse_directory_cluster(buffer, dest, offset))
 			return; /* directory table says we reached the end */
 
 		/* get the next cluster in the chain from the FAT */
@@ -235,15 +242,22 @@ void fat32_read_file(uint32_t start_cluster, uint8_t* dest, uint32_t *size)
 {
 	uint32_t cluster = start_cluster;
 	uint8_t buffer[drive.cluster_size];
-	*size = 0;
+	uint32_t *offset;
+
+	if (size != NULL) {
+		*size = 0;
+		offset = size;
+	} else {
+		*offset = 0;
+	}
 
 	while (true) { /* keep reading clusters until the end */
 		memset(buffer, 0, sizeof(buffer));
 
 		/* actually read this cluster of the file */
 		fat32_read_cluster(cluster, buffer);
-		memmove(&dest[*size], buffer, drive.cluster_size);
-		(*size) += drive.cluster_size;
+		memmove(&dest[*offset], buffer, drive.cluster_size);
+		(*offset) += drive.cluster_size;
 
 		/* get the next cluster in the chain from the FAT */
 		cluster = fat32_get_table_entry(cluster);

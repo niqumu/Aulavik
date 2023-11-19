@@ -51,19 +51,37 @@ void scheduler_dump(void)
 	}
 }
 
+struct cpu_state_out scheduler_reverse_state(struct cpu_state_in in)
+{
+	struct cpu_state_out out = {0};
+	out.eflags = in.eflags;
+	out.cs = in.cs;
+	out.eip = in.eip;
+	out.eax = in.eax;
+	out.ecx = in.ecx;
+	out.edx = in.edx;
+	out.ebx = in.ebx;
+	out.esp = in.esp;
+	out.ebx = in.ebp;
+	out.esi = in.esi;
+	out.edi = in.edi;
+	return out;
+}
+
 _Noreturn void scheduler_idle(void)
 {
 	while (true)
 		asm("hlt");
 }
 
-_Noreturn void scheduler_load_state(struct cpu_state state)
+//extern void scheduler_load_state(struct cpu_state_out state);
+void scheduler_load_state(struct cpu_state_out state)
 {
 	asm("popa");
 	asm("iret");
 }
 
-void scheduler_switch_next(struct cpu_state old_state)
+void scheduler_switch_next(struct cpu_state_in old_state)
 {
 	/* if there is only one process, do nothing */
 	if (current_process == first_process && !first_process->next_process)
@@ -82,7 +100,7 @@ void scheduler_switch_next(struct cpu_state old_state)
 		current_process->pid, current_process->name);
 
 	current_process->status = ACTIVE;
-//	scheduler_load_state(current_process->state);
+	scheduler_load_state(scheduler_reverse_state(current_process->state));
 }
 
 /**
@@ -114,7 +132,7 @@ void scheduler_exit(int exit_code)
 		first_process = current_process->next_process;
 	}
 
-//	free((void *) current_process->state.ebp);
+	free((void *) current_process->state.ebp);
 	free(current_process);
 
 	asm("sti");
@@ -149,17 +167,18 @@ void scheduler_spawn(char *name, void (*entry) (int, char **),
 		process->next_process = first_process;
 	}
 
-//	process->state.ebp = (uint32_t) calloc(PROCESS_STACK_SIZE);
-//	process->state.esp = process->state.ebp;
-//	process->state.eflags = 0x200 | 0x2;
-//	process->state.eip = (uint32_t) entry;
+	process->state.ebp = (uint32_t) calloc(PROCESS_STACK_SIZE);
+	process->state.esp = process->state.ebp;
+	process->state.eflags = 0x200000 | 0x200 | 0x2;
+	process->state.eip = (uint32_t) entry;
+
+	k_debug("Allocated stack for %s at %x", process->name, process->state.ebp);
 
 	current_process = process;
 	first_process = process;
-	asm("sti");
 
-//	scheduler_load_state(current_process->state);
-	loader_jump_ring3(entry, argc, argv);
+	k_debug("Loading state");
+	scheduler_load_state(scheduler_reverse_state(current_process->state));
 }
 
 void scheduler_create_idle()
@@ -168,6 +187,11 @@ void scheduler_create_idle()
 	idle->status = READY;
 	idle->pid = next_pid++;
 	memcpy(idle->name, "idle", 63);
+
+	idle->state.ebp = (uint32_t) calloc(PROCESS_STACK_SIZE);
+	idle->state.esp = idle->state.ebp;
+	idle->state.eflags = 0x200000 | 0x200 | 0x2;
+	idle->state.eip = (uint32_t) &scheduler_idle;
 
 	first_process = idle;
 	current_process = idle;

@@ -17,7 +17,6 @@
 #include <kernel/driver/pci.h>
 #include <kernel/driver/serial.h>
 
-#include <kernel/bin/shell.h>
 #include <kernel/logger.h>
 #include <kernel/interrupts/idt.h> /* idt_init() */
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
@@ -26,10 +25,6 @@
 #include <kernel/memory/paging.h>
 #include <kernel/terminal.h>
 #include <string.h>
-#include <stdlib.h>
-#include <aulavik/syscall.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include "kernel/task/scheduler.h"
 #include "kernel/rainier/rainier.h"
 #include "kernel/loader/loader.h"
@@ -57,36 +52,6 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 	heap_init();
 }
 
-int test_putchar(int i)
-{
-	char c = (char) i;
-	syscall_write(0, &c, 1);
-//	terminal_putc((char) i);
-	return i;
-}
-
-
-int test_vprintf(const char* restrict format, va_list parameters)
-{
-	char *str;
-	memset(str, 0, 256); // todo this NEEDS to be malloc
-	int ret = vsprintf(str, format, parameters);
-
-	while (*str)
-		test_putchar(*str++);
-
-	return ret;
-}
-
-int test_printf(const char* restrict format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	int i = test_vprintf(format, args);
-	va_end(args);
-	return i;
-}
-
 __attribute__((unused, __noreturn__))
 void kernel_main(void)
 {
@@ -111,10 +76,8 @@ void kernel_main(void)
 //	k_print("Entering Rainier...");
 //	terminal_exit();
 //	rainier_main();
+
 	terminal_clear();
-
-//	test_printf("Hello world!");
-
 	k_debug("Searching for executable in root directory");
 
 	for (uint32_t i = 0; i < fat32_get_root()->entry_count; i++) {

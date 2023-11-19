@@ -283,9 +283,9 @@ __attribute__((unused)) void idt_handle_vec31(uint32_t error)
  * ----------------------------------- */
 
 /* clock */
-__attribute__((unused)) void idt_handle_vec80()
+__attribute__((unused)) void idt_handle_vec80(struct cpu_state_in state)
 {
-	struct cpu_state old_state = {0};
+//	k_debug("eflags: %x", state.eflags);
 
 #ifdef RAINIER_DEBUGGING_ELEMENTS
 	rainier_tick();
@@ -297,7 +297,7 @@ __attribute__((unused)) void idt_handle_vec80()
 	port_pic_eoi();
 
 	if (scheduler_initialized())
-		scheduler_switch_next(old_state);
+		scheduler_switch_next(state);
 }
 
 /* keyboard */

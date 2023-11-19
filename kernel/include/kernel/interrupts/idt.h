@@ -12,6 +12,8 @@
 
 #include <stdint.h> /* uint8_t, uint16_t, uint32_t, uint64_t */
 
+#include <kernel/task/process.h>
+
 #define FLAG_PRESENT            0b10000000
 #define FLAG_PRIVILEGE_0	0b00000000
 #define FLAG_PRIVILEGE_1	0b00100000
@@ -93,7 +95,7 @@ __attribute__((unused)) void idt_handle_vec31(uint32_t error);
  *  IRQs
  * --------------------------------------- */
 
-__attribute__((unused)) void idt_handle_vec80();
+__attribute__((unused)) void idt_handle_vec80(struct cpu_state_in state);
 __attribute__((unused)) void idt_handle_vec81();
 __attribute__((unused)) void idt_handle_vec82();
 __attribute__((unused)) void idt_handle_vec83();

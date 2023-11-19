@@ -15,13 +15,25 @@
 
 #include <stdint.h>
 
-#define PROCESS_STACK_SIZE      1073741824   /* 1 MiB */
+#define PROCESS_STACK_SIZE      1048576         /* 1 MiB */
 
-struct cpu_state {
-	uint32_t eax, ebx, ecx, edx, esi;
-	uint32_t edi, esp, esb, ebp, eip;
+struct cpu_state_in {
+	uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	uint32_t eip;
+	uint32_t cs;
 	uint32_t eflags;
-};
+} __attribute((packed));
+
+struct cpu_state_out {
+//	uint32_t eflags;
+//	uint32_t cs;
+//	uint32_t eip;
+//	uint32_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
+	uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	uint32_t eip;
+	uint32_t cs;
+	uint32_t eflags;
+} __attribute((packed));
 
 enum process_status {
 #define PROCESS_STATUS_ACTIVE   0
@@ -38,7 +50,7 @@ enum process_status {
 };
 
 struct process {
-	struct cpu_state state;
+	struct cpu_state_in state;
 
 	char name[64];
 	uint16_t pid;

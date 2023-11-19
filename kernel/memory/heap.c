@@ -114,7 +114,7 @@ void* heap_alloc(size_t size)
 
 			/* make sure the block is big enough */
 			if (block->size < size_needed)
-				continue;
+				goto next;
 
 			/* split the free block up, writing a header at
 			 * the end of the memory we actually need */
@@ -130,6 +130,7 @@ void* heap_alloc(size_t size)
 			return (void *) (((uint64_t) block) + sizeof(block_header_t));
 		}
 
+next:
 		/* find the next, or stop if we reached the end of memory */
 		if (!(block = memman_next_block(block))) {
 			k_error("Failed to allocate %d bytes!", size_needed);

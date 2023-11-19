@@ -7,8 +7,8 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef AULAVIK_H
-#define AULAVIK_H
+#ifndef _AULAVIK_H
+#define _AULAVIK_H 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,8 +16,10 @@ extern "C" {
 
 int aulavik_main(int argc, char *argv[]);
 
+_Noreturn void _start(int argc, char *argv[]);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* AULAVIK_H */
+#endif /* _AULAVIK_H */

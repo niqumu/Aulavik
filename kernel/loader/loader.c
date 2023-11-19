@@ -1,4 +1,4 @@
-/*====------------------- FILENAME - SHORT DESCRIPTION -------------------====*\
+/*====-------------------- loader.c - Program loader ---------------------====*\
  *
  * This code is a part of the Aulavik project.
  * Usage of these works is permitted provided that the relevant copyright 
@@ -48,6 +48,16 @@ bool loader_verify(struct elf_file elf)
 	return true;
 }
 
+/**
+ * Switch to ring 3 and call a function. Implemented in _loader.asm
+ * @param callee A pointer to the function to be called from ring 3
+ */
+extern void loader_jump_ring3(void *callee);
+
+/**
+ * Load, parse, and execute an ELF file on disk
+ * @param file The file on disk to be executed
+ */
 void loader_load(struct fat32_directory_entry file)
 {
 	/* read and load into memory */
@@ -98,9 +108,12 @@ void loader_load(struct fat32_directory_entry file)
 
 	k_debug("loader: Calling entry point %x", elf.addr_entry_point);
 
-	char *args[] = {file.display_name};
-	int (*entry) (int, char*[]) = (int (*) (int, char*[])) elf.addr_entry_point;
-	entry(1, args);
 
-	k_debug("loader: Called");
+	char *args[] = {file.display_name};
+	void (*entry) (int, char*[]) = (void (*) (int, char*[])) elf.addr_entry_point;
+
+//	entry(1, args);
+	loader_jump_ring3(entry);
+
+//	k_debug("loader: Execution finished");
 }

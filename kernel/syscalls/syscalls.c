@@ -30,6 +30,14 @@ void syscalls_write(uint32_t edi, uint32_t esi, uint32_t edx)
 	asm volatile ("mov $0, %eax");
 }
 
+void syscalls_exit(int status)
+{
+	k_ok("Got exit syscall with status %d", status);
+
+	while (true)
+		asm("hlt");
+}
+
 void syscalls_handle(uint32_t eax, uint32_t edi, uint32_t esi, uint32_t edx)
 {
 //	printf("3: \"%s\"\n", (char*) esi);
@@ -37,6 +45,9 @@ void syscalls_handle(uint32_t eax, uint32_t edi, uint32_t esi, uint32_t edx)
 	switch (eax) {
 	case SYSCALL_WRITE:
 		syscalls_write(edi, esi, edx);
+		break;
+	case SYSCALL_EXIT:
+		syscalls_exit((int) edi);
 		break;
 	}
 }

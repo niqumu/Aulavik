@@ -89,10 +89,10 @@ void panic(char *msg)
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
 #endif /* SERIAL_LOGGING_ENABLED */
 
-	fr_render_string_bg(*graphics_get_global_rctx(), 0, 0, "Kernel panic",
-			 graphics_color_rgb(255, 255, 255), graphics_color_rgb(255, 0, 0));
-	fr_render_string_bg(*graphics_get_global_rctx(), 0, font_height, msg,
-	                    graphics_color_rgb(255, 255, 255), graphics_color_rgb(255, 0, 0));
+//	fr_render_string_bg(*graphics_get_global_rctx(), 0, 0, "Kernel panic",
+//			 graphics_color_rgb(255, 255, 255), graphics_color_rgb(255, 0, 0));
+//	fr_render_string_bg(*graphics_get_global_rctx(), 0, font_height, msg,
+//	                    graphics_color_rgb(255, 255, 255), graphics_color_rgb(255, 0, 0));
 	while (1)
 		asm volatile ("cli; hlt");
 }

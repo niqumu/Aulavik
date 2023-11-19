@@ -1,14 +1,17 @@
 /*====------------------- syscall.h - Aulavik syscalls -------------------====*\
  *
  * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * Usage of these works is permitted provided that the relevant copyright
+ * notice and permission notice shall be included in all copies or substantial
+ * portions of this software and all documentation files.
+ *
+ * Refer to LICENSE for more information. These works are provided with
+ * absolutely no warranty.
  *
 \*====--------------------------------------------------------------------====*/
 
 #ifndef _AULAVIK_SYSCALL_H
-#define _AULAVIK_SYSCALL_H
+#define _AULAVIK_SYSCALL_H 1
 
 #include <stddef.h>
 #include <sys/types.h>
@@ -24,6 +27,7 @@
 
 #define SYSCALL_READ    0
 #define SYSCALL_WRITE   1
+#define SYSCALL_EXIT    60
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +38,8 @@ extern "C" {
  * referred to by the file descriptor fd.
  */
 ssize_t syscall_write(unsigned int fd, const void *buf, size_t count);
+
+_Noreturn void syscall_exit(int status);
 
 #ifdef __cplusplus
 };

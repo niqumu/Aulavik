@@ -1,9 +1,12 @@
 /*====------------ syscall.c - Aulavik syscall implementation ------------====*\
  *
  * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * Usage of these works is permitted provided that the relevant copyright
+ * notice and permission notice shall be included in all copies or substantial
+ * portions of this software and all documentation files.
+ *
+ * Refer to LICENSE for more information. These works are provided with
+ * absolutely no warranty.
  *
 \*====--------------------------------------------------------------------====*/
 
@@ -24,8 +27,6 @@ ssize_t syscall(void)
  */
 ssize_t syscall_write(unsigned int fd, const void *buf, size_t count)
 {
-//	printf("2: \"%s\"\n", buf);
-
 	ASM("mov %0, %%eax" :: "a" (SYSCALL_WRITE));
 	ASM("mov %0, %%edi" :: "g" (fd));
 	ASM("mov %0, %%esi" :: "g" (buf));
@@ -37,4 +38,13 @@ ssize_t syscall_write(unsigned int fd, const void *buf, size_t count)
 
 	/* return the amount of bytes written */
 	return count;
+}
+
+_Noreturn void syscall_exit(int status)
+{
+	ASM("mov %0, %%eax" :: "a" (SYSCALL_EXIT));
+	ASM("mov %0, %%edi" :: "g" (status));
+	syscall();
+
+	__builtin_unreachable();
 }

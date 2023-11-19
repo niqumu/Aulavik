@@ -30,7 +30,7 @@
 #include <aulavik/syscall.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include "kernel/task/multitasking.h"
+#include "kernel/task/scheduler.h"
 #include "kernel/rainier/rainier.h"
 #include "kernel/loader/loader.h"
 
@@ -102,7 +102,7 @@ void kernel_main(void)
 	pci_init();
 	ata_init();
 	fat32_init();
-	multitasking_init();
+	scheduler_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,

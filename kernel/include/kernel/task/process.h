@@ -1,9 +1,12 @@
 /*====----------- process.h - Process structs and definitions ------------====*\
  *
  * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * Usage of these works is permitted provided that the relevant copyright
+ * notice and permission notice shall be included in all copies or substantial
+ * portions of this software and all documentation files.
+ *
+ * Refer to LICENSE for more information. These works are provided with
+ * absolutely no warranty.
  *
 \*====--------------------------------------------------------------------====*/
 
@@ -11,6 +14,8 @@
 #define KERNEL_PROCESS_H
 
 #include <stdint.h>
+
+#define PROCESS_STACK_SIZE      1073741824   /* 1 MiB */
 
 struct cpu_state {
 	uint32_t eax, ebx, ecx, edx, esi;
@@ -35,10 +40,13 @@ enum process_status {
 struct process {
 	struct cpu_state state;
 
-	char *name;
+	char name[64];
 	uint16_t pid;
 	enum process_status status;
 
+	struct process *parent;
+
+	struct process *last_process;
 	struct process *next_process;
 };
 

@@ -29,4 +29,6 @@ void* calloc(size_t size)
 
 	if (ptr != NULL)
 		memset(ptr, 0, size);
+
+	return ptr;
 }

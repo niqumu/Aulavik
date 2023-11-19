@@ -17,6 +17,7 @@
 #include <kernel/logger.h>
 #include <kernel/loader/elf.h>
 #include <string.h>
+#include "kernel/task/scheduler.h"
 
 bool loader_verify(struct elf_file elf)
 {
@@ -47,12 +48,6 @@ bool loader_verify(struct elf_file elf)
 
 	return true;
 }
-
-/**
- * Switch to ring 3 and call a function. Implemented in _loader.asm
- * @param callee A pointer to the function to be called from ring 3
- */
-extern void loader_jump_ring3(void *callee);
 
 /**
  * Load, parse, and execute an ELF file on disk
@@ -112,8 +107,10 @@ void loader_load(struct fat32_directory_entry file)
 	char *args[] = {file.display_name};
 	void (*entry) (int, char*[]) = (void (*) (int, char*[])) elf.addr_entry_point;
 
+	scheduler_spawn(file.display_name, entry, 1, args);
+
 //	entry(1, args);
-	loader_jump_ring3(entry);
+//	loader_jump_ring3(entry);
 
 //	k_debug("loader: Execution finished");
 }

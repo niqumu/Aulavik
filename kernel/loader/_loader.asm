@@ -17,7 +17,7 @@
 global loader_jump_ring3
 loader_jump_ring3:
 
-	mov ecx, [esp + 4]      ; void* callee
+	mov ecx, [esp + 4]      ; void *callee
 
 	mov ax, (4 * 8) | 3     ; ring 3
 	mov ds, ax
@@ -26,6 +26,8 @@ loader_jump_ring3:
 	mov gs, ax
 
 	mov eax, esp
+	or [eax], dword 0x200   ; enable interrupts in EFLAGS
+
 	push (4 * 8) | 3        ; data selector
 	push eax
 	pushf

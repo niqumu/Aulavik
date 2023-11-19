@@ -15,6 +15,12 @@
 
 #include <kernel/driver/fat32.h>
 
+/**
+ * Switch to ring 3 and call a function. Implemented in _loader.asm
+ * @param callee A pointer to the function to be called from ring 3
+ */
+extern void loader_jump_ring3(void *callee, int argc, char **argv);
+
 void loader_load(struct fat32_directory_entry file);
 
 #endif /* KERNEL_LOADER_H */

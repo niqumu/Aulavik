@@ -93,13 +93,15 @@ static void create_default_descriptors(void) {
 		(uint32_t) &tss, sizeof(struct tss), 0, access);
 }
 
-// how the hell do you do this???
 static void load_tss(void)
 {
 	memset(&tss, 0, sizeof(struct tss));
 
 	tss.ss0 = GDT_SEGMENT_KERNEL_DATA * DESCRIPTOR_SIZE;
 	tss.esp0 = (uint32_t) &isr_stack[0];
+
+	// todo why doesn't this work??
+	tss.eflags = (1 << 10); /* interrupt enable */
 
 	asm volatile ("ltr %0" :: "a" (GDT_SEGMENT_TSS * DESCRIPTOR_SIZE));
 }

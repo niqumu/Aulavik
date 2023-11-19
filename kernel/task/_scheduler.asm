@@ -12,21 +12,19 @@
 
 ; -----------------------------------------------------------------------------
 ; global function: load the provided cpu state
-; params: struct cpu_state_out
+; params: struct cpu_state
 ;
 ; declared in scheduler.c
 ; -----------------------------------------------------------------------------
-;global scheduler_load_state
-;scheduler_load_state:
-	popad
+global scheduler_load_state
+scheduler_load_state:
+	mov edi, [esp + 4]
+	mov esi, [esp + 8]
+	mov ebp, [esp + 12]
+	mov ebx, [esp + 20]
+	mov edx, [esp + 24]
+	mov ecx, [esp + 28]
+	mov eax, [esp + 32]
+	sti
+	jmp [esp + 36]
 
-	;mov ax, (4 * 8) | 3     ; ring 3
-        ;mov ds, ax
-        ;mov es, ax
-        ;mov fs, ax
-        ;mov gs, ax
-        ;mov ds, ax
-        ;mov ax, (3 * 8) | 3
-        ;mov cs, ax
-
-	iret

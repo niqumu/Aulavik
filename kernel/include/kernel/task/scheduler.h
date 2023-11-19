@@ -19,7 +19,7 @@
 
 bool scheduler_initialized(void);
 
-void scheduler_switch_next(struct cpu_state_in old_state);
+void scheduler_switch_next(struct cpu_state old_state);
 
 void scheduler_exit(int exit_code);
 

@@ -283,7 +283,7 @@ __attribute__((unused)) void idt_handle_vec31(uint32_t error)
  * ----------------------------------- */
 
 /* clock */
-__attribute__((unused)) void idt_handle_vec80(struct cpu_state_in state)
+__attribute__((unused)) void idt_handle_vec80(struct cpu_state state)
 {
 //	k_debug("eflags: %x", state.eflags);
 

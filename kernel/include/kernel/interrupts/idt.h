@@ -95,7 +95,7 @@ __attribute__((unused)) void idt_handle_vec31(uint32_t error);
  *  IRQs
  * --------------------------------------- */
 
-__attribute__((unused)) void idt_handle_vec80(struct cpu_state_in state);
+__attribute__((unused)) void idt_handle_vec80(struct cpu_state state);
 __attribute__((unused)) void idt_handle_vec81();
 __attribute__((unused)) void idt_handle_vec82();
 __attribute__((unused)) void idt_handle_vec83();

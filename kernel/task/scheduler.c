@@ -51,37 +51,23 @@ void scheduler_dump(void)
 	}
 }
 
-struct cpu_state_out scheduler_reverse_state(struct cpu_state_in in)
-{
-	struct cpu_state_out out = {0};
-	out.eflags = in.eflags;
-	out.cs = in.cs;
-	out.eip = in.eip;
-	out.eax = in.eax;
-	out.ecx = in.ecx;
-	out.edx = in.edx;
-	out.ebx = in.ebx;
-	out.esp = in.esp;
-	out.ebx = in.ebp;
-	out.esi = in.esi;
-	out.edi = in.edi;
-	return out;
-}
-
 _Noreturn void scheduler_idle(void)
 {
+	k_debug("idle task started");
 	while (true)
 		asm("hlt");
 }
 
-//extern void scheduler_load_state(struct cpu_state_out state);
-void scheduler_load_state(struct cpu_state_out state)
+_Noreturn void scheduler_test(void)
 {
-	asm("popa");
-	asm("iret");
+	k_debug("test task started");
+	while (true)
+		asm("hlt");
 }
 
-void scheduler_switch_next(struct cpu_state_in old_state)
+extern void scheduler_load_state(struct cpu_state state);
+
+void scheduler_switch_next(struct cpu_state old_state)
 {
 	/* if there is only one process, do nothing */
 	if (current_process == first_process && !first_process->next_process)
@@ -100,7 +86,7 @@ void scheduler_switch_next(struct cpu_state_in old_state)
 		current_process->pid, current_process->name);
 
 	current_process->status = ACTIVE;
-	scheduler_load_state(scheduler_reverse_state(current_process->state));
+	scheduler_load_state(current_process->state);
 }
 
 /**
@@ -108,7 +94,7 @@ void scheduler_switch_next(struct cpu_state_in old_state)
  * queue, and idles until the next task switch
  * @param exit_code The exit code of the terminated process
  */
-void scheduler_exit(int exit_code)
+_Noreturn void scheduler_exit(int exit_code)
 {
 	asm("cli");
 
@@ -136,7 +122,8 @@ void scheduler_exit(int exit_code)
 	free(current_process);
 
 	asm("sti");
-	scheduler_idle();
+	while (true)
+		asm("hlt");
 }
 
 /**
@@ -178,7 +165,7 @@ void scheduler_spawn(char *name, void (*entry) (int, char **),
 	first_process = process;
 
 	k_debug("Loading state");
-	scheduler_load_state(scheduler_reverse_state(current_process->state));
+	scheduler_load_state(current_process->state);
 }
 
 void scheduler_create_idle()
@@ -197,9 +184,26 @@ void scheduler_create_idle()
 	current_process = idle;
 }
 
+void scheduler_create_test()
+{
+	struct process *idle = calloc(sizeof(struct process));
+	idle->status = READY;
+	idle->pid = next_pid++;
+	memcpy(idle->name, "test", 63);
+
+	idle->state.ebp = (uint32_t) calloc(PROCESS_STACK_SIZE);
+	idle->state.esp = idle->state.ebp;
+	idle->state.eflags = 0x200000 | 0x200 | 0x2;
+	idle->state.eip = (uint32_t) &scheduler_test;
+
+	first_process->next_process = idle;
+	idle->last_process = first_process;
+}
+
 void scheduler_init(void)
 {
 	scheduler_create_idle();
+	scheduler_create_test();
 	k_ok("Started scheduler");
 	initialized = true;
 }

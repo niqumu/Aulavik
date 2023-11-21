@@ -21,7 +21,7 @@ int putchar(int i)
         terminal_putc((char) i);
 #else
 	char c = (char) i;
-	syscall_write(0, &c, 1);
+	syscall_write(stdout, &c, 1);
 #endif /* __AULAVIK_LIBK */
         return i;
 }

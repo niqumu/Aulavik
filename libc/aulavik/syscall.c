@@ -25,10 +25,10 @@ ssize_t syscall(void)
  * writes up to count bytes from the buffer, starting at buf, to the file
  * referred to by the file descriptor fd.
  */
-ssize_t syscall_write(unsigned int fd, const void *buf, size_t count)
+ssize_t syscall_write(const FILE *file, const void *buf, size_t count)
 {
 	ASM("mov %0, %%eax" :: "a" (SYSCALL_WRITE));
-	ASM("mov %0, %%edi" :: "g" (fd));
+	ASM("mov %0, %%edi" :: "g" (&file));
 	ASM("mov %0, %%esi" :: "g" (buf));
 	ASM("mov %0, %%edx" :: "g" (count));
 

@@ -1,9 +1,16 @@
 /*====------------- math.h - Standard mathematics header -----------------====*\
  *
- * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * This code is a part of the Aulavik project. The Aulavik project is licenced
+ * under the MIT License.
+ *
+ * Usage of these works (including, yet not limited to, reuse, modification,
+ * copying, distribution, and selling) is permitted provided that the relevant
+ * copyright notice and permission notice (as specified in LICENSE) shall be
+ * included in all copies or substantial portions of this software and all
+ * documentation files.
+ *
+ * Refer to LICENSE for more information. These works are provided "AS IS" with
+ * absolutely no warranty of any kind.
  *
 \*====--------------------------------------------------------------------====*/
 
@@ -12,7 +19,9 @@
 //      in <fenv.h> when an implementation is written.
 
 #ifndef _MATH_H
-#define _MATH_H
+#define _MATH_H 1
+
+#include <sys/cdefs.h>
 
 /*
  * Provide definitions for the float_t and double_t types
@@ -71,19 +80,23 @@
 enum
 {
         FP_ZERO =
-    #define FP_ZERO 0
+#define FP_ZERO 0
         FP_ZERO,
+
         FP_INFINITE =
-    #define FP_INFINITE 1
+#define FP_INFINITE 1
         FP_INFINITE,
+
         FP_NAN =
-    #define FP_NAN 2
+#define FP_NAN 2
         FP_NAN,
+
         FP_NORMAL =
-    #define FP_NORMAL 3
+#define FP_NORMAL 3
         FP_NORMAL,
+
         FP_SUBNORMAL =
-    #define FP_SUBNORMAL 4
+#define FP_SUBNORMAL 4
         FP_SUBNORMAL
 };
 
@@ -237,6 +250,7 @@ enum
 #define isunordered(x, y) (isnan(x) || isnan(y))
 #endif
 
+__BEGIN_DECLS
 
 /* Trigonometric functions @ ISO/IEC 9899:201 §7.12.4 */
 
@@ -557,5 +571,6 @@ long double truncl(long double x);
 /* Remainder functions @ ISO/IEC 9899:201 §7.12.10 */
 // TODO finish function declarations
 
+__END_DECLS
 
 #endif /* _MATH_H */

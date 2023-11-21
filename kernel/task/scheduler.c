@@ -58,13 +58,6 @@ _Noreturn void scheduler_idle(void)
 		asm("hlt");
 }
 
-_Noreturn void scheduler_test(void)
-{
-	k_debug("test task started");
-	while (true)
-		asm("hlt");
-}
-
 extern void scheduler_load_state(struct cpu_state state);
 
 void scheduler_switch_next(struct cpu_state old_state)
@@ -184,26 +177,9 @@ void scheduler_create_idle()
 	current_process = idle;
 }
 
-void scheduler_create_test()
-{
-	struct process *idle = calloc(sizeof(struct process));
-	idle->status = READY;
-	idle->pid = next_pid++;
-	memcpy(idle->name, "test", 63);
-
-	idle->state.ebp = (uint32_t) calloc(PROCESS_STACK_SIZE);
-	idle->state.esp = idle->state.ebp;
-	idle->state.eflags = 0x200000 | 0x200 | 0x2;
-	idle->state.eip = (uint32_t) &scheduler_test;
-
-	first_process->next_process = idle;
-	idle->last_process = first_process;
-}
-
 void scheduler_init(void)
 {
 	scheduler_create_idle();
-	scheduler_create_test();
 	k_ok("Started scheduler");
 	initialized = true;
 }

@@ -1,25 +1,30 @@
 /*====------------------ aulavik.h - Aulavik API header ------------------====*\
  *
- * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * This code is a part of the Aulavik project. The Aulavik project is licenced
+ * under the MIT License.
+ *
+ * Usage of these works (including, yet not limited to, reuse, modification,
+ * copying, distribution, and selling) is permitted provided that the relevant
+ * copyright notice and permission notice (as specified in LICENSE) shall be
+ * included in all copies or substantial portions of this software and all
+ * documentation files.
+ *
+ * Refer to LICENSE for more information. These works are provided "AS IS" with
+ * absolutely no warranty of any kind.
  *
 \*====--------------------------------------------------------------------====*/
 
 #ifndef _AULAVIK_H
 #define _AULAVIK_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 int aulavik_main(int argc, char *argv[]);
 
 _Noreturn void _start(int argc, char *argv[]);
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+__END_DECLS
 
 #endif /* _AULAVIK_H */

@@ -1,17 +1,29 @@
 /*====---------------- heap.h - Basic heap implementation ----------------====*\
  *
- * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that the relevant copyright
- * notice and permission notice shall be included in all copies or substantial
- * portions of this software and all documentation files.
+ * This file is a part of the Aulavik project. The Aulavik project is free
+ * software, licenced under the MIT License.
  *
- * Refer to LICENSE for more information. These works are provided with
- * absolutely no warranty.
+ * Usage of these works (including, yet not limited to, reuse, modification,
+ * copying, distribution, and selling) is permitted, provided that the relevant
+ * copyright notice and permission notice (as specified in LICENSE) shall be
+ * included in all copies or substantial portions of this software and all
+ * documentation files.
+ *
+ * These works are provided "AS IS" with absolutely no warranty of any kind,
+ * either expressed or implied.
+ *
+ * You should have received a copy of the MIT License alongside this software;
+ * refer to LICENSE for information. If not, refer to https://mit-license.org.
  *
 \*====--------------------------------------------------------------------====*/
 
 #include <kernel/logger.h>
 #include <kernel/memory/heap.h>
+
+#define DUMP_USED       "\e[91mUSED\e[0m"
+#define DUMP_FREE       "\e[92mFREE\e[0m"
+
+#define HEADER_SIZE     sizeof(block_header_t)
 
 uint64_t memory_end = 0;
 block_header_t *first_block;
@@ -26,6 +38,9 @@ static int memman_verify_header(uint64_t address)
 
 static block_header_t* memman_next_block(block_header_t *block)
 {
+	if (!block->size)
+		return 0;
+
 	uint64_t header = ((uint64_t) block) + block->size;
 
 	/* if the memory after this block isn't a valid block, we're at
@@ -57,6 +72,7 @@ static void memman_merge_blocks(void)
 		/* if the block is free, we want to merge it with all
 		 *   free blocks immediately following it */
 		if (block->used == BLOCK_FLAG_AVAILABLE) {
+
 			block_header_t *block2 = block;
 
 			/* second iteration, find free blocks immediately
@@ -92,8 +108,8 @@ void heap_dump(void)
 	block_header_t *block = first_block;
 
 	for (int i = 0; 1; i++) {
-		k_print("block %d\taddress: %l     size: %l\t  used: %d",
-			i, block, block->size, block->used);
+		k_print("%s  block %d     address: %x     size: %l",
+			block->used ? DUMP_USED : DUMP_FREE, i, block, block->size);
 
 		/* find the next, or stop if we reached the end of memory */
 		if (!(block = memman_next_block(block)))
@@ -105,7 +121,7 @@ void* heap_alloc(size_t size)
 {
 	/* the block needs to be bigger than the requested size in order
 	 *   to fit the header as well */
-	size_t size_needed = size + sizeof(block_header_t);
+	size_t size_needed = size + HEADER_SIZE;
 	block_header_t *block = first_block;
 
 	/* search forever until we find a free block or reach the end */
@@ -127,7 +143,7 @@ void* heap_alloc(size_t size)
 			block->used = BLOCK_FLAG_USED;
 
 			/* pointer to the start of usable memory in block */
-			return (void *) (((uint64_t) block) + sizeof(block_header_t));
+			return (void *) (((uint64_t) block) + HEADER_SIZE);
 		}
 
 next:
@@ -178,6 +194,12 @@ void heap_init(void)
 		panic("No memory");
 
 	/* create one big block to start with */
-	first_block = memman_write_header(MEMORY_START, free);
+	first_block = memman_write_header(MEMORY_START, free - HEADER_SIZE);
+
+	/* mark the end of memory as a used block with zero size */
+	((block_header_t *) (memory_end - HEADER_SIZE))->magic = BLOCK_MAGIC;
+	((block_header_t *) (memory_end - HEADER_SIZE))->size = 0;
+	((block_header_t *) (memory_end - HEADER_SIZE))->used = true;
+
 	heap_ready = true;
 }

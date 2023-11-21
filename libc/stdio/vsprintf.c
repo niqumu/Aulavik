@@ -73,6 +73,9 @@ char* convert(uint64_t number, int base, int min_digits)
  */
 int vsprintf(char *dest, const char* restrict str, va_list parameters)
 {
+	/* Necessary in case dest already points to a string */
+	dest[0] = '\0';
+
 	int written = 0;
 	int min_digits = 0;
 

@@ -39,12 +39,8 @@
  */
 int vprintf(const char* restrict str, va_list parameters)
 {
-//	void *addr = calloc(256); // TODO how big should this be?
-//	char *dest = (char *) addr;
-
-	char *dest;
-	memset(dest, 0, 256); // TODO fix heap ASAP
-
+	void *addr = calloc(256); // TODO how big should this be?
+	char *dest = (char *) addr;
 	int ret = vsprintf(dest, str, parameters);
 
 #ifdef __AULAVIK_LIBK
@@ -53,6 +49,6 @@ int vprintf(const char* restrict str, va_list parameters)
 	syscall_write(stdout, dest, strlen(dest));
 #endif /* __AULAVIK_LIBK */
 
-//	free(addr);
+	free(addr);
 	return ret;
 }

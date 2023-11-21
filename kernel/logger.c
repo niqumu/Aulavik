@@ -1,9 +1,19 @@
 /*====------------- logger.c - Kernel logger implementation --------------====*\
  *
- * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * This file is a part of the Aulavik project. The Aulavik project is free
+ * software, licenced under the MIT License.
+ *
+ * Usage of these works (including, yet not limited to, reuse, modification,
+ * copying, distribution, and selling) is permitted, provided that the relevant
+ * copyright notice and permission notice (as specified in LICENSE) shall be
+ * included in all copies or substantial portions of this software and all
+ * documentation files.
+ *
+ * These works are provided "AS IS" with absolutely no warranty of any kind,
+ * either expressed or implied.
+ *
+ * You should have received a copy of the MIT License alongside this software;
+ * refer to LICENSE for information. If not, refer to https://mit-license.org.
  *
 \*====--------------------------------------------------------------------====*/
 
@@ -11,7 +21,7 @@
 
 #include <stdarg.h> /* va_list, va_start(), va_end() */
 #include <stdio.h> /* printf() */
-#include <string.h>
+#include <stdlib.h> /* malloc(), free() */
 
 #include <kernel/driver/serial.h> /* serial_write_string() */
 
@@ -23,20 +33,20 @@ void k_debug(const char* restrict format, ...)
 	va_start(args, format);
 
 #ifdef SERIAL_LOGGING_ENABLED
+
 #ifdef SERIAL_LOGGING_ANSI
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_DEBUG);
 #else
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_DEBUG_M);
-#endif
-//	char *str = malloc(64);
-	char *str;
-	memset(str, 0, 64); /* todo investigate malloc/free page fault */
+#endif /* SERIAL_LOGGING_ANSI */
+
+	char *str = malloc(256);
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
-//	free(str);
-#endif
+	free(str);
+#endif /* SERIAL_LOGGING_ENABLED */
 
 	vprintf(format, args);
 	va_end(args);
@@ -49,15 +59,13 @@ void k_print(const char* __restrict format, ...)
 	va_start(args, format);
 
 #ifdef SERIAL_LOGGING_ENABLED
-//	char *str = malloc(64);
-	char *str;
-	memset(str, 0, 64); /* todo investigate malloc/free page fault */
+	char *str = malloc(256);
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
-//	free(str);
-#endif
+	free(str);
+#endif /* SERIAL_LOGGING_ENABLED */
 
 	vprintf(format, args);
 	va_end(args);
@@ -72,20 +80,20 @@ void k_ok(const char* restrict format, ...)
 	va_start(args, format);
 
 #ifdef SERIAL_LOGGING_ENABLED
+
 #ifdef SERIAL_LOGGING_ANSI
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_OK);
 #else
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_OK_M);
-#endif
-//	char *str = malloc(64);
-	char *str;
-	memset(str, 0, 64); /* todo investigate malloc/free page fault */
+#endif /* SERIAL_LOGGING_ANSI */
+
+	char *str = malloc(256);
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
-//	free(str);
-#endif
+	free(str);
+#endif /* SERIAL_LOGGING_ENABLED */
 
 	vprintf(format, args);
 	va_end(args);
@@ -101,20 +109,20 @@ void k_warn(const char* restrict format, ...)
 	va_start(args, format);
 
 #ifdef SERIAL_LOGGING_ENABLED
+
 #ifdef SERIAL_LOGGING_ANSI
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_WARN);
 #else
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_WARN_M);
-#endif
-//	char *str = malloc(64);
-	char *str;
-	memset(str, 0, 64); /* todo investigate malloc/free page fault */
+#endif /* SERIAL_LOGGING_ANSI */
+
+	char *str = malloc(256);
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
-//	free(str);
-#endif
+	free(str);
+#endif /* SERIAL_LOGGING_ENABLED */
 
 	vprintf(format, args);
 	va_end(args);
@@ -130,20 +138,20 @@ void k_error(const char* restrict format, ...)
 	va_start(args, format);
 
 #ifdef SERIAL_LOGGING_ENABLED
-	#ifdef SERIAL_LOGGING_ANSI
+
+#ifdef SERIAL_LOGGING_ANSI
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_ERROR);
 #else
 	serial_write_string(SERIAL_LOGGING_PORT, PREFIX_ERROR_M);
-#endif
-//	char *str = malloc(64);
-	char *str;
-	memset(str, 0, 64); /* todo investigate malloc/free page fault */
+#endif /* SERIAL_LOGGING_ANSI */
+
+	char *str = malloc(256);
 	vsprintf(str, format, args);
 
 	serial_write_string(SERIAL_LOGGING_PORT, str);
 	serial_write_string(SERIAL_LOGGING_PORT, "\n");
-//	free(str);
-#endif
+	free(str);
+#endif /* SERIAL_LOGGING_ENABLED */
 
 	vprintf(format, args);
 	va_end(args);

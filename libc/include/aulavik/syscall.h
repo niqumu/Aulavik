@@ -1,16 +1,20 @@
 /*====------------------- syscall.h - Aulavik syscalls -------------------====*\
  *
- * This code is a part of the Aulavik project. The Aulavik project is licenced
- * under the MIT License.
+ * This file is a part of the Aulavik project. The Aulavik project is free
+ * software, licenced under the MIT License.
  *
  * Usage of these works (including, yet not limited to, reuse, modification,
- * copying, distribution, and selling) is permitted provided that the relevant
+ * copying, distribution, and selling) is permitted, provided that the relevant
  * copyright notice and permission notice (as specified in LICENSE) shall be
  * included in all copies or substantial portions of this software and all
  * documentation files.
  *
- * Refer to LICENSE for more information. These works are provided "AS IS" with
- * absolutely no warranty of any kind.
+ * These works are provided "AS IS" with absolutely no warranty of any kind,
+ * either expressed or implied.
+ *
+ * You should have received a copy of the MIT License alongside this software,
+ * refer to LICENSE for more information. If not, please refer to
+ * https://mit-license.org.
  *
 \*====--------------------------------------------------------------------====*/
 
@@ -23,12 +27,6 @@
 #include <stdio.h>
 
 #include <sys/types.h>
-
-#ifdef __STRICT_ANSI__
-	#define ASM(n) __asm__ __volatile__ (n)
-#else
-	#define ASM(n) asm volatile (n)
-#endif /* __STRICT_ANSI__ */
 
 #define SYSCALL_KERNEL_ERR      1
 #define SYSCALL_ERR             (-1)
@@ -49,4 +47,4 @@ _Noreturn void syscall_exit(int status);
 
 __END_DECLS
 
-#endif /* _AULAVIK_SYSCALL_H */
+#endif /* !_AULAVIK_SYSCALL_H */

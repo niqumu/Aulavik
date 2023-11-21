@@ -48,7 +48,7 @@ void terminal_handle_key(char c);
 
 void terminal_putc(char c);
 
-void terminal_puts(char *s);
+void terminal_puts(const char *s);
 
 void terminal_tick(void);
 

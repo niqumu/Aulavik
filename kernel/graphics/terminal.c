@@ -232,7 +232,7 @@ void terminal_putc(char c)
 	terminal_state.cursor_type_ticks = 3;
 }
 
-void terminal_puts(char *str)
+void terminal_puts(const char *str)
 {
 	if (!terminal_alive)
 		return;

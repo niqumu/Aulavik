@@ -1,20 +1,28 @@
 /*====------------ vsprintf - stdio.h vsprintf implementation ------------====*\
  *
- * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that this instrument is retained
- * with the works, so that any entity that uses the works is notified of this
- * instrument. These works are provided without any warranty.
+ * This file is a part of the Aulavik project. The Aulavik project is free
+ * software, licenced under the MIT License.
+ *
+ * Usage of these works (including, yet not limited to, reuse, modification,
+ * copying, distribution, and selling) is permitted, provided that the relevant
+ * copyright notice and permission notice (as specified in LICENSE) shall be
+ * included in all copies or substantial portions of this software and all
+ * documentation files.
+ *
+ * These works are provided "AS IS" with absolutely no warranty of any kind,
+ * either expressed or implied.
+ *
+ * You should have received a copy of the MIT License alongside this software;
+ * refer to LICENSE for information. If not, refer to https://mit-license.org.
  *
 \*====--------------------------------------------------------------------====*/
 
 #include <stdio.h>
 
-#include <stdint.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdarg.h>
 #include <string.h>
-#include "../../kernel/include/kernel/driver/serial.h"
 
 static bool print(char *dest, const char *src, size_t length)
 {
@@ -53,62 +61,72 @@ char* convert(uint64_t number, int base, int min_digits)
 	return ptr;
 }
 
-int vsprintf(char *str, const char* restrict format, va_list parameters)
+/**
+ * Writes the formatted output of the format string pointed to by str and the
+ * provided arguments into the string pointed to by dest.
+ *
+ * @param dest A pointer to a sufficiently large string to write into
+ * @param str A multibyte character sequence, optionally with codes to indicate
+ *      the formatting and insertion of an additional provided argument
+ * @param parameters A variable argument list of values to insert/format
+ * @return The number of characters written, or, if an error occurs, EOF
+ */
+int vsprintf(char *dest, const char* restrict str, va_list parameters)
 {
 	int written = 0;
 	int min_digits = 0;
 
-	while (*format) {
+	while (*str) {
 		size_t maxleft = INT_MAX - written;
 
-		if (format[0] != '%' || format[1] == '%') {
-			if (format[0] == '%')
-				format++;
+		if (str[0] != '%' || str[1] == '%') {
+			if (str[0] == '%')
+				str++;
 
 			size_t amount = 1;
 
-			while (format[amount] && format[amount] != '%')
+			while (str[amount] && str[amount] != '%')
 				amount++;
 
 			if (maxleft < amount) {
 				// TODO set errno to EOVERFLOW
-				return -1;
+				return EOF;
 			}
 
-			if (!print(str, format, amount))
+			if (!print(dest, str, amount))
 				return -1;
 
-			format += amount;
+			str += amount;
 			written += amount;
 			continue;
 		}
 
-		const char *format_begun_at = format++;
+		const char *format_begun_at = str++;
 		size_t len;
 
-		if (*format >= '0' && *format <= '9') {
+		if (*str >= '0' && *str <= '9') {
 			min_digits *= 10;
-			min_digits += (*format) - '0';
-			format++;
+			min_digits += (*str) - '0';
+			str++;
 		}
 
-		switch (*format) {
+		switch (*str) {
 			case 'c':
-				format++;
+				str++;
 				char c = (char) va_arg(parameters, int);
 
 				if (!maxleft) {
 					// TODO set errno to EOVERFLOW
-					return -1;
+					return EOF;
 				}
 
-				if (!print(str, &c, sizeof(c)))
-					return -1;
+				if (!print(dest, &c, sizeof(c)))
+					return EOF;
 
 				written++;
 				break;
 			case 'd':
-				format++;
+				str++;
 				const int num = va_arg(parameters, int);
 				// TODO proper abs();
 				char *d_str = convert(num * ((num > 0) - (num < 0)), 10, min_digits);
@@ -123,33 +141,33 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 				if (num < 0) {
 					written++;
 					char neg = '-';
-					if (!print(str, &neg, sizeof(neg)))
-						return -1;
+					if (!print(dest, &neg, sizeof(neg)))
+						return EOF;
 				}
 
-				if (!print(str, d_str, len))
-					return -1;
+				if (!print(dest, d_str, len))
+					return EOF;
 
 				written += len;
 				break;
 			case 's':
-				format++;
+				str++;
 				const char *s_str = va_arg(parameters, const char*);
 				len = strlen(s_str);
 
 				if (maxleft < len) {
 					// TODO set errno to EOVERFLOW
-					return -1;
+					return EOF;
 				}
 
-				if (!print(str, s_str, len))
-					return -1;
+				if (!print(dest, s_str, len))
+					return EOF;
 
 				written += len;
 				break;
 			case 'l': /* todo this should be %lx, but format codes
                                         are only 1 char now */
-				format++;
+				str++;
 				const uint64_t num_hex_64 = va_arg(parameters, uint64_t);
 				char *x_str_64 = convert(num_hex_64, 16, min_digits);
 				min_digits = 0;
@@ -157,19 +175,19 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 
 				if (maxleft < len) {
 					// TODO set errno to EOVERFLOW
-					return -1;
+					return EOF;
 				}
 
-				if (!print(str, "0x", sizeof("0x") - 1))
-					return -1;
+				if (!print(dest, "0x", sizeof("0x") - 1))
+					return EOF;
 
-				if (!print(str, x_str_64, len))
-					return -1;
+				if (!print(dest, x_str_64, len))
+					return EOF;
 
 				written += len + 2;
 				break;
 			case 'x':
-				format++;
+				str++;
 				const uint32_t num_hex = va_arg(parameters, uint32_t);
 				char *x_str = convert(num_hex, 16, min_digits);
 				min_digits = 0;
@@ -177,31 +195,31 @@ int vsprintf(char *str, const char* restrict format, va_list parameters)
 
 				if (maxleft < len) {
 					// TODO set errno to EOVERFLOW
-					return -1;
+					return EOF;
 				}
 
-				if (!print(str, "0x", sizeof("0x") - 1))
-					return -1;
+				if (!print(dest, "0x", sizeof("0x") - 1))
+					return EOF;
 
-				if (!print(str, x_str, len))
-					return -1;
+				if (!print(dest, x_str, len))
+					return EOF;
 
 				written += len + 2;
 				break;
 			default:
-				format = format_begun_at;
-				len = strlen(format);
+				str = format_begun_at;
+				len = strlen(str);
 
 				if (maxleft < len) {
 					// TODO set errno to EOVERFLOW
-					return -1;
+					return EOF;
 				}
 
-				if (!print(str, format, len))
-					return -1;
+				if (!print(dest, str, len))
+					return EOF;
 
 				written += len;
-				format += len;
+				str += len;
 		}
 	}
 

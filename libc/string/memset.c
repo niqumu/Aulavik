@@ -1,12 +1,19 @@
 /*====------------ memset.c - string.h memset implementation -------------====*\
  *
- * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that the relevant copyright
- * notice and permission notice shall be included in all copies or substantial
- * portions of this software and all documentation files.
+ * This file is a part of the Aulavik project. The Aulavik project is free
+ * software, licenced under the MIT License.
  *
- * Refer to LICENSE for more information. These works are provided with
- * absolutely no warranty.
+ * Usage of these works (including, yet not limited to, reuse, modification,
+ * copying, distribution, and selling) is permitted, provided that the relevant
+ * copyright notice and permission notice (as specified in LICENSE) shall be
+ * included in all copies or substantial portions of this software and all
+ * documentation files.
+ *
+ * These works are provided "AS IS" with absolutely no warranty of any kind,
+ * either expressed or implied.
+ *
+ * You should have received a copy of the MIT License alongside this software;
+ * refer to LICENSE for information. If not, refer to https://mit-license.org.
  *
 \*====--------------------------------------------------------------------====*/
 
@@ -19,7 +26,7 @@
 
 #include <string.h>
 
-#include <stdint.h>
+#include <stdint.h> /* uint8_t */
 
 /**
  * Copies the value stored in value to the first n bytes of memory starting at
@@ -39,10 +46,10 @@ void* memset(void *dest, int value, size_t n)
 
 	/*
 	 * fast algorithm. we should only use this if n is large enough for
-	 * this to be an improvement over the simple algorithm (twice the size
-	 * of a long).
+	 * this to be an improvement over the simple algorithm (four times the
+	 * size of a long).
 	 */
-	if (n >= l_size * 2) {
+	if (n >= l_size * 4) {
 
 		/*
 		 * simple/slow copy to the destination until it is aligned to
@@ -82,7 +89,7 @@ void* memset(void *dest, int value, size_t n)
 		}
 
 		dest_byte = (uint8_t *) dest_long;
-	}
+	} /* fall-through to simple algorithm if leftover data exists */
 
 	/*
 	 * simple/fallback algorithm. we need to use this if n is so small that

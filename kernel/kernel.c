@@ -82,8 +82,8 @@ void kernel_main(void)
 	scheduler_init();
 
 	k_print("\nKernel ready");
-	k_print("Memory: %dkb lower, %dkb upper\n", mb_info->mem_lower,
-		mb_info->mem_upper);
+	k_print("Memory: %dKB lower, %dMB upper\n", mb_info->mem_lower,
+		mb_info->mem_upper / 1000);
 
 	k_print("Entering Rainier...");
 	terminal_exit();

@@ -239,7 +239,7 @@ void graphics_draw_mcr(struct render_context *ctx, const uint8_t *buffer,
 			else if (!bit && !sec_trans)
 				graphics_plot_pixel(ctx, draw_x, draw_y,secondary);
 
-			if (++draw_x >= width) {
+			if (++draw_x >= x + width) {
 				draw_x = x;
 				draw_y++;
 			}

@@ -53,6 +53,12 @@ extern struct color color_14;
 extern struct color color_15;
 extern uint8_t cursor1[78];
 extern uint8_t cursor2[78];
+extern uint8_t cursor_move_hv[];
+extern uint8_t cursor_move_hv_outline[];
+extern uint8_t cursor_move_h[];
+extern uint8_t cursor_move_h_outline[];
+extern uint8_t cursor_move_v[];
+extern uint8_t cursor_move_v_outline[];
 
 struct render_context* graphics_get_global_rctx(void);
 

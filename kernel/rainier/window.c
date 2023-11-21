@@ -164,8 +164,8 @@ uint8_t window_locate_click(int x, int y, struct rainier_window window)
 	x -= window.x;
 	y -= window.y;
 
-	if (x < -10 || y < -10 || x > window.width + 10 ||
-			y > window.height + 10)
+	if (x < -8 || y < -8 || x > window.width + 8 ||
+			y > window.height + 8)
 		return WINDOW_AREA_NONE;
 
 	if (window.minimized)
@@ -179,10 +179,10 @@ uint8_t window_locate_click(int x, int y, struct rainier_window window)
 	/* only consider edges if resizing is allowed and a border exists */
 	if (!(window.flags & WINDOW_FLAG_LOCK_SIZE) &&
 			!(window.flags & WINDOW_FLAG_NO_BORDER)) {
-		if (y < 5) area |= WINDOW_AREA_TOP;
-		if (y > window.height - 10) area |= WINDOW_AREA_BOTTOM;
-		if (x < 10) area |= WINDOW_AREA_LEFT;
-		if (x > window.width - 10) area |= WINDOW_AREA_RIGHT;
+		if (y < 7) area |= WINDOW_AREA_TOP;
+		if (y > window.height - 12) area |= WINDOW_AREA_BOTTOM;
+		if (x < 12) area |= WINDOW_AREA_LEFT;
+		if (x > window.width - 12) area |= WINDOW_AREA_RIGHT;
 	}
 
 	/* if we still haven't found the area */

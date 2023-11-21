@@ -1,13 +1,20 @@
 /*====---------------- rainier.c - Rainier window manager ----------------====*\
  *
- * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that the relevant copyright 
- * notice and permission notice shall be included in all copies or substantial 
- * portions of this software and all documentation files.
- * 
- * Refer to LICENSE for more information. These works are provided with 
- * absolutely no warranty.
- * 
+ * This file is a part of the Aulavik project. The Aulavik project is free
+ * software, licenced under the MIT License.
+ *
+ * Usage of these works (including, yet not limited to, reuse, modification,
+ * copying, distribution, and selling) is permitted, provided that the relevant
+ * copyright notice and permission notice (as specified in LICENSE) shall be
+ * included in all copies or substantial portions of this software and all
+ * documentation files.
+ *
+ * These works are provided "AS IS" with absolutely no warranty of any kind,
+ * either expressed or implied.
+ *
+ * You should have received a copy of the MIT License alongside this software;
+ * refer to LICENSE for information. If not, refer to https://mit-license.org.
+ *
 \*====--------------------------------------------------------------------====*/
 
 #include <kernel/rainier/rainier.h>
@@ -36,6 +43,7 @@ struct rainier_window *back_window = NULL;
 
 struct rainier_window *focused_window = NULL;
 uint8_t last_click_flags = WINDOW_AREA_NONE;
+uint8_t cursor_flags = WINDOW_AREA_NONE;
 bool dragging = false;
 
 /* fps */
@@ -146,6 +154,37 @@ void rainier_render_debug(void)
 #endif /* RAINIER_DEBUGGING_ELEMENTS */
 }
 
+void memset_test(void *dest, uint8_t value, uint32_t count)
+{
+	for (uint32_t i = 0; i < count; i++)
+		((uint8_t *) dest)[i] = value;
+}
+
+void rainier_update_cursor(void)
+{
+	/* clear the old cursor */
+	memset_test(cursor_rctx.framebuffer, 0, cursor_rctx.framebuffer_size);
+
+	if (cursor_flags & WINDOW_AREA_LEFT || cursor_flags & WINDOW_AREA_RIGHT) {
+		graphics_draw_mcr(&cursor_rctx, cursor_move_h,
+	                32 - 12, 32 - 12);
+		graphics_draw_mcr(&cursor_rctx, cursor_move_h_outline,
+	                32 - 12, 32 - 12);
+		return;
+	}
+
+	if (cursor_flags & WINDOW_AREA_TOP || cursor_flags & WINDOW_AREA_BOTTOM) {
+		graphics_draw_mcr(&cursor_rctx, cursor_move_v,
+	                32 - 12, 32 - 12);
+		graphics_draw_mcr(&cursor_rctx, cursor_move_v_outline,
+	                32 - 12, 32 - 12);
+		return;
+	}
+
+	graphics_draw_mcr(&cursor_rctx, cursor1, 32, 32);
+	graphics_draw_mcr(&cursor_rctx, cursor2, 32, 32);
+}
+
 void rainier_render(void)
 {
 	cursor_x = mouse_x;
@@ -161,7 +200,7 @@ void rainier_render(void)
 	rainier_render_windows();
 
 	/* cursor */
-	graphics_bake_contexts(&cursor_rctx, 0, 0, cursor_x, cursor_y,
+	graphics_bake_contexts(&cursor_rctx, 0, 0, cursor_x - 32, cursor_y - 32,
 		cursor_rctx.width, cursor_rctx.height, &double_buffer);
 
 #ifdef RAINIER_DEBUGGING_ELEMENTS
@@ -184,6 +223,14 @@ void rainier_process_mouse(struct mouse_packet packet)
 	mouse_y += packet.delta_y;
 	mouse_y = mouse_y < 0 ? 0 : (mouse_y > (int) double_buffer.height ?
 		(int) double_buffer.height : mouse_y);
+
+	uint8_t new_cursor_flags = window_locate_click(mouse_x,
+		mouse_y, *focused_window);
+
+	if (new_cursor_flags != cursor_flags) {
+		cursor_flags = new_cursor_flags;
+		rainier_update_cursor();
+	}
 
 	if (packet.left_state) {
 
@@ -323,15 +370,14 @@ void rainier_main()
 	rainier_add_window(desktop_window);
 
 	/* set up the cursor context */
-	cursor_rctx = double_buffer;
-	cursor_rctx.framebuffer = malloc(20 * 27 * 3);
-	cursor_rctx.framebuffer_size = 20 * 27 * 3;
-	cursor_rctx.width = 20;
-	cursor_rctx.height = 27;
+	cursor_rctx.framebuffer = malloc(64 * 64 * 3);
+	cursor_rctx.framebuffer_size = 64 * 64 * 3;
+	cursor_rctx.width = 64;
+	cursor_rctx.height = 64;
+	cursor_rctx.pixel_width = 3;
+	cursor_rctx.pitch = 64 * 3;
 	cursor_rctx.blending = true;
-	graphics_draw_mcr(&cursor_rctx, cursor1, 0, 0);
-	graphics_draw_mcr(&cursor_rctx, cursor2, 0, 0);
-
+	rainier_update_cursor();
 
 	struct rainier_window window1 = window_create("Hello, world!", 500, 400);
 	window1.x = 300;

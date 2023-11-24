@@ -18,9 +18,10 @@
 \*====--------------------------------------------------------------------====*/
 
 #ifndef _SYS_CDEFS_H
-#define _SYS_CDEFS_H 1
+#define _SYS_CDEFS_H    1
 
-#define __AULAVIK_LIBC 1
+#define __AULAVIK_LIBC  1
+
 
 /*
  * Versions of GCC prior to 9 will automatically insert extern "C" unless we
@@ -31,6 +32,7 @@
 	#define NO_IMPLICIT_EXTERN_C 1
 #endif /* __GNUC__ < 9 */
 
+
 /* Define environment-appropriate macros for function declarations */
 #ifdef __cplusplus
 	#define __BEGIN_DECLS   extern "C" {
@@ -40,6 +42,7 @@
 	#define __END_DECLS
 #endif /* __cplusplus */
 
+
 /* Define environment-appropriate macros for inline ASM */
 #ifdef __STRICT_ANSI__
 	#define ASM_VOLATILE(n) __asm__ __volatile__ (n)
@@ -48,6 +51,7 @@
 	#define ASM_VOLATILE(n) asm volatile (n)
 	#define ASM(n) asm(n)
 #endif /* __STRICT_ANSI__ */
+
 
 /*
  * In supported environments, warn callers when a function's return value is

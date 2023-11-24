@@ -58,11 +58,8 @@ void loader_load(struct fat32_directory_entry file)
 	/* read and load into memory */
 	uint8_t *loaded_addr = malloc(file.size + fat32_get_drive()->cluster_size);
 	fat32_read_file(file.first_cluster, loaded_addr, NULL);
-	k_ok("Loaded executable to %x", loaded_addr);
 
 	struct elf_file elf = elf_parse(loaded_addr, file.size);
-
-//	elf_dump(elf);
 
 	if (!loader_verify(elf))
 		return;
@@ -85,8 +82,6 @@ void loader_load(struct fat32_directory_entry file)
 			void *memory = calloc(section->file_size);
 			section->file_offset =
 				(uint64_t) memory - (uint64_t) loaded_addr;
-			k_debug("loader: Allocated %l bytes at %x for section %d",
-				section->file_size, (uintptr_t) memory, i);
 		}
 	}
 
@@ -98,19 +93,14 @@ void loader_load(struct fat32_directory_entry file)
 
 		memcpy((void *) segment->virtual_addr,
 		       loaded_addr + segment->file_offset, segment->file_size);
-		k_debug("loader: Loaded segment %d to %x", i, segment->virtual_addr);
+		k_debug("loader: %s: Loaded segment %d to %x", file.display_name,
+			i, segment->virtual_addr);
 	}
 
 	k_debug("loader: Calling entry point %x", elf.addr_entry_point);
-
 
 	char *args[] = {file.display_name};
 	void (*entry) (int, char*[]) = (void (*) (int, char*[])) elf.addr_entry_point;
 
 	scheduler_spawn(file.display_name, entry, 1, args);
-
-//	entry(1, args);
-//	loader_jump_ring3(entry);
-
-//	k_debug("loader: Execution finished");
 }

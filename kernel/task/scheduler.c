@@ -16,6 +16,8 @@
 
 #include <kernel/logger.h>
 #include <string.h>
+#include <kernel/kernel.h>
+#include <kernel/graphics/graphics.h>
 #include "kernel/loader/loader.h"
 
 struct process *first_process;
@@ -53,7 +55,6 @@ void scheduler_dump(void)
 
 _Noreturn void scheduler_idle(void)
 {
-	k_debug("idle task started");
 	while (true)
 		asm("hlt");
 }
@@ -62,6 +63,10 @@ extern void scheduler_load_state(struct cpu_state state);
 
 void scheduler_switch_next(struct cpu_state old_state)
 {
+	/* if there are no processes, panic */
+	if (current_process == NULL)
+		panic("Nothing to do");
+
 	/* if there is only one process, do nothing */
 	if (current_process == first_process && !first_process->next_process)
 		return;
@@ -74,9 +79,6 @@ void scheduler_switch_next(struct cpu_state old_state)
 	} else {
 		current_process = first_process;
 	}
-
-	k_debug("scheduler: switch to pid %d (%s)",
-		current_process->pid, current_process->name);
 
 	current_process->status = ACTIVE;
 	scheduler_load_state(current_process->state);
@@ -152,12 +154,9 @@ void scheduler_spawn(char *name, void (*entry) (int, char **),
 	process->state.eflags = 0x200000 | 0x200 | 0x2;
 	process->state.eip = (uint32_t) entry;
 
-	k_debug("Allocated stack for %s at %x", process->name, process->state.ebp);
-
 	current_process = process;
 	first_process = process;
 
-	k_debug("Loading state");
 	scheduler_load_state(current_process->state);
 }
 

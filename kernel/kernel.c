@@ -27,6 +27,8 @@
 #include <kernel/driver/pci.h>
 #include <kernel/driver/serial.h>
 
+#include <kernel/file/vfs.h>
+
 #include <kernel/logger.h>
 #include <kernel/interrupts/idt.h> /* idt_init() */
 #include <kernel/gdt/gdt.h> /* gdt_init(); */
@@ -40,6 +42,7 @@
 #include "kernel/task/scheduler.h"
 #include "kernel/rainier/rainier.h"
 #include "kernel/loader/loader.h"
+#include "kernel/bin/shell.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -79,22 +82,26 @@ void kernel_main(void)
 	pci_init();
 	ata_init();
 	fat32_init();
-	scheduler_init();
+//	scheduler_init();
 
 	k_print("\nKernel ready");
 	k_print("Memory: %dKB lower, %dMB upper\n", mb_info->mem_lower,
 	        mb_info->mem_upper / 1000);
 
 
-	for (uint32_t i = 0; i < fat32_get_root()->entry_count; i++) {
-
-		struct fat32_directory_entry entry = fat32_get_root()->entries[i];
-
-		if (strcmp(entry.extension, "elf") == 0) {
-			k_ok("Found executable: %s", entry.display_name);
-			loader_load(entry);
-		}
+	char test_path[] = "0:/test.txt";
+	k_print("Test path: %s", test_path);
+	struct vfs_mountpoint *mountpoint = vfs_get_mountpoint(test_path);
+	if (mountpoint != NULL) {
+		k_print("Path drive label: %s", mountpoint->name);
+		k_print("Path physical device name: %s", mountpoint->device.name);
+		k_print("Path drive id: %d", mountpoint->id);
+	} else {
+		k_error("Mountpoint null");
 	}
+
+//	int file = vfs_open(test_path, 0);
+//	k_print("Descriptor for test path: %d", file);
 
 //	k_print("Entering Rainier...");
 //	terminal_exit();

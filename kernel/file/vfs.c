@@ -66,7 +66,7 @@ struct vfs_mountpoint* vfs_get_mountpoint(const char *path)
 		digits++;
 	}
 
-	if (path[digits] != '/')
+	if (path[digits] != ':' || path[digits + 1] != '/')
 		return NULL; /* path either has a 3 digit device id or no / */
 
 	struct vfs_mountpoint *mountpoint = &mountpoints[id];
@@ -96,7 +96,17 @@ int vfs_unmount(struct ata_device device)
 	return -1; /* device was not mounted in the first place */
 }
 
-int vfs_mount(struct ata_device device, uint8_t id, enum vfs_filesystem fs)
+/**
+ * Mounts the provided device to the provided mountpoint. If the mount was
+ * successful, zero is returned. A non-zero value indicates failure.
+ * @param device The device to mount
+ * @param id The id to mount the device as
+ * @param name The label of the drive
+ * @param fs The filesystem of the drive, used to call the appropriate driver
+ * @return Zero if the mount succeeded, otherwise a non-zero value.
+ */
+int vfs_mount(struct ata_device device, uint8_t id,
+	      char *name, enum vfs_filesystem fs)
 {
 	if (mountpoints[id].present)
 		return -1; /* given id is already taken */
@@ -106,8 +116,10 @@ int vfs_mount(struct ata_device device, uint8_t id, enum vfs_filesystem fs)
 	mountpoint.device = device;
 	mountpoint.type = INTERNAL;
 
-	memcpy(mountpoint.name, device.name, strlen(device.name));
+	memcpy(mountpoint.name, name, strlen(device.name));
 	mountpoints[id] = mountpoint;
+	mountpoints[id].filesystem = fs;
+	mountpoints[id].present = true;
 
 	return 0;
 }
@@ -141,8 +153,8 @@ int vfs_open(const char *path, int flags)
 
 	/* get the absolute path relative to the mountpoint.
 	 * e.g. 13/dir/file.foo -> dir/file.foo */
-	char *path_cpy = malloc(strlen(path));
-	memcpy(path_cpy, path, strlen(path + 1));
+	char *path_cpy = malloc(strlen(path) + 1);
+	memcpy(path_cpy, path, strlen(path) + 1);
 	path_cpy = vfs_get_mountpoint_path(path_cpy);
 
 	int fs_file_id = mountpoint->operations.open(path_cpy, flags);
@@ -200,7 +212,7 @@ ssize_t vfs_read(int descriptor, void *buffer, size_t size)
 	return read;
 }
 
-void init_vfs(void)
+void vfs_init(void)
 {
 
 }

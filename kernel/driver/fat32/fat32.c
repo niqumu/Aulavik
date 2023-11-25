@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <kernel/file/vfs.h>
+
 #include <kernel/logger.h>
 
 struct fat32_drive drive;
@@ -286,6 +288,17 @@ void fat32_init(void)
 	root_directory.name[1] = '\0';
 	fat32_read_directory(drive.root_cluster, root_directory.entries,
 			     &root_directory.entry_count);
+
+	/* if we found a drive, mount it in the vfs */
+	int mountpoint = vfs_next_free_mountpoint();
+	int status = vfs_mount(drive.device, mountpoint, drive.label, FAT32);
+	if (status == 0) {
+		k_ok("FAT32: Successfully mounted %s to %d:/",
+		     drive.label, mountpoint);
+	} else {
+		k_error("FAT32: Failed to mount %s to %d:/, got %d",
+			drive.label, mountpoint, status);
+	}
 
 	k_ok("Loaded FAT32 driver, drive label: \"%s\"", drive.label);
 }

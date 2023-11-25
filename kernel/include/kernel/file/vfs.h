@@ -66,13 +66,25 @@ struct vfs_mountpoint* vfs_get_mountpoint(const char *path);
 
 int vfs_unmount(struct ata_device device);
 
-int vfs_mount(struct ata_device device, uint8_t id, enum vfs_filesystem fs);
+/**
+ * Mounts the provided device to the provided mountpoint. If the mount was
+ * successful, zero is returned. A non-zero value indicates failure.
+ * @param device The device to mount
+ * @param id The id to mount the device as
+ * @param name The label of the drive
+ * @param fs The filesystem of the drive, used to call the appropriate driver
+ * @return Zero if the mount succeeded, otherwise a non-zero value.
+ */
+int vfs_mount(struct ata_device device, uint8_t id,
+              char *name, enum vfs_filesystem fs);
 
 int vfs_open(const char *path, int flags);
 
 int vfs_close(int descriptor);
 
 ssize_t vfs_read(int descriptor, void *buffer, size_t size);
+
+int vfs_next_free_mountpoint(void);
 
 void vfs_init(void);
 

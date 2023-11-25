@@ -1,13 +1,20 @@
 /*====--------------------- vfs.c - Virtual Filesystem -------------------====*\
  *
- * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that the relevant copyright 
- * notice and permission notice shall be included in all copies or substantial 
- * portions of this software and all documentation files.
- * 
- * Refer to LICENSE for more information. These works are provided with 
- * absolutely no warranty.
- * 
+ * This file is a part of the Aulavik project. The Aulavik project is free
+ * software, licenced under the MIT License.
+ *
+ * Usage of these works (including, yet not limited to, reuse, modification,
+ * copying, distribution, and selling) is permitted, provided that the relevant
+ * copyright notice and permission notice (as specified in LICENSE) shall be
+ * included in all copies or substantial portions of this software and all
+ * documentation files.
+ *
+ * These works are provided "AS IS" with absolutely no warranty of any kind,
+ * either expressed or implied.
+ *
+ * You should have received a copy of the MIT License alongside this software;
+ * refer to LICENSE for information. If not, refer to https://mit-license.org.
+ *
 \*====--------------------------------------------------------------------====*/
 
 #include <kernel/file/vfs.h>
@@ -15,33 +22,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../libc/include/stdlib.h"
-#include "../../libc/include/string.h"
+#include <kernel/logger.h>
+#include "vfs_fat.h"
 
 struct vfs_mountpoint mountpoints[VFS_MOUNTPOINTS];
 struct vfs_file_descriptor open_files[VFS_MAX_OPEN_FILES];
 
-char* vfs_get_mountpoint_path(char *path)
+int vfs_get_mountpoint_path(const char *path, char *mp_path)
 {
 	if (strlen(path) < 3)
-		return NULL; /* path is too short to be valid */
+		return -1; /* path is too short to be valid */
 
 	if (path[0] < '0' || path[0] > '9')
-		return path; /* path is malformed, or nothing to do */
+		return 0; /* path is malformed, or nothing to do */
 
-	if (path[1] == '/') { /* 0/... */
-		path += 2;
-		return path;
+	if (path[2] == '/') { /* 0:/... */
+		strcpy(mp_path, path + 3);
+		return 0;
 	}
 
-	else if (path[2] == '/') { /* 00/... */
-		path += 3;
-		return path;
+	else if (path[3] == '/') { /* 00:/... */
+		strcpy(mp_path, path + 4);
+		return 0;
 	}
 
-	return NULL; /* the path isn't valid */
+	return -2; /* the path isn't valid */
 }
 
+/**
+ * Gets the mountpoint from a path. For example, calling this function with
+ * the path "2:/foo/bar.bin" will return a pointer to mountpoint 2.
+ * @param path A pointer to the path
+ * @return A pointer to the mountpoint path belongs to, or NULL if the path is
+ *      malformed or otherwise invalid
+ */
 struct vfs_mountpoint* vfs_get_mountpoint(const char *path)
 {
 	if (strlen(path) < 2)
@@ -96,6 +110,17 @@ int vfs_unmount(struct ata_device device)
 	return -1; /* device was not mounted in the first place */
 }
 
+static int vfs_create_functions(struct vfs_mountpoint *mountpoint)
+{
+	switch (mountpoint->filesystem) {
+	case FAT32:
+		mountpoint->operations.open = fat_open;
+		return 0;
+	}
+
+	return -1;
+}
+
 /**
  * Mounts the provided device to the provided mountpoint. If the mount was
  * successful, zero is returned. A non-zero value indicates failure.
@@ -119,8 +144,12 @@ int vfs_mount(struct ata_device device, uint8_t id,
 	memcpy(mountpoint.name, name, strlen(device.name));
 	mountpoints[id] = mountpoint;
 	mountpoints[id].filesystem = fs;
-	mountpoints[id].present = true;
 
+	/* attempt to create function pointers to the appropriate driver */
+	if (vfs_create_functions(&mountpoints[id]) != 0)
+		return -2; /* creating function pointers failed */
+
+	mountpoints[id].present = true;
 	return 0;
 }
 
@@ -152,21 +181,25 @@ int vfs_open(const char *path, int flags)
 		return -1; /* something went wrong getting the mountpoint */
 
 	/* get the absolute path relative to the mountpoint.
-	 * e.g. 13/dir/file.foo -> dir/file.foo */
-	char *path_cpy = malloc(strlen(path) + 1);
-	memcpy(path_cpy, path, strlen(path) + 1);
-	path_cpy = vfs_get_mountpoint_path(path_cpy);
+	 * e.g. 13:/dir/file.foo -> dir/file.foo */
+	char *mp_path = malloc(strlen(path) + 1);
 
-	int fs_file_id = mountpoint->operations.open(path_cpy, flags);
-	free(path_cpy);
+	if (vfs_get_mountpoint_path(path, mp_path) != 0) {
+		return -4;
+	} else {
+		k_debug("MP Path for \"%s\": \"%s\"", path, mp_path);
+	}
+
+	int fs_file_id = mountpoint->operations.open(mp_path, flags);
+	free(mp_path);
 
 	if (fs_file_id == -1)
-		return 1; /* something went wrong on the file-system side */
+		return -2; /* something went wrong on the file-system side */
 
 	int descriptor = vfs_next_free_descriptor();
 
 	if (descriptor == -1)
-		return 2; /* no more room to open new files */
+		return -3; /* no more room to open new files */
 
 	// TODO how do we get the name and size from the file system???
 	open_files[descriptor].present = true;

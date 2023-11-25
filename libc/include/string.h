@@ -87,6 +87,16 @@ void* memset(void *dest, int value, size_t n);
 char* strcat(char *dest, const char *src);
 
 /**
+ * Copies the string pointed to by src into the array pointed to by dest. The
+ * terminating null-character of src is also copied. The two strings should not
+ * overlap.
+ * @param dest A pointer to a string to read from
+ * @param src A pointer to a string to write into
+ * @return The value of dest
+ */
+char* strcpy(char *dest, const char *src);
+
+/**
  * Compares the string pointed to by str1 to the string pointed to by str2. If
  * the two strings are equal, the function will return zero. Otherwise, the
  * function will return the difference between the two characters where the

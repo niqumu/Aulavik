@@ -11,12 +11,10 @@
 \*====--------------------------------------------------------------------====*/
 
 #include "vfs_fat.h"
-#include "../../libc/include/string.h"
-#include "../../libc/include/stdlib.h"
+#include "kernel/logger.h"
 
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 
 #include <kernel/driver/fat32.h>
 #include <kernel/file/vfs.h>
@@ -41,10 +39,17 @@ int fat_open(const char *path, int flags, ...)
 	if (id == -1)
 		return -1; /* max open files reached */
 
-	char *path_cpy = malloc(strlen(path));
-	char *part = malloc(strlen(path));
+	void *path_cpy_addr = malloc(strlen(path) + 1);
+	char *path_cpy = path_cpy_addr;
+	strcpy(path_cpy, path);
+
+	/* the next "piece" of the path, either a directory or the file
+	 * name itself. i.e., in "0:/foo/bar.png", the parts are "foo" and
+	 * "bar.png". */
+	char *part = malloc(strlen(path) + 1);
+
+	/* whether we've reached our end destination */
 	bool resolved = false;
-	memcpy(path_cpy, path, strlen(path) + 1);
 
 	struct fat32_directory_entry *entry_buffer =
 		malloc(sizeof(struct fat32_directory_entry) * 128);
@@ -58,12 +63,15 @@ loop_start:
 
 	/* store the next part of the path in part */
 	for (size_t i = 1; i <= strlen(path); i++) {
+
+		/* if the path keeps going, we haven't reached the end */
 		if (path_cpy[i] == '/') {
 			memcpy(part, path_cpy, i);
 			part[i] = '\0';
 			path_cpy += i + 1; /* remove part and '/' */
 		}
 
+		/* if the path ends, we should be at the file (resolved) */
 		else if (path_cpy[i] == '\0') {
 			memcpy(part, path_cpy, i);
 			part[i] = '\0';
@@ -79,7 +87,7 @@ loop_start:
 	for (uint32_t i = 0; i < *count; i++) {
 		struct fat32_directory_entry entry = entry_buffer[i];
 
-		if (strcmp(entry.name, part) == 0) {
+		if (strcmp(entry.display_name, part) == 0) {
 
 			/* this directory is a match, but we still have
 			 * more directories to go before the file */
@@ -92,10 +100,9 @@ loop_start:
 			fat_open_files[id].present = true;
 			fat_open_files[id].size = entry.size;
 			fat_open_files[id].first_cluster = entry.first_cluster;
-			memcpy(fat_open_files[id].name, entry.display_name,
-			       strlen(entry.display_name));
+			strcpy(fat_open_files[id].name, entry.display_name);
 
-			free(path_cpy);
+			free(path_cpy_addr);
 			free(part);
 			free(entry_buffer);
 			free(count);
@@ -104,7 +111,7 @@ loop_start:
 	}
 
 	/* didn't find the file */
-	free(path_cpy);
+	free(path_cpy_addr);
 	free(part);
 	free(entry_buffer);
 	free(count);

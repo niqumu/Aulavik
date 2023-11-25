@@ -1,6 +1,6 @@
-/*====---------------- vfs_fat.h - FAT VFS implementation ----------------====*\
+/*====------------- strcpy.c - string.h strcpy implementation ------------====*\
  *
- * This file is a part of the Aulavik project. The Aulavik project is free
+ * This file is a part of the Aulavik project. The Aulavik project is free 
  * software, licenced under the MIT License.
  *
  * Usage of these works (including, yet not limited to, reuse, modification,
@@ -17,19 +17,25 @@
  *
 \*====--------------------------------------------------------------------====*/
 
-#ifndef FILE_VFS_FAT_H
-#define FILE_VFS_FAT_H  1
+#include <string.h>
 
-#include <stdbool.h>
-#include <stdint.h>
+/**
+ * Copies the string pointed to by src into the array pointed to by dest. The
+ * terminating null-character of src is also copied. The two strings should not
+ * overlap.
+ * @param dest A pointer to a string to read from
+ * @param src A pointer to a string to write into
+ * @return The value of dest
+ */
+char* strcpy(char *dest, const char *src)
+{
+	if (dest == NULL || src == NULL)
+		return NULL;
 
-struct fat_file_descriptor {
-	bool present;
-	char name[13];
-	uint32_t first_cluster;
-	uint32_t size;
-};
+	char *a = dest;
 
-int fat_open(const char *path, int flags, ...);
+	while ((*dest++ = *src++))
+		;
 
-#endif /* !FILE_VFS_FAT_H */
+	return a;
+}

@@ -100,8 +100,8 @@ void kernel_main(void)
 		k_error("Mountpoint null");
 	}
 
-//	int file = vfs_open(test_path, 0);
-//	k_print("Descriptor for test path: %d", file);
+	int file = vfs_open(test_path, 0);
+	k_print("File Descriptor for \"%s\": %d", test_path, file);
 
 //	k_print("Entering Rainier...");
 //	terminal_exit();

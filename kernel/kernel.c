@@ -67,6 +67,30 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 	heap_init();
 }
 
+void vfs_test(void)
+{
+	char path[] = "0:/test.txt";
+
+	int file = vfs_open(path, 0);
+	k_print("File Descriptor for \"%s\": %d", path, file);
+
+	if (file < 0) {
+		k_error("Failure opening file!");
+		return;
+	}
+
+	uint8_t buffer[9];
+
+	if (vfs_read(file, buffer, 8) < 0) {
+		k_error("Failure reading file!");
+		return;
+	}
+
+	k_print("\"%s\"", buffer);
+
+	vfs_close(file);
+}
+
 __attribute__((unused, __noreturn__))
 void kernel_main(void)
 {
@@ -89,19 +113,7 @@ void kernel_main(void)
 	        mb_info->mem_upper / 1000);
 
 
-	char test_path[] = "0:/test.txt";
-	k_print("Test path: %s", test_path);
-	struct vfs_mountpoint *mountpoint = vfs_get_mountpoint(test_path);
-	if (mountpoint != NULL) {
-		k_print("Path drive label: %s", mountpoint->name);
-		k_print("Path physical device name: %s", mountpoint->device.name);
-		k_print("Path drive id: %d", mountpoint->id);
-	} else {
-		k_error("Mountpoint null");
-	}
-
-	int file = vfs_open(test_path, 0);
-	k_print("File Descriptor for \"%s\": %d", test_path, file);
+	vfs_test();
 
 //	k_print("Entering Rainier...");
 //	terminal_exit();

@@ -21,7 +21,10 @@
 #define FILE_VFS_FAT_H  1
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+
+#include <sys/types.h>
 
 struct fat_file_descriptor {
 	bool present;
@@ -31,5 +34,11 @@ struct fat_file_descriptor {
 };
 
 int fat_open(const char *path, int flags, ...);
+
+int fat_close(int descriptor);
+
+ssize_t fat_read(int descriptor, void *r_buffer, size_t size);
+
+ssize_t fat_write(int descriptor, const void *w_buffer, size_t size);
 
 #endif /* !FILE_VFS_FAT_H */

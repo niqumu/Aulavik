@@ -42,7 +42,7 @@ enum vfs_filesystem {
 struct vfs_file_descriptor {
 	bool present;
 	char *name;
-	uint64_t fs_file_id;
+	int fs_file_id;
 	uint64_t file_size;
 
 	int mountpoint_id;

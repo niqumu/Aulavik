@@ -16,6 +16,8 @@
 #include <stdint.h>
 
 #include <kernel/driver/ata.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 #define FAT_CLUSTER_FREE                0x0
 #define FAT_CLUSTER_BAD                 0x0ffffff7
@@ -135,9 +137,22 @@ void fat32_read_directory(uint32_t start_cluster,
  *
  * @param start_cluster The first cluster of the file
  * @param dest A sufficiently large buffer to be read into
- * @param count A pointer to the number of bytes read
+ * @param size A pointer to the number of bytes read
  */
 void fat32_read_file(uint32_t start_cluster, uint8_t* dest, uint32_t *size);
+
+/**
+ * Read up to size bytes from a file, given the starting cluster of the file.
+ *
+ * Function implemented in fat32.c
+ *
+ * @param start_cluster The first cluster of the file
+ * @param dest A sufficiently large buffer to read into
+ * @param size The maximum amount of bytes to read
+ * @return The number of bytes read, no greater than size, or -1 if an error
+ *      preventing reading occured
+ */
+ssize_t fat32_read_bytes(uint32_t start_cluster, uint8_t* dest, size_t size);
 
 /**
  * Iterate over ATA devices, searching for a FAT32 formatted drive. If one is

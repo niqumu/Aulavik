@@ -115,6 +115,9 @@ static int vfs_create_functions(struct vfs_mountpoint *mountpoint)
 	switch (mountpoint->filesystem) {
 	case FAT32:
 		mountpoint->operations.open = fat_open;
+		mountpoint->operations.close = fat_close;
+		mountpoint->operations.read = fat_read;
+		mountpoint->operations.write = fat_write;
 		return 0;
 	}
 
@@ -155,7 +158,8 @@ int vfs_mount(struct ata_device device, uint8_t id,
 
 int vfs_next_free_descriptor(void)
 {
-	for (int i = 0; i < VFS_MAX_OPEN_FILES; i++) {
+	/* file descriptors below 5 are reserved for std streams */
+	for (int i = 5; i < VFS_MAX_OPEN_FILES; i++) {
 		if (!open_files[i].present)
 			return i;
 	}
@@ -184,11 +188,8 @@ int vfs_open(const char *path, int flags)
 	 * e.g. 13:/dir/file.foo -> dir/file.foo */
 	char *mp_path = malloc(strlen(path) + 1);
 
-	if (vfs_get_mountpoint_path(path, mp_path) != 0) {
-		return -4;
-	} else {
-		k_debug("MP Path for \"%s\": \"%s\"", path, mp_path);
-	}
+	if (vfs_get_mountpoint_path(path, mp_path) != 0)
+		return -4; /* something went wrong parsing the path */
 
 	int fs_file_id = mountpoint->operations.open(mp_path, flags);
 	free(mp_path);
@@ -234,7 +235,7 @@ ssize_t vfs_read(int descriptor, void *buffer, size_t size)
 	if (!file.present || !mountpoint.present)
 		return -1; /* the file isn't open, or its mountpoint is bad */
 
-	ssize_t read = mountpoint.operations.read(descriptor, buffer, size);
+	ssize_t read = mountpoint.operations.read(file.fs_file_id, buffer, size);
 
 	if (file.buffer_read_pos + size < file.file_size) {
 		file.buffer_read_pos += size;

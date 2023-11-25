@@ -239,7 +239,7 @@ void fat32_read_directory(uint32_t start_cluster,
  * @param start_cluster The first cluster of the file
  * @param dest A sufficiently large buffer to be read into. The buffer must
  *      be as large as the file, rounded up to the drive cluster size.
- * @param count A pointer to the number of bytes read
+ * @param size A pointer to the number of bytes read
  */
 void fat32_read_file(uint32_t start_cluster, uint8_t* dest, uint32_t *size)
 {
@@ -269,6 +269,47 @@ void fat32_read_file(uint32_t start_cluster, uint8_t* dest, uint32_t *size)
 			return; /* FAT says we've reached the end */
 	}
 
+}
+
+/**
+ * Read up to size bytes from a file, given the starting cluster of the file.
+ * @param start_cluster The first cluster of the file
+ * @param dest A sufficiently large buffer to read into
+ * @param size The maximum amount of bytes to read
+ * @return The number of bytes read, no greater than size, or -1 if an error
+ *      preventing reading occured
+ */
+ssize_t fat32_read_bytes(uint32_t start_cluster, uint8_t* dest, size_t size)
+{
+	uint32_t cluster = start_cluster;
+	uint8_t buffer[drive.cluster_size];
+	uint32_t bytes_read = 0;
+
+	/* keep reading clusters until the end of the file, or until we're
+	 * not supposed to read any further */
+	while (bytes_read < size) {
+		memset(buffer, 0, sizeof(buffer));
+
+		/* actually read this cluster of the file into our buffer */
+		fat32_read_cluster(cluster, buffer);
+
+		/* we can read up to one cluster at time. however, if the
+		 * bytes left are less, only read that many */
+		size_t bytes_left = size - bytes_read;
+		size_t bytes_to_read = bytes_left < drive.cluster_size ?
+			bytes_left : drive.cluster_size;
+
+		memmove(&dest[bytes_read], buffer, bytes_to_read);
+		bytes_read += drive.cluster_size;
+
+		/* get the next cluster in the chain from the FAT */
+		cluster = fat32_get_table_entry(cluster);
+
+		if (cluster >= cluster_eoc)
+			break; /* FAT says we've reached the end */
+	}
+
+	return bytes_read;
 }
 
 void fat32_init(void)

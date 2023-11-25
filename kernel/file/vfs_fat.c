@@ -1,13 +1,20 @@
 /*====---------------- vfs_fat.c - FAT VFS implementation ----------------====*\
  *
- * This code is a part of the Aulavik project.
- * Usage of these works is permitted provided that the relevant copyright 
- * notice and permission notice shall be included in all copies or substantial 
- * portions of this software and all documentation files.
- * 
- * Refer to LICENSE for more information. These works are provided with 
- * absolutely no warranty.
- * 
+ * This file is a part of the Aulavik project. The Aulavik project is free
+ * software, licenced under the MIT License.
+ *
+ * Usage of these works (including, yet not limited to, reuse, modification,
+ * copying, distribution, and selling) is permitted, provided that the relevant
+ * copyright notice and permission notice (as specified in LICENSE) shall be
+ * included in all copies or substantial portions of this software and all
+ * documentation files.
+ *
+ * These works are provided "AS IS" with absolutely no warranty of any kind,
+ * either expressed or implied.
+ *
+ * You should have received a copy of the MIT License alongside this software;
+ * refer to LICENSE for information. If not, refer to https://mit-license.org.
+ *
 \*====--------------------------------------------------------------------====*/
 
 #include "vfs_fat.h"
@@ -21,7 +28,7 @@
 
 struct fat_file_descriptor fat_open_files[VFS_MAX_OPEN_FILES];
 
-int fat_next_free_id(void)
+static int fat_next_free_id(void)
 {
 	for (int i = 0; i < VFS_MAX_OPEN_FILES; i++) {
 		if (!fat_open_files[i].present)
@@ -30,7 +37,6 @@ int fat_next_free_id(void)
 
 	return -1; /* no room */
 }
-
 
 int fat_open(const char *path, int flags, ...)
 {
@@ -116,4 +122,25 @@ loop_start:
 	free(entry_buffer);
 	free(count);
 	return -1;
+}
+
+int fat_close(int descriptor)
+{
+	fat_open_files[descriptor].present = false;
+	return 0;
+}
+
+ssize_t fat_read(int descriptor, void *r_buffer, size_t size)
+{
+	struct fat_file_descriptor file = fat_open_files[descriptor];
+
+	if (!file.present)
+		return -1; /* file wasn't opened first */
+
+	return fat32_read_bytes(file.first_cluster, r_buffer, size);
+}
+
+ssize_t fat_write(int descriptor, const void *w_buffer, size_t size)
+{
+	return 0;
 }

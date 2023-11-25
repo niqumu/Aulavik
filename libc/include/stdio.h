@@ -34,9 +34,9 @@ typedef uint64_t FILE;
  * respective stream
  * @ ISO/IEC 9899:201 §7.21.1.3
  */
-#define stdout  ((FILE *) 0)
-#define stdin   ((FILE *) 1)
-#define stderr  ((FILE *) 2)
+#define stdout  ((FILE *) 1)
+#define stdin   ((FILE *) 2)
+#define stderr  ((FILE *) 3)
 
 __BEGIN_DECLS
 
@@ -97,6 +97,11 @@ int vprintf(const char* __restrict str, va_list args);
  * @return The number of characters written, or, if an error occurs, EOF
  */
 int vsprintf(char* __restrict dest, const char* __restrict str, va_list args);
+
+
+FILE* fopen(const char* __restrict filename, const char* __restrict mode);
+
+int fclose(FILE *stream);
 
 __END_DECLS
 

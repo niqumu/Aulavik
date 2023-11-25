@@ -16,6 +16,7 @@
 
 #include <kernel/terminal.h>
 #include <kernel/task/scheduler.h>
+#include <kernel/file/vfs.h>
 
 void syscalls_write(uint32_t edi, uint32_t esi, uint32_t edx)
 {
@@ -28,6 +29,20 @@ void syscalls_write(uint32_t edi, uint32_t esi, uint32_t edx)
 	asm volatile ("mov $0, %eax");
 }
 
+void syscalls_open(uint32_t edi, uint32_t esi, uint32_t edx)
+{
+	char *path = (char *) edi;
+	int descriptor = vfs_open(path, (int) esi, (int) edx);
+
+	asm volatile("mov %0, %%eax" :: "a" (descriptor));
+}
+
+void syscalls_close(uint32_t edi)
+{
+	int status = vfs_close((int) edi);
+	asm volatile("mov %0, %%eax" :: "a" (status));
+}
+
 void syscalls_exit(int status)
 {
 	scheduler_exit(status);
@@ -38,6 +53,12 @@ void syscalls_handle(uint32_t eax, uint32_t edi, uint32_t esi, uint32_t edx)
 	switch (eax) {
 	case SYSCALL_WRITE:
 		syscalls_write(edi, esi, edx);
+		break;
+	case SYSCALL_OPEN:
+		syscalls_open(edi, esi, edx);
+		break;
+	case SYSCALL_CLOSE:
+		syscalls_close(edi);
 		break;
 	case SYSCALL_EXIT:
 		syscalls_exit((int) edi);

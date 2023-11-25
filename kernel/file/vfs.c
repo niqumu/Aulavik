@@ -177,7 +177,7 @@ int vfs_next_free_mountpoint(void)
 	return -1; /* no room */
 }
 
-int vfs_open(const char *path, int flags)
+int vfs_open(const char *path, int flags, int mode)
 {
 	struct vfs_mountpoint *mountpoint = vfs_get_mountpoint(path);
 
@@ -244,9 +244,4 @@ ssize_t vfs_read(int descriptor, void *buffer, size_t size)
 	}
 
 	return read;
-}
-
-void vfs_init(void)
-{
-
 }

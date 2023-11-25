@@ -38,7 +38,6 @@ enum vfs_filesystem {
 	FAT32
 };
 
-
 struct vfs_file_descriptor {
 	bool present;
 	char *name;
@@ -92,14 +91,12 @@ int vfs_unmount(struct ata_device device);
 int vfs_mount(struct ata_device device, uint8_t id,
               char *name, enum vfs_filesystem fs);
 
-int vfs_open(const char *path, int flags);
+int vfs_open(const char *path, int flags, int mode);
 
 int vfs_close(int descriptor);
 
 ssize_t vfs_read(int descriptor, void *buffer, size_t size);
 
 int vfs_next_free_mountpoint(void);
-
-void vfs_init(void);
 
 #endif /* !FILE_VFS_H */

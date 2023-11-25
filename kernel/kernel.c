@@ -43,6 +43,7 @@
 #include "kernel/rainier/rainier.h"
 #include "kernel/loader/loader.h"
 #include "kernel/bin/shell.h"
+#include "../libc/include/stdio.h"
 
 multiboot_info_t *mb_info;
 mb_memory_block_t *mb_memory_map;
@@ -69,12 +70,9 @@ void kernel_premain(multiboot_info_t *_mb_info, uint32_t magic)
 
 void vfs_test(void)
 {
-	char path[] = "0:/test.txt";
+	FILE *file = fopen("0:/test.txt", "r");
 
-	int file = vfs_open(path, 0);
-	k_print("File Descriptor for \"%s\": %d", path, file);
-
-	if (file < 0) {
+	if (file == NULL) {
 		k_error("Failure opening file!");
 		return;
 	}
@@ -88,7 +86,7 @@ void vfs_test(void)
 
 	k_print("\"%s\"", buffer);
 
-	vfs_close(file);
+	fclose(file);
 }
 
 __attribute__((unused, __noreturn__))

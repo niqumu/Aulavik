@@ -33,6 +33,8 @@
 
 #define SYSCALL_READ    0
 #define SYSCALL_WRITE   1
+#define SYSCALL_OPEN    2
+#define SYSCALL_CLOSE   3
 #define SYSCALL_EXIT    60
 
 __BEGIN_DECLS
@@ -42,6 +44,10 @@ __BEGIN_DECLS
  * referred to by the file descriptor file.
  */
 ssize_t syscall_write(const FILE *file, const void *buf, size_t count);
+
+FILE* syscall_open(const char *filename, int flags, int mode);
+
+int syscall_close(const FILE *stream);
 
 _Noreturn void syscall_exit(int status);
 
